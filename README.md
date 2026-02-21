@@ -59,6 +59,7 @@ flowchart LR
     REPO_IMPL --> UC
     UC --> VM
     VM --> UI
+```
 
 ## ⚙️ Development Guide
 
