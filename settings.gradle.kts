@@ -24,7 +24,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Template App"
+rootProject.name = "Urithiru Project"
 include(":app")
 include(":core")
 include(":api-a")

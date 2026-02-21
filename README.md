@@ -1,21 +1,22 @@
-# Template Project
+# ⚔️ Urithiru Project
+**One project to rule them all.**
 
-This is a template android application project to showcase modularized clean architecture. 
-The project can be used to create any kind of app with clear structure for easier scalability and maintainability.
+A modular Android application template built with Clean Architecture principles.  
+Designed to be scalable, maintainable, and easy to extend — even for beginners.
 
-# Tech Used
+## 🧰 Tech Stack
 * Jetpack Compose for UI creation
 * Retrofit for API call
 * Hilt for dependency injection
 * Kotlin Coroutines for asynchronous programming
 
-## Prerequisites
+## 📦 Prerequisites
 
 * Gradle 9.3.1
 * JDK 21
 * Minimum Android SDK 24
 
-## API
+## 🧱 Project Modules
 
 The project contains the following modules:
 
@@ -25,10 +26,43 @@ The project contains the following modules:
 * `:core-entity`
 * `:buildlogic`
 
+## 🏗 Architecture Flow
 
-# How To
+```mermaid
+flowchart LR
 
-### 1. Changing the Base URL
+    subgraph Presentation Layer
+        UI[Screen]
+        VM[ViewModel]
+    end
+
+    subgraph Domain Layer
+        UC[Use Case]
+        REPO_INT[Repository]
+    end
+
+    subgraph Data Layer
+        REPO_IMPL[Repository Implementation]
+        RDS[Data Source]
+        API[Retrofit API]
+    end
+
+    UI --> VM
+    VM --> UC
+    UC --> REPO_INT
+    REPO_INT --> REPO_IMPL
+    REPO_IMPL --> RDS
+    RDS --> API
+
+    API --> RDS
+    RDS --> REPO_IMPL
+    REPO_IMPL --> UC
+    UC --> VM
+    VM --> UI
+
+## ⚙️ Development Guide
+
+### 1️⃣ Changing the Base URL
 
 The Base URL is managed per environment using property files in the `productFlavorProperties` folder.
 
@@ -40,7 +74,7 @@ The Base URL is managed per environment using property files in the `productFlav
     ```
 4.  Sync the project with Gradle. The `BuildConfig.BASE_URL` will be updated automatically.
 
-### 2. Creating a New Endpoint API Call
+### 2️⃣ Creating a New API Endpoint
 
 To add a new API call, follow these steps (using the `api-a` module as an example):
 
