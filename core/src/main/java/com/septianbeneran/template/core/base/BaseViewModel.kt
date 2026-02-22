@@ -9,11 +9,19 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.concurrent.atomics.update
 
-@HiltViewModel
-open class BaseViewModel @Inject constructor() : ViewModel() {
+open class BaseViewModel<UiState>(initialState: UiState) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(initialState)
+    val uiState = _uiState.asStateFlow()
+
+    protected fun updateUiState(reducer: (UiState) -> UiState) {
+        _uiState.update(reducer)
+    }
 
     private var _isCentralLoading = MutableStateFlow(false)
     var isCentralLoading = _isCentralLoading.asStateFlow()

@@ -1,6 +1,6 @@
 package com.septianbeneran.template.api_a.data.remote.dto
 
-import com.septianbeneran.template.core_entity.weapon.Weapon
+import com.septianbeneran.template.core_entity.a.Weapon
 import com.septianbeneran.template.api_a.data.remote.dto.common.AttributesResponse
 import com.septianbeneran.template.api_a.data.remote.dto.common.ScalingResponse
 import kotlinx.serialization.Serializable

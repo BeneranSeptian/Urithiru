@@ -11,6 +11,7 @@ fun Project.baseDependencies() {
     dependencies {
         implementation (libs.hilt.android)
         ksp(libs.hilt.android.compiler)
+        implementation(libs.kotlinx.serialization.json)
     }
 }
 
@@ -21,5 +22,20 @@ fun Project.apiDependencies() {
         implementation(libs.retrofit2.kotlinx.serialization.converter)
         implementation(libs.converter.gson)
         implementation(libs.kotlinx.serialization.json)
+    }
+}
+
+fun Project.composeDependencies() {
+    val libs = the<LibrariesForLibs>()
+
+    dependencies {
+        implementation(platform(libs.androidx.compose.bom))
+        implementation(libs.androidx.compose.ui)
+        implementation(libs.androidx.compose.ui.graphics)
+        implementation(libs.androidx.compose.ui.tooling.preview)
+        implementation(libs.androidx.compose.ui.tooling)
+        implementation(libs.androidx.compose.material3)
+        implementation(libs.androidx.navigation.compose)
+        implementation(libs.androidx.hilt.navigation.compose)
     }
 }

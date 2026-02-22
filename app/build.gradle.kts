@@ -1,6 +1,7 @@
 plugins {
     id("app-convention")
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -41,8 +42,12 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.kotlinx.serialization.json)
 
     implementation(project(":core"))
     implementation(project(":core-entity"))
+    implementation(project(":core-navigation"))
     implementation(project(":api-a"))
+    implementation(project(":feature-a"))
+    implementation(project(":feature-b"))
 }

@@ -1,6 +1,6 @@
 package com.septianbeneran.template.api_a.data.remote.service
 
-import com.septianbeneran.template.api_a.data.remote.api.EldenRingApi
+import com.septianbeneran.template.api_a.data.remote.api.WeaponApi
 import com.septianbeneran.template.api_a.data.remote.dto.WeaponResponse
 import com.septianbeneran.template.core.base.BaseDataSource
 import com.septianbeneran.template.core.remote.entity.ApiDto
@@ -8,7 +8,7 @@ import com.septianbeneran.template.core.remote.entity.ApiResult
 import javax.inject.Inject
 
 class ApiARemoteDataSourceImpl @Inject constructor(
-    private val api: EldenRingApi
+    private val api: WeaponApi
 ) : ApiARemoteDataSource, BaseDataSource() {
     override suspend fun getWeaponList(
         limit: Int?,
