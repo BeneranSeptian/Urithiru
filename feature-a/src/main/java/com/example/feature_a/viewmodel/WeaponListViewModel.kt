@@ -9,12 +9,17 @@ import com.septianbeneran.template.core.base.BaseState.StateLoading
 import com.septianbeneran.template.core.base.BaseState.StateSuccess
 import com.septianbeneran.template.core.base.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 
 @HiltViewModel
 class WeaponListViewModel @Inject constructor(
     private val getWeaponListUseCase: GetWeaponListUseCase
-) : BaseViewModel<WeaponListScreenUiState>(WeaponListScreenUiState()) {
+) : BaseViewModel() {
+
+    private val _uiState = MutableStateFlow(WeaponListScreenUiState())
+    val uiState = _uiState.asStateFlow()
 
     fun onAction(action: WeaponListScreenAction) {
         when (action) {
@@ -25,13 +30,17 @@ class WeaponListViewModel @Inject constructor(
     private fun getWeaponList() {
         collectApi(
             flow = getWeaponListUseCase(),
-            onLoading = { updateUiState { it.copy(weaponListState = StateLoading) } },
+            isCentralLoading = true,
             onError = { error ->
-                updateUiState { it.copy(weaponListState = StateFailed(error)) }
+                _uiState.value = _uiState.value.copy(
+                    weaponListState = StateFailed(error)
+                )
             },
             onSuccess = { data ->
                 data?.let { weaponList ->
-                    updateUiState { it.copy(weaponListState = StateSuccess(weaponList)) }
+                    _uiState.value = _uiState.value.copy(
+                        weaponListState = StateSuccess(weaponList)
+                    )
                 }
             }
         )

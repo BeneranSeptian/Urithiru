@@ -7,23 +7,29 @@ import com.example.feature_a.screen.stateaction.WeaponDetailAction
 import com.example.feature_a.screen.stateaction.WeaponDetailAction.GetWeaponDetail
 import com.example.feature_a.screen.stateaction.WeaponDetailScreenUiState
 import com.septianbeneran.template.api_a.domain.get.GetWeaponDetailUseCase
-import com.septianbeneran.template.core.base.BaseState
 import com.septianbeneran.template.core.base.BaseState.StateFailed
-import com.septianbeneran.template.core.base.BaseState.StateLoading
 import com.septianbeneran.template.core.base.BaseState.StateSuccess
 import com.septianbeneran.template.core.base.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 
 @HiltViewModel
 class WeaponDetailViewModel @Inject constructor(
     private val getWeaponDetailUseCase: GetWeaponDetailUseCase,
-    private val savedStateHandle: SavedStateHandle
-): BaseViewModel<WeaponDetailScreenUiState>(WeaponDetailScreenUiState()) {
+    savedStateHandle: SavedStateHandle
+): BaseViewModel() {
+
+    private val _uiState = MutableStateFlow(WeaponDetailScreenUiState())
+    val uiState = _uiState.asStateFlow()
+
+    val weaponId: String by lazy {
+        savedStateHandle.toRoute<WeaponDetailRoute>().id
+    }
 
     init {
-        val route = savedStateHandle.toRoute<WeaponDetailRoute>()
-        onAction(GetWeaponDetail(route.id))
+        onAction(GetWeaponDetail(weaponId))
     }
 
     fun onAction(action: WeaponDetailAction) {
@@ -35,14 +41,16 @@ class WeaponDetailViewModel @Inject constructor(
     private fun getWeaponDetail(weaponId: String) {
         collectApi(
             flow = getWeaponDetailUseCase(weaponId),
-            onLoading = { updateUiState { it.copy(weaponDetailState = StateLoading) }},
-            onError = { error ->
-                updateUiState { it.copy(weaponDetailState = StateFailed(error)) }
+            isCentralLoading = true,
+            onSuccess = {
+                _uiState.value = _uiState.value.copy(
+                    weaponDetailState = StateSuccess(it)
+                )
             },
-            onSuccess = { data ->
-                data?.let { weaponList ->
-                    updateUiState { it.copy(weaponDetailState = StateSuccess(weaponList)) }
-                }
+            onError = { error ->
+                _uiState.value = _uiState.value.copy(
+                    weaponDetailState = StateFailed(error)
+                )
             }
         )
     }

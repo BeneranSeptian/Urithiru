@@ -14,15 +14,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.concurrent.atomics.update
 
-open class BaseViewModel<UiState>(initialState: UiState) : ViewModel() {
-
-    private val _uiState = MutableStateFlow(initialState)
-    val uiState = _uiState.asStateFlow()
-
-    protected fun updateUiState(reducer: (UiState) -> UiState) {
-        _uiState.update(reducer)
-    }
-
+open class BaseViewModel : ViewModel() {
     private var _isCentralLoading = MutableStateFlow(false)
     var isCentralLoading = _isCentralLoading.asStateFlow()
 

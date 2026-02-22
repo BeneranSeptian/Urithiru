@@ -6,7 +6,11 @@ fun Project.moduleImplementation(name: String) {
 }
 
 private fun Project.defineModule(name: String): Any {
-    val moduleVersion = rootProject.extra[name].toString()
+    val moduleVersion = if (rootProject.extra.has(name)) {
+        rootProject.extra[name].toString()
+    } else {
+        ""
+    }
 
     return if (moduleVersion.isNotBlank()) {
         "${AppConfig.projectNameSpace}:$name:$moduleVersion"

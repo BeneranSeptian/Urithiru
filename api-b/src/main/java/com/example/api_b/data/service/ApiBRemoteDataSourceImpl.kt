@@ -6,6 +6,7 @@ import com.septianbeneran.template.core.base.BaseDataSource
 import com.septianbeneran.template.core.remote.entity.ApiDto
 import com.septianbeneran.template.core.remote.entity.ApiResult
 import javax.inject.Inject
+import com.septianbeneran.template.api_b.BuildConfig.BOSSES_V1
 
 class ApiBRemoteDataSourceImpl @Inject constructor(
     private val api: BossApi
@@ -15,6 +16,6 @@ class ApiBRemoteDataSourceImpl @Inject constructor(
         name: String?,
         page: Int?
     ): ApiResult<ApiDto<List<BossResponse>>> = getResult {
-        api.getBossList("bosses", limit, name, page)
+        api.getBossList(BOSSES_V1, limit, name, page)
     }
 }

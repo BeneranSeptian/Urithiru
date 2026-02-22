@@ -28,6 +28,7 @@ class FeatureANavGraphImpl @Inject constructor() : FeatureNavGraph() {
 
                 WeaponListScreen(
                     state = state,
+                    viewModel = viewModel,
                     onAction = viewModel::onAction,
                     onNavigateToWeaponDetail = { weaponId ->
                         navigator.navigate(WeaponDetailRoute(weaponId))
@@ -40,6 +41,7 @@ class FeatureANavGraphImpl @Inject constructor() : FeatureNavGraph() {
                 val state by viewModel.uiState.collectAsStateWithLifecycle()
 
                 WeaponDetailScreen(
+                    viewModel = viewModel,
                     state = state,
                     onAction = viewModel::onAction
                 )

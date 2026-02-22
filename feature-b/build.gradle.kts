@@ -3,9 +3,9 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":api-a"))
+    moduleImplementation("api-b")
 
-    implementation(project(":core"))
-    implementation(project(":core-entity"))
-    implementation(project(":core-navigation"))
+    moduleImplementation("core")
+    moduleImplementation("core-entity")
+    moduleImplementation("core-navigation")
 }

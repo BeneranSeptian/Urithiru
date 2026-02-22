@@ -1,8 +1,10 @@
 plugins {
-    id("api-convention")
+    alias(libs.plugins.android.library)
+    id("compose-convention")
 }
 
 dependencies {
     moduleImplementation("core")
+
     moduleImplementation("core-entity")
 }

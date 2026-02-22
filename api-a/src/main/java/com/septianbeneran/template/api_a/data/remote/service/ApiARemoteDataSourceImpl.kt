@@ -1,5 +1,6 @@
 package com.septianbeneran.template.api_a.data.remote.service
 
+import com.septianbeneran.template.api_a.BuildConfig.WEAPONS_V1
 import com.septianbeneran.template.api_a.data.remote.api.WeaponApi
 import com.septianbeneran.template.api_a.data.remote.dto.WeaponResponse
 import com.septianbeneran.template.core.base.BaseDataSource
@@ -15,8 +16,8 @@ class ApiARemoteDataSourceImpl @Inject constructor(
         name: String?,
         page: Int?
     ): ApiResult<ApiDto<List<WeaponResponse>>> =
-        getResult { api.getWeaponList("weapons", limit, name, page) }
+        getResult { api.getWeaponList(WEAPONS_V1, limit, name, page) }
 
     override suspend fun getWeaponDetail(weaponId: String): ApiResult<ApiDto<WeaponResponse>> =
-        getResult { api.getWeaponDetail("weapons/$weaponId") }
+        getResult { api.getWeaponDetail("${WEAPONS_V1}$weaponId") }
 }
