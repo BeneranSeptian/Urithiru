@@ -3,8 +3,6 @@ plugins {
 }
 
 dependencies {
-    moduleImplementation("api-b")
-
     moduleImplementation("core")
     moduleImplementation("core-entity")
     moduleImplementation("core-navigation")
