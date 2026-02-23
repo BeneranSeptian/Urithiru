@@ -2,6 +2,8 @@ package com.septianbeneran.template
 
 import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Companion.Left
 import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Companion.Right
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.navigation.compose.NavHost
@@ -20,10 +22,20 @@ fun NavHostChamber(
     NavHost(
         navController = navController,
         startDestination = FeatureSplashNavGraph,
-        enterTransition = { slideIntoContainer(Right) },
-        exitTransition = { slideOutOfContainer(Right) },
-        popEnterTransition = { slideIntoContainer(Left) },
-        popExitTransition = { slideOutOfContainer(Left) }
+        enterTransition = {
+            slideIntoContainer(
+                towards = Left,
+                animationSpec = tween(300, easing = FastOutSlowInEasing)
+            )
+        },
+        exitTransition = {
+            slideOutOfContainer(
+                towards = Left,
+                animationSpec = tween(300, easing = FastOutSlowInEasing)
+            )
+        },
+        popEnterTransition = { slideIntoContainer(Right) },
+        popExitTransition = { slideOutOfContainer(Right) }
     ) {
         navgraphs.forEach { navGraph ->
             navGraph.createGraph(this, navigator)

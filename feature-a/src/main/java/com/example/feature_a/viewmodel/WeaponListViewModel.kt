@@ -10,7 +10,7 @@ import com.septianbeneran.template.api_a.domain.get.GetWeaponListUseCase
 import com.septianbeneran.template.core.base.BaseState.StateFailed
 import com.septianbeneran.template.core.base.BaseState.StateLoading
 import com.septianbeneran.template.core.base.BaseState.StateSuccess
-import com.septianbeneran.template.core.base.BaseViewModel
+import com.example.core_ui.base.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,18 +30,23 @@ class WeaponListViewModel @Inject constructor(
                 _uiState.update { it.copy(page = 0, weapons = emptyList(), isEndReached = false) }
                 getWeaponList()
             }
+
             is LoadNextPage -> {
                 if (!_uiState.value.isEndReached && _uiState.value.weaponListState !is StateLoading) {
                     getWeaponList()
                 }
             }
+
             is OnSearchButtonClick -> {
                 _uiState.update { it.copy(page = 0, weapons = emptyList(), isEndReached = false) }
                 getWeaponList(action.weaponName)
             }
-            is OnSearchWeaponTextChange -> _uiState.update { it.copy(
-                searchWeaponText = action.newValue
-            ) }
+
+            is OnSearchWeaponTextChange -> _uiState.update {
+                it.copy(
+                    searchWeaponText = action.newValue
+                )
+            }
         }
     }
 
@@ -63,7 +68,7 @@ class WeaponListViewModel @Inject constructor(
             },
             onSuccess = { data ->
                 val newWeapons = data ?: emptyList()
-                _uiState.update { 
+                _uiState.update {
                     it.copy(
                         weapons = it.weapons + newWeapons,
                         weaponListState = StateSuccess(it.weapons + newWeapons),

@@ -10,3 +10,5 @@ data class WeaponDetailScreenUiState(
 sealed interface WeaponDetailAction {
     data class GetWeaponDetail(val weaponId: String) : WeaponDetailAction
 }
+
+sealed interface WeaponDetailNonce

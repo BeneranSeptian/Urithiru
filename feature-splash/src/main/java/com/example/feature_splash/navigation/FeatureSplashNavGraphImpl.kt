@@ -19,7 +19,7 @@ class FeatureSplashNavGraphImpl @Inject constructor() : FeatureNavGraph() {
             composable<SplashRoute> {
                 SplashScreen(
                     onNavigateToLanding = {
-                        navigator.navigate(LandingRoute)
+                        navigator.navigate(LandingRoute, popUpTo = SplashRoute, inclusive = true)
                     }
                 )
             }

@@ -9,7 +9,7 @@ import com.example.feature_a.screen.stateaction.WeaponDetailScreenUiState
 import com.septianbeneran.template.api_a.domain.get.GetWeaponDetailUseCase
 import com.septianbeneran.template.core.base.BaseState.StateFailed
 import com.septianbeneran.template.core.base.BaseState.StateSuccess
-import com.septianbeneran.template.core.base.BaseViewModel
+import com.example.core_ui.base.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -41,7 +41,6 @@ class WeaponDetailViewModel @Inject constructor(
     private fun getWeaponDetail(weaponId: String) {
         collectApi(
             flow = getWeaponDetailUseCase(weaponId),
-            isCentralLoading = true,
             onSuccess = {
                 _uiState.value = _uiState.value.copy(
                     weaponDetailState = StateSuccess(it)

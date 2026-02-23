@@ -20,11 +20,17 @@ Designed to be scalable, maintainable, and easy to extend — even for beginners
 
 The project contains the following modules:
 
-* `:app`
-* `:core`
 * `:api-a`
-* `:core-entity`
+* `:api-b`
+* `:app`
 * `:buildlogic`
+* `:core`
+* `:core-entity`
+* `:core-navigation`
+* `:core-ui`
+* `:feature-a`
+* `:feature-b`
+* `:feature-splash`
 
 ## 🏗 Architecture Flow
 

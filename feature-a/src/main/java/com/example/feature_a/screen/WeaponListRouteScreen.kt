@@ -21,58 +21,88 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.example.core_navigation.Navigator
+import com.example.core_navigation.route.feature_a.WeaponDetailRoute
 import com.example.core_ui.base.BaseScreen
+import com.example.core_ui.util.NonceObserver
+import com.example.feature_a.screen.stateaction.WeaponListNonce
+import com.example.feature_a.screen.stateaction.WeaponListNonce.NavigateToWeaponDetail
 import com.example.feature_a.screen.stateaction.WeaponListScreenAction
 import com.example.feature_a.screen.stateaction.WeaponListScreenAction.GetWeaponList
 import com.example.feature_a.screen.stateaction.WeaponListScreenAction.OnSearchButtonClick
 import com.example.feature_a.screen.stateaction.WeaponListScreenAction.OnSearchWeaponTextChange
 import com.example.feature_a.screen.stateaction.WeaponListScreenUiState
+import com.example.feature_a.viewmodel.WeaponListViewModel
 import com.septianbeneran.template.core.base.BaseState.StateFailed
 import com.septianbeneran.template.core.base.BaseState.StateInitial
 import com.septianbeneran.template.core.base.BaseState.StateLoading
 import com.septianbeneran.template.core.base.BaseState.StateSuccess
-import com.septianbeneran.template.core.base.BaseViewModel
 import com.septianbeneran.template.core_entity.a.Weapon
 
 @Composable
-fun WeaponListScreen(
-    modifier: Modifier = Modifier,
-    state: WeaponListScreenUiState,
-    viewModel: BaseViewModel,
-    onNavigateToWeaponDetail: (String) -> Unit = {},
-    onAction: (WeaponListScreenAction) -> Unit
+fun WeaponListRouteScreen(
+    navigator: Navigator
 ) {
+    val viewModel: WeaponListViewModel = hiltViewModel()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
     BaseScreen(
         viewModel = viewModel
     ) {
-        Column() {
-            SearchBarSection(
-                searchWeaponText = state.searchWeaponText,
-                onSearchWeaponTextChange = { onAction(OnSearchWeaponTextChange(it)) },
-                onSearchWeapon = { onAction(OnSearchButtonClick(state.searchWeaponText)) }
-            )
-            WeaponListSection(
-                modifier = modifier,
-                getWeaponList = { onAction(GetWeaponList) },
-                onClickWeapon = { weaponId -> onNavigateToWeaponDetail(weaponId) },
-                onLoadNextPage = { onAction(WeaponListScreenAction.LoadNextPage) },
-                state = state
-            )
+        WeaponListScreen(
+            uiState = uiState,
+            onAction = viewModel::onAction,
+            onNonce = viewModel::sendNonce
+        )
+    }
+
+    NonceObserver(
+        nonce = viewModel.nonce,
+        onNonce = { nonce ->
+            when (nonce) {
+                is NavigateToWeaponDetail -> {
+                    navigator.navigate(WeaponDetailRoute(nonce.weaponId))
+                }
+            }
         }
+    )
+}
+
+@Composable
+fun WeaponListScreen(
+    uiState: WeaponListScreenUiState,
+    onAction: (WeaponListScreenAction) -> Unit,
+    onNonce: (WeaponListNonce) -> Unit
+) {
+    Column {
+        SearchBarSection(
+            searchWeaponText = uiState.searchWeaponText,
+            onSearchWeaponTextChange = { onAction(OnSearchWeaponTextChange(it)) },
+            onSearchWeapon = { onAction(OnSearchButtonClick(uiState.searchWeaponText)) }
+        )
+        WeaponListSection(
+            getWeaponList = { onAction(GetWeaponList) },
+            onClickWeapon = { weaponId -> onNonce(NavigateToWeaponDetail(weaponId)) },
+            onLoadNextPage = { onAction(WeaponListScreenAction.LoadNextPage) },
+            state = uiState
+        )
     }
 }
 
 @Composable
 fun SearchBarSection(
     modifier: Modifier = Modifier,
-    searchWeaponText: String,    onSearchWeaponTextChange: (String) -> Unit,
+    searchWeaponText: String, onSearchWeaponTextChange: (String) -> Unit,
     onSearchWeapon: () -> Unit
 ) {
     Row(

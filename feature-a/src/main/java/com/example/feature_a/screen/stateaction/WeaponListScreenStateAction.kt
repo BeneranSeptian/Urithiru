@@ -1,5 +1,6 @@
 package com.example.feature_a.screen.stateaction
 
+import com.example.core_ui.base.BaseNonce
 import com.septianbeneran.template.core.base.BaseState
 import com.septianbeneran.template.core.base.BaseState.StateInitial
 import com.septianbeneran.template.core_entity.a.Weapon
@@ -17,4 +18,8 @@ sealed interface WeaponListScreenAction {
     data object LoadNextPage: WeaponListScreenAction
     data class OnSearchWeaponTextChange(val newValue: String): WeaponListScreenAction
     data class OnSearchButtonClick(val weaponName: String): WeaponListScreenAction
+}
+
+sealed interface WeaponListNonce: BaseNonce {
+    data class NavigateToWeaponDetail(val weaponId: String): WeaponListNonce
 }
