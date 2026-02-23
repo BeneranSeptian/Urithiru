@@ -46,4 +46,6 @@ dependencies {
     implementation(project(":feature-a"))
     implementation(project(":feature-b"))
     implementation(project(":feature-splash"))
+
+    ksp(project(":navigation-processor"))
 }

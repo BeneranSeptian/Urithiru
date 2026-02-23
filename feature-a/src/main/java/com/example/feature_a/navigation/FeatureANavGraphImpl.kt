@@ -3,8 +3,8 @@ package com.example.feature_a.navigation
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
-import com.example.core_navigation.FeatureNavGraph
-import com.example.core_navigation.Navigator
+import com.example.core_navigation.util.FeatureNavGraph
+import com.example.core_navigation.util.Navigator
 import com.example.core_navigation.graph.FeatureANavGraph
 import com.example.core_navigation.route.feature_a.WeaponDetailRoute
 import com.example.core_navigation.route.feature_a.WeaponListRoute
@@ -24,7 +24,6 @@ class FeatureANavGraphImpl @Inject constructor() : FeatureNavGraph() {
             composable<WeaponDetailRoute> {
                 WeaponDetailRoute(navigator)
             }
-
         }
     }
 }

@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.example.core_navigation.Navigator
+import com.example.core_navigation.util.Navigator
 import com.example.core_navigation.route.feature_a.WeaponDetailRoute
 import com.example.core_ui.base.BaseScreen
 import com.example.core_ui.util.NonceObserver

@@ -1,4 +1,4 @@
-package com.example.core_navigation
+package com.example.core_navigation.util
 
 import androidx.navigation.NavHostController
 import androidx.navigation.toRoute

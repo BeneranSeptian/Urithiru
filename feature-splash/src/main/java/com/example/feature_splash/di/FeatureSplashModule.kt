@@ -1,6 +1,6 @@
 package com.example.feature_splash.di
 
-import com.example.core_navigation.FeatureNavGraph
+import com.example.core_navigation.util.FeatureNavGraph
 import com.example.feature_splash.navigation.FeatureSplashNavGraphImpl
 import dagger.Binds
 import dagger.Module

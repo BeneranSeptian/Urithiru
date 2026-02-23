@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.example.core_navigation.Navigator
+import com.example.core_navigation.util.Navigator
 import com.example.core_ui.base.BaseScreen
 import com.example.core_ui.util.shimmerEffect
 import com.example.feature_a.screen.stateaction.WeaponDetailAction
