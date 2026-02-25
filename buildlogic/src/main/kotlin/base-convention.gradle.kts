@@ -10,7 +10,7 @@ plugins {
 }
 
 android {
-    namespace = "${AppConfig.projectNameSpace}.${project.name.replace("-", "_")}"
+    namespace = "${AppConfig.projectNameSpace}.${project.name.replace("-", ".")}"
     compileSdk = AppConfig.compileSdk
 
     defaultConfig {

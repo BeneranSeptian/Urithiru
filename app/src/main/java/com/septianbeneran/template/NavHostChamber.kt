@@ -8,9 +8,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
-import com.example.core_navigation.util.FeatureNavGraph
-import com.example.core_navigation.util.Navigator
-import com.example.core_navigation.graph.FeatureSplashNavGraph
+import com.example.core.navigation.util.FeatureNavGraph
+import com.example.core.navigation.util.Navigator
+import com.example.core.navigation.graph.FeatureSplashNavGraph
 
 @Composable
 fun NavHostChamber(
