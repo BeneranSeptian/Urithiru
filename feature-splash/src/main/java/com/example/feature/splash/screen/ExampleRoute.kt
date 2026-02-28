@@ -5,11 +5,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment.Companion.Center
 import com.example.core.navigation.annotation.FeatureRoute
-import com.example.core.navigation.routeparams.ExampleRouteParams
+import com.example.core.navigation.routeparams.splash.ExampleRouteParams
 import com.example.core.navigation.util.Navigator
 
 @FeatureRoute(
-    route = ExampleRouteParams::class
+    routeParams = ExampleRouteParams::class
 )
 @Composable
 fun ExampleRoute(navigator: Navigator) {

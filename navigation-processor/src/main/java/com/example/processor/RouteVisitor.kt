@@ -1,47 +1,27 @@
 package com.example.processor
 
-import com.example.processor.generator.generateRouteCode
-import com.google.devtools.ksp.processing.CodeGenerator
-import com.google.devtools.ksp.processing.KSPLogger
+import com.example.processor.generator.generateRouteSpec
+import com.example.processor.model.RouteData
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
+import com.google.devtools.ksp.symbol.KSNode
 import com.google.devtools.ksp.symbol.KSType
-import com.google.devtools.ksp.symbol.KSVisitorVoid
+import com.google.devtools.ksp.visitor.KSDefaultVisitor
+import com.squareup.kotlinpoet.FileSpec
 
-class RouteVisitor(
-    private val codeGenerator: CodeGenerator,
-    private val logger: KSPLogger,
-    private val generatedRouteSet: MutableSet<String>
-) : KSVisitorVoid() {
-    override fun visitFunctionDeclaration(function: KSFunctionDeclaration, data: Unit) {
+class RouteVisitor : KSDefaultVisitor<RouteData, FileSpec>() {
 
-        val routeType = getRouteTypeFromAnnotation(function)
-        if (routeType == null) {
-            logger.error("FeatureRoute annotation missing 'route' argument", function)
-            return
-        }
+    override fun defaultHandler(node: KSNode, data: RouteData): FileSpec {
+        val function = (node as KSFunctionDeclaration)
+        val sourcePackageName = function.packageName.asString()
+        val simpleName = function.simpleName.asString()
 
-        val routeId = routeType.declaration.qualifiedName?.asString()
-            ?: routeType.toString()
+        val fileSpec = FileSpec.builder(sourcePackageName, simpleName)
+            .generateRouteSpec(
+                functionName = simpleName,
+                packageName = sourcePackageName,
+                routeParams = data.routeParams
+            ).build()
 
-        if (generatedRouteSet.contains(routeId)) {
-            logger.error(
-                "Duplicate Route Error: The route '$routeId' is already bound to another function.",
-                function
-            )
-            return
-        }
-
-        generatedRouteSet.add(routeId)
-        generateRouteCode(codeGenerator,function, routeType)
-    }
-
-    private fun getRouteTypeFromAnnotation(function: KSFunctionDeclaration): KSType? {
-        val annotation = function.annotations.firstOrNull {
-            it.shortName.asString() == "FeatureRoute"
-        } ?: return null
-
-        val routeArg = annotation.arguments.find { it.name?.asString() == "route" }
-        return routeArg?.value as? KSType
+        return fileSpec
     }
 }
-
