@@ -2,7 +2,7 @@ package com.example.feature.a.viewmodel
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.toRoute
-import com.example.core.navigation.route.feature_a.WeaponDetailRoute
+import com.example.core.navigation.routeparams.feature_a.WeaponDetailRoute
 import com.example.core.ui.base.BaseViewModel
 import com.example.feature.a.screen.stateaction.WeaponDetailAction
 import com.example.feature.a.screen.stateaction.WeaponDetailAction.GetWeaponDetail

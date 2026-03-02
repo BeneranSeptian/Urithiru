@@ -3,7 +3,7 @@ package com.example.processor.util
 object Constant {
     const val ANNOTATION_PACKAGE_NAME = "com.example.core.navigation.annotation."
 
-    const val FEATURE_PACKAGE_NAME = "com.example.feature"
+    const val FEATURE_PACKAGE_NAME = "com.example.feature."
     const val FEATURE_GRAPH_PACKAGE_NAME = "${FEATURE_PACKAGE_NAME}graph"
 
     const val APP_PACKAGE_NAME = "com.septianbeneran.template."

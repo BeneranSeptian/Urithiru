@@ -1,4 +1,4 @@
-package com.example.core.navigation.route.feature_a
+package com.example.core.navigation.routeparams.feature_a
 
 import kotlinx.serialization.Serializable
 
