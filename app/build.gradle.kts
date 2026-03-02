@@ -21,6 +21,7 @@ android {
 
 ksp {
     arg("hilt.rootPackage", "com.septianbeneran.template")
+    arg("isAppModule", "true")
 }
 
 dependencies {

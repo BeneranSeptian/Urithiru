@@ -1,4 +1,4 @@
-package com.example.core.navigation.route.feature_splash
+package com.example.core.navigation.routeparams.feature_splash
 
 import kotlinx.serialization.Serializable
 

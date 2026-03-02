@@ -31,8 +31,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.example.core.navigation.annotation.FeatureRoute
+import com.example.core.navigation.graph.FeatureANavGraph
 import com.example.core.navigation.util.Navigator
-import com.example.core.navigation.route.feature_a.WeaponDetailRoute
+import com.example.core.navigation.routeparams.feature_a.WeaponDetailRoute
+import com.example.core.navigation.routeparams.feature_a.WeaponListRoute
 import com.example.core.ui.base.BaseScreen
 import com.example.core.ui.util.NonceObserver
 import com.example.feature.a.screen.stateaction.WeaponListNonce
@@ -49,6 +52,10 @@ import com.septianbeneran.template.core.base.BaseState.StateLoading
 import com.septianbeneran.template.core.base.BaseState.StateSuccess
 import com.septianbeneran.template.core.entity.a.Weapon
 
+@FeatureRoute(
+    routeParams = WeaponListRoute::class,
+    graph = FeatureANavGraph::class
+)
 @Composable
 fun WeaponListRouteScreen(
     navigator: Navigator

@@ -1,15 +1,24 @@
 package com.example.processor
 
 import com.example.processor.processor.FeatureProcessor
+import com.example.processor.processor.GraphProcessor
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.processing.SymbolProcessorProvider
 
 class ProcessorProvider: SymbolProcessorProvider {
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
-        return FeatureProcessor(
-            codeGenerator = environment.codeGenerator,
-            logger = environment.logger
-        )
+        val isAppModule = environment.options["isAppModule"] == "true"
+
+        return if (isAppModule) {
+            GraphProcessor(
+                codeGenerator = environment.codeGenerator
+            )
+        } else {
+            FeatureProcessor(
+                codeGenerator = environment.codeGenerator,
+                logger = environment.logger
+            )
+        }
     }
 }

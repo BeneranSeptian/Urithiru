@@ -26,6 +26,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.example.core.navigation.annotation.FeatureRoute
+import com.example.core.navigation.routeparams.feature_a.WeaponDetailRoute
 import com.example.core.navigation.util.Navigator
 import com.example.core.ui.base.BaseScreen
 import com.example.core.ui.util.shimmerEffect
@@ -39,6 +41,9 @@ import com.septianbeneran.template.core.entity.a.Weapon
 import com.septianbeneran.template.core.entity.a.common.Attributes
 import com.septianbeneran.template.core.entity.a.common.Scaling
 
+@FeatureRoute(
+    routeParams = WeaponDetailRoute::class,
+)
 @Composable
 fun WeaponDetailRoute(
     navigator: Navigator

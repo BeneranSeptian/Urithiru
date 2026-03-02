@@ -4,8 +4,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.toRoute
 
 class Navigator(
-    val navController: NavHostController,
-    val navGraphs: Set<FeatureNavGraph>
+    val navController: NavHostController
 ) {
     fun navigate(
         route: Any,

@@ -8,20 +8,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
-import com.example.core.navigation.util.FeatureNavGraph
+import com.example.core.navigation.graph.TestingGraph
 import com.example.core.navigation.util.Navigator
-import com.example.core.navigation.graph.FeatureSplashNavGraph
+import com.septianbeneran.template.graph.registerAllFeatureGraphs
 
 @Composable
-fun NavHostChamber(
-    navgraphs: Set<FeatureNavGraph>
-) {
+fun NavHostChamber() {
     val navController = rememberNavController()
-    val navigator = remember { Navigator(navController, navgraphs) }
+    val navigator = remember { Navigator(navController) }
 
     NavHost(
         navController = navController,
-        startDestination = FeatureSplashNavGraph,
+        startDestination = TestingGraph,
         enterTransition = {
             slideIntoContainer(
                 towards = Left,
@@ -37,8 +35,6 @@ fun NavHostChamber(
         popEnterTransition = { slideIntoContainer(Right) },
         popExitTransition = { slideOutOfContainer(Right) }
     ) {
-        navgraphs.forEach { navGraph ->
-            navGraph.createGraph(this, navigator)
-        }
+        registerAllFeatureGraphs(navigator)
     }
 }
