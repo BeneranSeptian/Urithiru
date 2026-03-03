@@ -38,6 +38,7 @@ fun Project.composeDependencies() {
         implementation(libs.androidx.navigation.compose)
         implementation(libs.androidx.hilt.navigation.compose)
         implementation(libs.coil.compose)
+        implementation(libs.androidx.activity.compose)
         ksp(project(":navigation-processor"))
     }
 }

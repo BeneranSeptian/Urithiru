@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.septianbeneran.template.core.remote.entity.ApiResult
 import com.septianbeneran.template.core.remote.entity.ErrorResponse
+import com.septianbeneran.template.core.util.permission.PermissionHandler
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.Channel.Factory.BUFFERED
 import kotlinx.coroutines.flow.Flow
@@ -13,8 +14,11 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-open class BaseViewModel : ViewModel() {
+open class BaseViewModel @Inject constructor(): ViewModel() {
+    @Inject
+    lateinit var permissionHandler: PermissionHandler
     private var _baseScreenUiState = MutableStateFlow(BaseScreenUiState())
     var baseScreenUiState = _baseScreenUiState.asStateFlow()
 
