@@ -5,10 +5,10 @@ plugins {
 }
 
 android {
-    namespace = "com.septianbeneran.template"
+    namespace = "com.septianbeneran.urithiru"
 
     defaultConfig {
-        applicationId = "com.septianbeneran.template"
+        applicationId = "com.septianbeneran.urithiru"
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -20,7 +20,7 @@ android {
 }
 
 ksp {
-    arg("hilt.rootPackage", "com.septianbeneran.template")
+    arg("hilt.rootPackage", "com.septianbeneran.urithiru")
     arg("isAppModule", "true")
 }
 

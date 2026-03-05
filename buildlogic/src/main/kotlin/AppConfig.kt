@@ -1,5 +1,5 @@
 object AppConfig {
-    const val projectNameSpace = "com.septianbeneran.template"
+    const val projectNameSpace = "com.septianbeneran.urithiru"
     const val compileSdk = 36
     const val minSdk = 24
     const val targetSdk = 35

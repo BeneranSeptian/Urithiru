@@ -34,6 +34,7 @@ The project contains the following modules:
 
 ## 🏗 Architecture Flow
 
+### 💾 Data Flow
 ```mermaid
 flowchart LR
 
@@ -65,6 +66,31 @@ flowchart LR
     REPO_IMPL --> UC
     UC --> VM
     VM --> UI
+```
+
+### 🏭 Screen Route Generator
+```mermaid
+flowchart TD
+    subgraph FeatureModule ["Feature Module"]
+        A["Create Composable Screen (WeaponDetailRoute)"] --> B("@FeatureRoute")
+    end
+
+    subgraph KSPFeature ["KSP Output: Feature Level"]
+        B -->|Generates route| C[weaponDetailRouteGenerated]
+        B -->|Generates graph| D[featureANavGraph]
+        C -.->|Called inside| D
+        D --> E("@FeatureGraph")
+    end
+
+    subgraph KSPApp ["KSP Output: App Level"]
+        E -->|Scanned by KSP| F[registerAllFeatureGraphs]
+        F -.->|Aggregates| G[featureANavGraph]
+        F -.->|Aggregates| H[featureBNavGraph]
+    end
+
+    subgraph AppModule ["App Module"]
+        I[(NavHost Chamber)] -->|Executes| F
+    end
 ```
 
 ## ⚙️ Development Guide
