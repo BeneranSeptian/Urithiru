@@ -93,7 +93,8 @@ flowchart TD
     end
 ```
 
-## ⚙️ Development Guide
+<details>
+<summary><h2>⚙️ Creating New Endpoint For API Call</h2></summary>
 
 ### 1️⃣ Changing the Base URL
 
@@ -149,3 +150,55 @@ override suspend fun getYourData(): ApiResult<ApiDto<WeaponResponse>> =
 
 #### Step D: Expose through Repository and Use Case
 Finally, expose the data through the Repository and create a Use Case to be consumed by the ViewModel in the `feature` module.
+</details>
+
+<details>
+<summary><h2>📱 Creating a New Screen Route</h2></summary>
+
+To add a new screen and automatically wire it into the navigation graph, follow these steps:
+
+#### Step A: Define the Feature Navigation Graph
+First, declare the navigation graph for your feature in the `core-navigation:graph` module. This must be marked with `@Serializable`.
+
+```kotlin
+@Serializable
+object FeatureANavGraph
+```
+
+#### Step B: Define the Route Parameters
+Next, define the specific route for your screen in the `core-navigation:routeparams` module. This also requires the `@Serializable` annotation. Use an `object` for a route without arguments, or a `data class` if you need to pass data.
+
+```kotlin
+@Serializable
+object WeaponDetailRoute
+```
+
+#### Step C: Create and Annotate the Composable
+In your `feature` module, create your standard Jetpack Compose UI function. Tag it with the `@FeatureRoute` annotation, linking the route parameters you just created. 
+
+*Note: If this screen is the starting point for the feature, be sure to declare the `navGraph` parameter as well.*
+
+```kotlin
+@FeatureRoute(
+    routeParams = WeaponDetailRoute::class,
+    navGraph = FeatureANavGraph::class // Add this ONLY if it's the start destination
+)
+@Composable
+fun WeaponDetailScreen(navigator: Navigator) {
+    // Your UI implementation here
+}
+```
+
+#### Step D: Build the Project
+Run a project build (or rebuild) so KSP can process the annotations. 
+
+During the build, KSP will automatically generate:
+1.  The route extension for your specific screen (e.g., `weaponDetailRouteGenerated`).
+2.  The updated feature-level graph builder (e.g., `featureANavGraph`) containing your new route.
+
+#### Step E: Automatic Registration
+You don't need to manually register the screen in the App module! 
+
+The KSP processor automatically tags the generated feature graph with `@FeatureGraph`. The App module will scan for this and automatically include your new screen in the main `NavHost` via the generated `registerAllFeatureGraphs` function.
+
+</details>
