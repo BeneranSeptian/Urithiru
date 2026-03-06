@@ -10,5 +10,4 @@ class GetBossListUseCaseImpl @Inject constructor(
     private val repository: BossRepository
 ) : GetBossListUseCase {
     override fun invoke(): Flow<ApiResult<List<Boss>>> = repository.getBossList()
-
 }

@@ -44,6 +44,7 @@ dependencies {
     implementation(project(":core-navigation"))
     implementation(project(":api-a"))
     implementation(project(":api-b"))
+    implementation(project(":api-twitch"))
     implementation(project(":feature-a"))
     implementation(project(":feature-b"))
     implementation(project(":feature-splash"))

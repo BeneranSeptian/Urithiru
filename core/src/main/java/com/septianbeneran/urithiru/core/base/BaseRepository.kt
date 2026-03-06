@@ -7,7 +7,8 @@ import kotlinx.coroutines.flow.map
 
 open class BaseRepository {
     private fun <ResponsePlain, Entity> ApiResult<ResponsePlain>.transformResult(
-        transform: (ResponsePlain?) -> Entity
+        transform: (ResponsePlain?) -> Entity,
+        saveResult: ((Entity)->Unit)? = null
     ) = try {
         when(this) {
             is ApiResult.Error -> ApiResult.Error(error)
@@ -19,8 +20,11 @@ open class BaseRepository {
     }
 
     protected fun <ResponsePlain, Entity> Flow<ApiResult<ResponsePlain>>.mapToEntity(
-        transform: (ResponsePlain?) -> Entity
+        transform: (ResponsePlain?) -> Entity,
+        saveResult: ((Entity)-> Unit)? = null
     ) = this.map {
         it.transformResult(transform)
     }
+
+
 }

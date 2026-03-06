@@ -5,6 +5,7 @@ import com.septianbeneran.urithiru.api.a.data.remote.service.ApiARemoteDataSourc
 import com.septianbeneran.urithiru.api.a.data.remote.service.ApiARemoteDataSourceImpl
 import com.septianbeneran.urithiru.api.a.data.repository.WeaponRepository
 import com.septianbeneran.urithiru.api.a.data.repository.WeaponRepositoryImpl
+import com.septianbeneran.urithiru.core.annotation.EldenRingNetwork
 import com.septianbeneran.urithiru.core.util.CoroutineDispatcherProvider
 import dagger.Module
 import dagger.Provides
@@ -20,7 +21,7 @@ class ApiAModule {
     @Provides
     @Singleton
     fun provideEldenRingApi(
-        retrofit: Retrofit
+        @EldenRingNetwork retrofit: Retrofit
     ): WeaponApi {
         return retrofit.create(WeaponApi::class.java)
     }
