@@ -31,11 +31,17 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.septianbeneran.urithiru.core.base.BaseState.StateFailed
+import com.septianbeneran.urithiru.core.base.BaseState.StateInitial
+import com.septianbeneran.urithiru.core.base.BaseState.StateLoading
+import com.septianbeneran.urithiru.core.base.BaseState.StateSuccess
+import com.septianbeneran.urithiru.core.entity.a.Weapon
 import com.septianbeneran.urithiru.core.navigation.annotation.FeatureRoute
 import com.septianbeneran.urithiru.core.navigation.graph.FeatureANavGraph
-import com.septianbeneran.urithiru.core.navigation.util.Navigator
 import com.septianbeneran.urithiru.core.navigation.routeparams.feature_a.WeaponDetailRoute
 import com.septianbeneran.urithiru.core.navigation.routeparams.feature_a.WeaponListRoute
+import com.septianbeneran.urithiru.core.navigation.util.Navigator
+import com.septianbeneran.urithiru.core.ui.base.BaseScreen
 import com.septianbeneran.urithiru.core.ui.util.NonceObserver
 import com.septianbeneran.urithiru.feature.a.screen.stateaction.WeaponListNonce
 import com.septianbeneran.urithiru.feature.a.screen.stateaction.WeaponListNonce.NavigateToWeaponDetail
@@ -45,12 +51,6 @@ import com.septianbeneran.urithiru.feature.a.screen.stateaction.WeaponListScreen
 import com.septianbeneran.urithiru.feature.a.screen.stateaction.WeaponListScreenAction.OnSearchWeaponTextChange
 import com.septianbeneran.urithiru.feature.a.screen.stateaction.WeaponListScreenUiState
 import com.septianbeneran.urithiru.feature.a.viewmodel.WeaponListViewModel
-import com.septianbeneran.urithiru.core.base.BaseState.StateFailed
-import com.septianbeneran.urithiru.core.base.BaseState.StateInitial
-import com.septianbeneran.urithiru.core.base.BaseState.StateLoading
-import com.septianbeneran.urithiru.core.base.BaseState.StateSuccess
-import com.septianbeneran.urithiru.core.entity.a.Weapon
-import com.septianbeneran.urithiru.core.ui.base.BaseScreen
 
 @FeatureRoute(
     routeParams = WeaponListRoute::class,
@@ -101,6 +101,7 @@ fun WeaponListScreen(
             getWeaponList = { onAction(GetWeaponList) },
             onClickWeapon = { weaponId -> onNonce(NavigateToWeaponDetail(weaponId)) },
             onLoadNextPage = { onAction(WeaponListScreenAction.LoadNextPage) },
+            getWeaponListLocal = { onAction(WeaponListScreenAction.GetWeaponListLocal) },
             state = uiState
         )
     }
@@ -141,14 +142,31 @@ fun WeaponListSection(
     state: WeaponListScreenUiState,
     onLoadNextPage: () -> Unit,
     getWeaponList: () -> Unit,
+    getWeaponListLocal: () -> Unit,
     onClickWeapon: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier.fillMaxSize()) {
         val weaponListState = state.weaponListState
         val weapons = state.weapons
+        val weaponListLocal = state.weaponListLocal
 
         when {
+            (weaponListLocal.isNotEmpty()) -> {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    itemsIndexed(weaponListLocal) { index, weapon ->
+                        WeaponItem(
+                            weapon = weapon,
+                            onClick = { onClickWeapon(weapon.id) }
+                        )
+                    }
+                }
+            }
+
             weaponListState is StateFailed && weapons.isEmpty() -> {
                 Button(
                     onClick = getWeaponList,
@@ -159,11 +177,22 @@ fun WeaponListSection(
             }
 
             weaponListState is StateInitial -> {
-                Button(
-                    onClick = getWeaponList,
-                    modifier = Modifier.align(Alignment.Center)
+                Column(
+                    modifier = Modifier.align(Alignment.Center),
                 ) {
-                    Text("Get Weapons")
+                    Button(
+                        onClick = getWeaponList,
+                        modifier = Modifier
+                    ) {
+                        Text("Get Weapons From API")
+                    }
+
+                    Button(
+                        onClick = getWeaponListLocal,
+                        modifier = Modifier
+                    ) {
+                        Text("Get Weapons From Local")
+                    }
                 }
             }
 

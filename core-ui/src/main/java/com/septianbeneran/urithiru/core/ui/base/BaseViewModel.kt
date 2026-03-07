@@ -53,4 +53,15 @@ open class BaseViewModel @Inject constructor(): ViewModel() {
     }
 
     fun sendNonce(nonce: BaseNonce) = viewModelScope.launch { _nonce.send(nonce) }
+
+    open fun <T: Any> collectLocalData(
+        flow: Flow<T>,
+        updateState: (T) -> Unit
+    ) {
+        viewModelScope.launch {
+            flow.distinctUntilChanged().collect {
+                updateState(it)
+            }
+        }
+    }
 }

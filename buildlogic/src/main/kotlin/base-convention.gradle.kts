@@ -1,5 +1,3 @@
-import org.gradle.api.JavaVersion
-import org.gradle.kotlin.dsl.dependencies
 import java.io.FileInputStream
 import java.util.Properties
 

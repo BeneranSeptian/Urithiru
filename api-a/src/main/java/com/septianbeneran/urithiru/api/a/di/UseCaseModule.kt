@@ -5,6 +5,8 @@ import com.septianbeneran.urithiru.api.a.domain.get.GetWeaponDetailUseCase
 import com.septianbeneran.urithiru.api.a.domain.get.GetWeaponDetailUseCaseImpl
 import com.septianbeneran.urithiru.api.a.domain.get.GetWeaponListUseCase
 import com.septianbeneran.urithiru.api.a.domain.get.GetWeaponListUseCaseImpl
+import com.septianbeneran.urithiru.api.a.domain.load.LoadWeaponListUseCase
+import com.septianbeneran.urithiru.api.a.domain.load.LoadWeaponListUseCaseImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -25,4 +27,10 @@ class UseCaseModule {
     internal fun provideGetWeaponDetail(
         repo: WeaponRepository
     ): GetWeaponDetailUseCase = GetWeaponDetailUseCaseImpl(repo)
+
+    @Singleton
+    @Provides
+    internal fun provideLoadWeaponListUseCase(
+        repo: WeaponRepository
+    ): LoadWeaponListUseCase = LoadWeaponListUseCaseImpl(repo)
 }

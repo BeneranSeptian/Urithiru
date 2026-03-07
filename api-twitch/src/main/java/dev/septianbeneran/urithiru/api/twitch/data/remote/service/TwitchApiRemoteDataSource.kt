@@ -1,7 +1,7 @@
-package dev.septianbeneran.urithiru.api.twitch.data.service
+package dev.septianbeneran.urithiru.api.twitch.data.remote.service
 
 import com.septianbeneran.urithiru.core.remote.entity.ApiResult
-import dev.septianbeneran.urithiru.api.twitch.data.dto.TwitchOAuthTokenResponse
+import dev.septianbeneran.urithiru.api.twitch.data.remote.dto.TwitchOAuthTokenResponse
 
 interface TwitchApiRemoteDataSource {
     suspend fun postTwitchToken(

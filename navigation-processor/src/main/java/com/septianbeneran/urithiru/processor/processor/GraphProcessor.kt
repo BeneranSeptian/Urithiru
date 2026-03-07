@@ -1,14 +1,14 @@
 package com.septianbeneran.urithiru.processor.processor
 
-import com.septianbeneran.urithiru.processor.generator.generateGraphRegistry
-import com.septianbeneran.urithiru.processor.util.Constant.FEATURE_GRAPH_PACKAGE_NAME
-import com.septianbeneran.urithiru.processor.util.Constant.GENERATED_GRAPH_PACKAGE_NAME
 import com.google.devtools.ksp.KspExperimental
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
+import com.septianbeneran.urithiru.processor.generator.generateGraphRegistry
+import com.septianbeneran.urithiru.processor.util.Constant.FEATURE_GRAPH_PACKAGE_NAME
+import com.septianbeneran.urithiru.processor.util.Constant.GENERATED_GRAPH_PACKAGE_NAME
 
 class GraphProcessor(
     private val codeGenerator: CodeGenerator,

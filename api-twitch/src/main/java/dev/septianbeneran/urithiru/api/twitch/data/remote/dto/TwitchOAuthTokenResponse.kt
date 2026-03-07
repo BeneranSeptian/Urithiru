@@ -1,4 +1,4 @@
-package dev.septianbeneran.urithiru.api.twitch.data.dto
+package dev.septianbeneran.urithiru.api.twitch.data.remote.dto
 
 import com.google.gson.annotations.SerializedName
 import com.septianbeneran.urithiru.core.entity.twitch.TwitchOAuthToken

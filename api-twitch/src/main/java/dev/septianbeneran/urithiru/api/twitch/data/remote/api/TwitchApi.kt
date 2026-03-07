@@ -1,6 +1,6 @@
-package dev.septianbeneran.urithiru.api.twitch.data.api
+package dev.septianbeneran.urithiru.api.twitch.data.remote.api
 
-import dev.septianbeneran.urithiru.api.twitch.data.dto.TwitchOAuthTokenResponse
+import dev.septianbeneran.urithiru.api.twitch.data.remote.dto.TwitchOAuthTokenResponse
 import retrofit2.Response
 import retrofit2.http.POST
 import retrofit2.http.Query

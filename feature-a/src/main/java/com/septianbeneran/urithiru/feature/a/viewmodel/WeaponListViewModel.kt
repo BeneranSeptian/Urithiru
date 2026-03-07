@@ -1,6 +1,7 @@
 package com.septianbeneran.urithiru.feature.a.viewmodel
 
 import com.septianbeneran.urithiru.api.a.domain.get.GetWeaponListUseCase
+import com.septianbeneran.urithiru.api.a.domain.load.LoadWeaponListUseCase
 import com.septianbeneran.urithiru.core.base.BaseState.StateFailed
 import com.septianbeneran.urithiru.core.base.BaseState.StateLoading
 import com.septianbeneran.urithiru.core.base.BaseState.StateSuccess
@@ -19,7 +20,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class WeaponListViewModel @Inject constructor(
-    private val getWeaponListUseCase: GetWeaponListUseCase
+    private val getWeaponListUseCase: GetWeaponListUseCase,
+    private val loadWeaponListUseCase: LoadWeaponListUseCase
 ) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(WeaponListScreenUiState())
@@ -47,6 +49,8 @@ class WeaponListViewModel @Inject constructor(
                     searchWeaponText = action.newValue
                 )
             }
+
+            is WeaponListScreenAction.GetWeaponListLocal -> loadWeaponListLocal()
         }
     }
 
@@ -78,5 +82,15 @@ class WeaponListViewModel @Inject constructor(
                 }
             }
         )
+    }
+
+    private fun loadWeaponListLocal() {
+        collectLocalData(
+            loadWeaponListUseCase(),
+        ) {
+            _uiState.update { state ->
+                state.copy(weaponListLocal = it)
+            }
+        }
     }
 }

@@ -1,10 +1,10 @@
 package com.septianbeneran.urithiru.processor
 
-import com.septianbeneran.urithiru.processor.processor.FeatureProcessor
-import com.septianbeneran.urithiru.processor.processor.GraphProcessor
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.processing.SymbolProcessorProvider
+import com.septianbeneran.urithiru.processor.processor.FeatureProcessor
+import com.septianbeneran.urithiru.processor.processor.GraphProcessor
 
 class ProcessorProvider: SymbolProcessorProvider {
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {

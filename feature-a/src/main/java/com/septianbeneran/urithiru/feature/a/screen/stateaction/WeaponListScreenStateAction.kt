@@ -10,6 +10,7 @@ data class WeaponListScreenUiState(
     val weapons: List<Weapon> = emptyList(),
     val weaponListState: BaseState<List<Weapon>> = StateInitial,
     val isEndReached: Boolean = false,
+    val weaponListLocal: List<Weapon> = emptyList(),
     val page: Int = 0
 )
 
@@ -18,6 +19,7 @@ sealed interface WeaponListScreenAction {
     data object LoadNextPage: WeaponListScreenAction
     data class OnSearchWeaponTextChange(val newValue: String): WeaponListScreenAction
     data class OnSearchButtonClick(val weaponName: String): WeaponListScreenAction
+    data object GetWeaponListLocal: WeaponListScreenAction
 }
 
 sealed interface WeaponListNonce: BaseNonce {

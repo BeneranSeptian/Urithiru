@@ -2,6 +2,7 @@
 agp = "9.0.1"
 converterGson = "3.0.0"
 coreKtx = "1.17.0"
+datastorePreferences = "1.2.0"
 gradle = "9.0.1"
 hiltAndroid = "2.59.1"
 hiltNavigationCompose = "1.3.0"
@@ -27,6 +28,7 @@ coilCompose = "2.7.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycleRuntimeKtx" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
