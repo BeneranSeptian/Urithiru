@@ -42,6 +42,7 @@ dependencies {
     implementation(project(":core"))
     implementation(project(":core-entity"))
     implementation(project(":core-navigation"))
+    implementation(project(":core-ui"))
     implementation(project(":api-a"))
     implementation(project(":api-b"))
     implementation(project(":api-twitch"))
