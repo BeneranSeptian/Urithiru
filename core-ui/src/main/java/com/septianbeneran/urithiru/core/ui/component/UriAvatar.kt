@@ -28,19 +28,18 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.septianbeneran.urithiru.core.ui.R
 import com.septianbeneran.urithiru.core.ui.component.UriAvatarProperties.L
 import com.septianbeneran.urithiru.core.ui.component.UriAvatarProperties.M
 import com.septianbeneran.urithiru.core.ui.component.UriAvatarProperties.S
 import com.septianbeneran.urithiru.core.ui.theme.Highlight.Highlight100
-import com.septianbeneran.urithiru.core.ui.theme.Highlight.Highlight300
+import com.septianbeneran.urithiru.core.ui.theme.Highlight.Highlight200
 
 @Composable
 fun UriAvatar(
     size: UriAvatarProperties.Size = S,
-    iconTint: Color = Highlight300,
+    iconTint: Color = Highlight200,
     backgroundColor: Color = Highlight100
 ) {
     val iconModifier = when (size) {
