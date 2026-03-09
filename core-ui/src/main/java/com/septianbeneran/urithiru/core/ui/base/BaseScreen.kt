@@ -11,6 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.septianbeneran.urithiru.core.ui.component.CentralLoadingDialog
+import com.septianbeneran.urithiru.core.ui.util.permission.permissionStateHandler
 
 @Composable
 fun BaseScreen(
@@ -24,7 +26,7 @@ fun BaseScreen(
     val baseScreenUiState = viewModel.baseScreenUiState.collectAsStateWithLifecycle()
 
     val permissionLauncher =
-        _root_ide_package_.com.septianbeneran.urithiru.core.ui.util.permission.permissionStateHandler(
+        permissionStateHandler(
             permissionHandler = viewModel.permissionHandler,
             context = context
         )
@@ -43,7 +45,7 @@ fun BaseScreen(
     }
 
     if (baseScreenUiState.value.showCentralLoading) {
-        _root_ide_package_.com.septianbeneran.urithiru.core.ui.component.CircularProgressDialog()
+        CentralLoadingDialog()
     }
 
     BackHandler(enabled = onBack != null) {

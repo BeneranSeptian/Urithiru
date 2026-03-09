@@ -15,9 +15,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ButtonElevation
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -43,7 +41,7 @@ fun UriButton(
     text: String,
     @DrawableRes leadingIcon: Int? = null,
     @DrawableRes trailingIcon: Int? = null,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit
 ) {
     Button(
         modifier = modifier,
@@ -128,17 +126,20 @@ private fun UriButtonPrev() {
                 ) {
                     UriButton(
                         type = Primary,
-                        text = "Primary"
+                        text = "Primary",
+                        onClick = {}
                     )
 
                     UriButton(
                         type = Secondary,
-                        text = "Secondary"
+                        text = "Secondary",
+                        onClick = {}
                     )
 
                     UriButton(
                         type = Type.Tertiary,
-                        text = "Tertiary"
+                        text = "Tertiary",
+                        onClick = {}
                     )
                 }
 
@@ -149,21 +150,24 @@ private fun UriButtonPrev() {
                         type = Primary,
                         text = "Primary",
                         leadingIcon = com.septianbeneran.urithiru.core.ui.R.drawable.play,
-                        trailingIcon = com.septianbeneran.urithiru.core.ui.R.drawable.play
+                        trailingIcon = com.septianbeneran.urithiru.core.ui.R.drawable.play,
+                        onClick = {}
                     )
 
                     UriButton(
                         type = Secondary,
                         text = "Secondary",
                         leadingIcon = com.septianbeneran.urithiru.core.ui.R.drawable.play,
-                        trailingIcon = com.septianbeneran.urithiru.core.ui.R.drawable.play
+                        trailingIcon = com.septianbeneran.urithiru.core.ui.R.drawable.play,
+                        onClick = {}
                     )
 
                     UriButton(
                         type = Type.Tertiary,
                         text = "Tertiary",
                         leadingIcon = com.septianbeneran.urithiru.core.ui.R.drawable.play,
-                        trailingIcon = com.septianbeneran.urithiru.core.ui.R.drawable.play
+                        trailingIcon = com.septianbeneran.urithiru.core.ui.R.drawable.play,
+                        onClick = {}
                     )
                 }
             }
