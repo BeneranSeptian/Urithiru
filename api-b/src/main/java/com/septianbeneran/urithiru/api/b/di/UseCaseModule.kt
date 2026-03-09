@@ -1,8 +1,10 @@
 package com.septianbeneran.urithiru.api.b.di
 
-import com.septianbeneran.urithiru.api.b.domain.get.GetBossListUseCase
-import com.septianbeneran.urithiru.api.b.domain.get.GetBossListUseCaseImpl
-import com.septianbeneran.urithiru.api.b.repository.BossRepository
+import com.septianbeneran.urithiru.api.b.domain.get.GetOnBoardingDataListUseCase
+import com.septianbeneran.urithiru.api.b.domain.get.GetOnBoardingDataListUseCaseImpl
+import com.septianbeneran.urithiru.api.b.domain.load.LoadOnBoardingPageDataListUseCase
+import com.septianbeneran.urithiru.api.b.domain.load.LoadOnBoardingPageDataListUseCaseImpl
+import com.septianbeneran.urithiru.api.b.repository.ApiJsonBinRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -14,7 +16,13 @@ import javax.inject.Singleton
 class UseCaseModule {
     @Singleton
     @Provides
-    internal fun provideGetWeaponListUseCase(
-        repo: BossRepository
-    ): GetBossListUseCase = GetBossListUseCaseImpl(repo)
+    internal fun provideGetOnBoardingDataListUseCase(
+        repo: ApiJsonBinRepository
+    ): GetOnBoardingDataListUseCase = GetOnBoardingDataListUseCaseImpl(repo)
+
+    @Singleton
+    @Provides
+    internal fun provideLoadOnBoardingPageDataListUseCase(
+        repo: ApiJsonBinRepository
+    ): LoadOnBoardingPageDataListUseCase = LoadOnBoardingPageDataListUseCaseImpl(repo)
 }

@@ -21,6 +21,7 @@ import com.septianbeneran.urithiru.core.navigation.annotation.FeatureRoute
 import com.septianbeneran.urithiru.core.navigation.graph.FeatureBNavGraph
 import com.septianbeneran.urithiru.core.navigation.routeparams.feature_a.WeaponListRoute
 import com.septianbeneran.urithiru.core.navigation.routeparams.feature_b.LandingRoute
+import com.septianbeneran.urithiru.core.navigation.routeparams.feature_b.OnBoardingRoute
 import com.septianbeneran.urithiru.core.navigation.util.Navigator
 import com.septianbeneran.urithiru.core.ui.base.BaseScreen
 import com.septianbeneran.urithiru.core.ui.util.permission.rememberActionPermissionHandler
@@ -47,9 +48,9 @@ fun HomeScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Button(onClick = {
-
+                navigator.navigate(OnBoardingRoute)
             }) {
-                Text(text = "Boss List")
+                Text(text = "On Boarding")
             }
             Spacer(modifier = Modifier.height(16.dp))
             Button(

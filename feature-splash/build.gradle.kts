@@ -7,4 +7,6 @@ dependencies {
     moduleImplementation("core-entity")
     moduleImplementation("core-navigation")
     moduleImplementation("core-ui")
+
+    moduleImplementation("api-b")
 }

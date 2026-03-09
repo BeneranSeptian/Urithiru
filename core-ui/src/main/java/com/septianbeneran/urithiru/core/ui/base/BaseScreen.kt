@@ -2,6 +2,7 @@ package com.septianbeneran.urithiru.core.ui.base
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -13,7 +14,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun BaseScreen(
+    modifier: Modifier = Modifier,
     viewModel: BaseViewModel,
+    contentPadding: PaddingValues = PaddingValues(24.dp),
     onBack: (() -> Unit)? = null,
     content: @Composable (properties: BaseScreenProperties) -> Unit
 ) {
@@ -48,9 +51,9 @@ fun BaseScreen(
     }
 
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
-            .padding(24.dp)
+            .padding(contentPadding)
     ) {
         content(properties)
     }

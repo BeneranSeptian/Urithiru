@@ -3,8 +3,10 @@ package com.septianbeneran.urithiru.core.di
 import com.septianbeneran.urithiru.core.BuildConfig.ELDEN_RING_BASE_URL
 import com.septianbeneran.urithiru.core.BuildConfig.IGDB_BASE_URL
 import com.septianbeneran.urithiru.core.BuildConfig.TWITCH_BASE_URL
+import com.septianbeneran.urithiru.core.BuildConfig.JSON_BIN_BASE_URL
 import com.septianbeneran.urithiru.core.annotation.EldenRingNetwork
 import com.septianbeneran.urithiru.core.annotation.IgdbNetwork
+import com.septianbeneran.urithiru.core.annotation.JsonBinNetwork
 import com.septianbeneran.urithiru.core.annotation.TwitchNetwork
 import com.septianbeneran.urithiru.core.remote.interceptor.LogcatInterceptor
 import dagger.Module
@@ -62,6 +64,19 @@ object NetworkModule {
     ): Retrofit {
         return Retrofit.Builder()
             .baseUrl(IGDB_BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    @JsonBinNetwork
+    @Provides
+    @Singleton
+    fun provideJsonBinRetrofit(
+        okHttpClient: OkHttpClient
+    ): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl(JSON_BIN_BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
