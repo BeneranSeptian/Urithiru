@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -19,6 +20,7 @@ fun BaseScreen(
     modifier: Modifier = Modifier,
     viewModel: BaseViewModel,
     contentPadding: PaddingValues = PaddingValues(24.dp),
+    isUseSystembarsPadding: Boolean = true,
     onBack: (() -> Unit)? = null,
     content: @Composable (properties: BaseScreenProperties) -> Unit
 ) {
@@ -56,6 +58,7 @@ fun BaseScreen(
         modifier = modifier
             .fillMaxSize()
             .padding(contentPadding)
+            .then(if(isUseSystembarsPadding) Modifier.systemBarsPadding() else Modifier)
     ) {
         content(properties)
     }

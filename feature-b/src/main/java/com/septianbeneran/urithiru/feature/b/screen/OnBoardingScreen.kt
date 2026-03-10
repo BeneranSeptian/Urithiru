@@ -31,9 +31,8 @@ import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.septianbeneran.urithiru.core.entity.b.OnBoardingPageData
 import com.septianbeneran.urithiru.core.navigation.annotation.FeatureRoute
-import com.septianbeneran.urithiru.core.navigation.graph.FeatureBNavGraph
-import com.septianbeneran.urithiru.core.navigation.routeparams.feature_b.LandingRoute
 import com.septianbeneran.urithiru.core.navigation.routeparams.feature_b.OnBoardingRoute
+import com.septianbeneran.urithiru.core.navigation.routeparams.feature_b.PersonalizeExperienceRouteParams
 import com.septianbeneran.urithiru.core.navigation.util.Navigator
 import com.septianbeneran.urithiru.core.ui.base.BaseScreen
 import com.septianbeneran.urithiru.core.ui.component.UriButton
@@ -43,7 +42,6 @@ import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTypography
 import com.septianbeneran.urithiru.core.ui.util.NonceObserver
 import com.septianbeneran.urithiru.feature.b.screen.stateaction.OnBoardingScreenAction
-import com.septianbeneran.urithiru.feature.b.screen.stateaction.OnBoardingScreenAction.OnClickNextLastPage
 import com.septianbeneran.urithiru.feature.b.screen.stateaction.OnBoardingScreenNonce
 import com.septianbeneran.urithiru.feature.b.screen.stateaction.OnBoardingScreenNonce.NavigateToHomeScreen
 import com.septianbeneran.urithiru.feature.b.viewmodel.OnBoardingViewModel
@@ -64,11 +62,8 @@ fun OnBoardingRoute(
         onNonce = { nonce ->
             when (nonce) {
                 NavigateToHomeScreen -> {
-                    println("masuk nonce")
-
                     navigator.navigate(
-                        route = LandingRoute,
-                        popUpTo = OnBoardingRoute,
+                        route = PersonalizeExperienceRouteParams,
                         inclusive = true
                     )
                 }
@@ -79,7 +74,8 @@ fun OnBoardingRoute(
     BaseScreen(
         viewModel = viewModel,
         contentPadding = PaddingValues(),
-        modifier = Modifier
+        modifier = Modifier,
+        isUseSystembarsPadding = false
     ) { properties ->
         OnBoardingScreen(
             pages = uiState.value.onBoardingPageDataList,
