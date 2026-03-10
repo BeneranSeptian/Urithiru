@@ -42,7 +42,7 @@ fun UriCheckBox(
             .size(size.boxSize)
             .clip(RoundedCornerShape(size.roundedCorner))
             .border(
-                width = 1.dp,
+                width = 1.5f.dp,
                 color = if (checked) Color.Transparent else Neutral.Light.Light500,
                 shape = RoundedCornerShape(size.roundedCorner)
             )
@@ -108,24 +108,19 @@ private fun UriCheckBoxPreview() {
                     checked = true,
                     size = Large
                 )
-            }
-
-            Spacer(Modifier.padding(vertical = 16.dp))
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally)
-            ) {
                 UriCheckBox(
                     checked = false,
-                    size = Small
+                    size = Large
                 )
+
                 UriCheckBox(
                     checked = false,
                     size = Medium
                 )
+
                 UriCheckBox(
                     checked = false,
-                    size = Large
+                    size = Small
                 )
             }
         }
