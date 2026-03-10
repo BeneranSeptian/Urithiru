@@ -42,8 +42,8 @@ fun UriListItem(
         ) {
             leadingContent?.invoke()
             Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = Modifier.weight(1f)
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.weight(1f),
             ) {
                 Text(
                     text = title,
@@ -63,7 +63,7 @@ fun UriListItem(
                             color = Neutral.Dark.Dark200,
                             maxLines = 3,
                             overflow = Ellipsis,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f).padding(top = 4.dp)
                         )
                         trailingContent?.invoke()
                     }
