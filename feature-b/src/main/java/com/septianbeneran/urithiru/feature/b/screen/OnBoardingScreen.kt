@@ -43,7 +43,7 @@ import com.septianbeneran.urithiru.core.ui.theme.UrithiruTypography
 import com.septianbeneran.urithiru.core.ui.util.NonceObserver
 import com.septianbeneran.urithiru.feature.b.screen.stateaction.OnBoardingScreenAction
 import com.septianbeneran.urithiru.feature.b.screen.stateaction.OnBoardingScreenNonce
-import com.septianbeneran.urithiru.feature.b.screen.stateaction.OnBoardingScreenNonce.NavigateToHomeScreen
+import com.septianbeneran.urithiru.feature.b.screen.stateaction.OnBoardingScreenNonce.NavigateToPersonalizeExperienceScreen
 import com.septianbeneran.urithiru.feature.b.viewmodel.OnBoardingViewModel
 import kotlinx.coroutines.launch
 
@@ -61,9 +61,10 @@ fun OnBoardingRoute(
         nonce = viewModel.nonce,
         onNonce = { nonce ->
             when (nonce) {
-                NavigateToHomeScreen -> {
+                NavigateToPersonalizeExperienceScreen -> {
                     navigator.navigate(
                         route = PersonalizeExperienceRouteParams,
+                        popUpTo = OnBoardingRoute,
                         inclusive = true
                     )
                 }
@@ -176,7 +177,7 @@ fun OnBoardingScreen(
             onClick = {
                 if (isLastPage) {
                     println("masuk last page")
-                    onNonce(NavigateToHomeScreen)
+                    onNonce(NavigateToPersonalizeExperienceScreen)
                 } else {
                     coroutineScope.launch {
                         pagerState.animateScrollToPage(pagerState.currentPage + 1)

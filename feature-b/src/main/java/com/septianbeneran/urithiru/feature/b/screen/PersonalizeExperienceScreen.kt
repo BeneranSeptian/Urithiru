@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.septianbeneran.urithiru.core.navigation.annotation.FeatureRoute
+import com.septianbeneran.urithiru.core.navigation.routeparams.feature_b.LandingRoute
 import com.septianbeneran.urithiru.core.navigation.routeparams.feature_b.PersonalizeExperienceRouteParams
 import com.septianbeneran.urithiru.core.navigation.util.Navigator
 import com.septianbeneran.urithiru.core.ui.R
@@ -65,9 +66,18 @@ fun PersonalizeExperienceScreen(navigator: Navigator) {
         )
     }
 
-    NonceObserver(viewModel.nonce) {
-        when (viewModel.nonce) {
-            NavigateTo -> {}
+    NonceObserver(
+        nonce = viewModel.nonce
+    ) { nonce ->
+        when (nonce) {
+            NavigateTo -> {
+                println("masuk observer")
+                navigator.navigate(
+                    route = LandingRoute,
+                    popUpTo = PersonalizeExperienceRouteParams,
+                    inclusive = true
+                )
+            }
         }
     }
 }
@@ -93,7 +103,10 @@ fun PersonalizeExperienceScreen(
         UriButton(
             modifier = Modifier.fillMaxWidth(),
             text = "Next",
-            onClick = { onNonce(NavigateTo) }
+            onClick = {
+                println("masuk click button")
+                onNonce(NavigateTo)
+            }
         )
     }
 }

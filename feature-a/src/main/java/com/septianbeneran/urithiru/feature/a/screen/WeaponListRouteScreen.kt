@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -42,6 +44,7 @@ import com.septianbeneran.urithiru.core.navigation.routeparams.feature_a.WeaponD
 import com.septianbeneran.urithiru.core.navigation.routeparams.feature_a.WeaponListRoute
 import com.septianbeneran.urithiru.core.navigation.util.Navigator
 import com.septianbeneran.urithiru.core.ui.base.BaseScreen
+import com.septianbeneran.urithiru.core.ui.component.UriTopAppBarProperties.defaults
 import com.septianbeneran.urithiru.core.ui.util.NonceObserver
 import com.septianbeneran.urithiru.feature.a.screen.stateaction.WeaponListNonce
 import com.septianbeneran.urithiru.feature.a.screen.stateaction.WeaponListNonce.NavigateToWeaponDetail
@@ -64,7 +67,8 @@ fun WeaponListRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     BaseScreen(
-        viewModel = viewModel
+        viewModel = viewModel,
+        topAppBarArgs = defaults(title = "Weapon List")
     ) {
         WeaponListScreen(
             uiState = uiState,
@@ -97,6 +101,7 @@ fun WeaponListScreen(
             onSearchWeaponTextChange = { onAction(OnSearchWeaponTextChange(it)) },
             onSearchWeapon = { onAction(OnSearchButtonClick(uiState.searchWeaponText)) }
         )
+        Spacer(Modifier.height(8.dp))
         WeaponListSection(
             getWeaponList = { onAction(GetWeaponList) },
             onClickWeapon = { weaponId -> onNonce(NavigateToWeaponDetail(weaponId)) },
@@ -115,8 +120,7 @@ fun SearchBarSection(
 ) {
     Row(
         modifier = modifier
-            .fillMaxWidth()
-            .padding(16.dp),
+            .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -155,7 +159,7 @@ fun WeaponListSection(
             (weaponListLocal.isNotEmpty()) -> {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
+                    contentPadding = PaddingValues(vertical = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     itemsIndexed(weaponListLocal) { index, weapon ->
@@ -202,7 +206,7 @@ fun WeaponListSection(
                 } else {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(16.dp),
+                        contentPadding = PaddingValues(vertical = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         itemsIndexed(weapons) { index, weapon ->
@@ -241,8 +245,7 @@ fun WeaponItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onClick() }
-                .padding(8.dp),
+                .clickable { onClick() },
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {

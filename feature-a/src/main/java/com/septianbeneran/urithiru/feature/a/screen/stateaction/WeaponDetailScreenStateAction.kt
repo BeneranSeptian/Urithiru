@@ -4,7 +4,8 @@ import com.septianbeneran.urithiru.core.base.BaseState
 import com.septianbeneran.urithiru.core.entity.a.Weapon
 
 data class WeaponDetailScreenUiState(
-    val weaponDetailState: BaseState<Weapon> = BaseState.StateInitial
+    val weaponDetailState: BaseState<Weapon> = BaseState.StateInitial,
+    val weapon: Weapon? = null
 )
 
 sealed interface WeaponDetailAction {

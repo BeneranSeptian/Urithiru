@@ -12,5 +12,5 @@ sealed interface OnBoardingScreenAction {
 }
 
 sealed interface OnBoardingScreenNonce: BaseNonce {
-    object NavigateToHomeScreen: OnBoardingScreenNonce
+    object NavigateToPersonalizeExperienceScreen: OnBoardingScreenNonce
 }

@@ -43,6 +43,9 @@ class WeaponDetailViewModel @Inject constructor(
             flow = getWeaponDetailUseCase(weaponId),
             onSuccess = {
                 _uiState.value = _uiState.value.copy(
+                    weapon = it
+                )
+                _uiState.value = _uiState.value.copy(
                     weaponDetailState = StateSuccess(it)
                 )
             },

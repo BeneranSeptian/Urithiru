@@ -35,6 +35,7 @@ import com.septianbeneran.urithiru.core.navigation.annotation.FeatureRoute
 import com.septianbeneran.urithiru.core.navigation.routeparams.feature_a.WeaponDetailRoute
 import com.septianbeneran.urithiru.core.navigation.util.Navigator
 import com.septianbeneran.urithiru.core.ui.base.BaseScreen
+import com.septianbeneran.urithiru.core.ui.component.UriTopAppBarProperties.defaults
 import com.septianbeneran.urithiru.core.ui.util.shimmerEffect
 import com.septianbeneran.urithiru.feature.a.screen.stateaction.WeaponDetailAction
 import com.septianbeneran.urithiru.feature.a.screen.stateaction.WeaponDetailAction.GetWeaponDetail
@@ -52,7 +53,8 @@ fun WeaponDetailRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     BaseScreen(
-        viewModel = viewModel
+        viewModel = viewModel,
+        topAppBarArgs = defaults(title = uiState.weapon?.name.orEmpty())
     ) {
         WeaponDetailScreen(
             uiState = uiState,
@@ -100,7 +102,6 @@ fun WeaponDetailContent(weapon: Weapon) {
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp)
     ) {
         AsyncImage(
             model = weapon.image,
@@ -204,7 +205,6 @@ fun WeaponDetailSkeletonLoader() {
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp)
     ) {
         Spacer(
             modifier = Modifier
