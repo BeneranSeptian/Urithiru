@@ -24,7 +24,6 @@ import com.septianbeneran.urithiru.core.ui.R
 import com.septianbeneran.urithiru.core.ui.component.UriTopAppBarProperties.defaults
 import com.septianbeneran.urithiru.core.ui.theme.Highlight
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
-import com.septianbeneran.urithiru.core.ui.theme.UrithiruTypography
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,7 +69,7 @@ fun AppBarTitle(
 ) {
     Text(
         text = title.orEmpty(),
-        style = UrithiruTypography.titleLarge,
+        style = UrithiruTheme.typography.h4,
         modifier = modifier
             .padding(8.dp, end = 8.dp),
         maxLines = 1,
@@ -137,7 +136,7 @@ private fun UriTopAppBarPreview() {
                         trailingComposable = {
                             Text(
                                 text = "Edit",
-                                style = UrithiruTypography.labelMedium,
+                                style = UrithiruTheme.typography.actionM,
                                 color = Highlight.Highlight500
                             )
                         }
@@ -171,14 +170,14 @@ private fun UriTopAppBarPreview() {
                         leadingComposable = {
                             Text(
                                 text = "Cancel",
-                                style = UrithiruTypography.labelMedium,
+                                style = UrithiruTheme.typography.actionM,
                                 color = Highlight.Highlight500
                             )
                         },
                         trailingComposable = {
                             Text(
                                 text = "Edit",
-                                style = UrithiruTypography.labelMedium,
+                                style = UrithiruTheme.typography.actionM,
                                 color = Highlight.Highlight500
                             )
                         }
@@ -191,7 +190,7 @@ private fun UriTopAppBarPreview() {
                         leadingComposable = {
                             Text(
                                 text = "Cancel",
-                                style = UrithiruTypography.labelMedium,
+                                style = UrithiruTheme.typography.actionM,
                                 color = Highlight.Highlight500
                             )
                         },

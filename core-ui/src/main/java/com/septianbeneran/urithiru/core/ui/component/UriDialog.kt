@@ -18,13 +18,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import com.septianbeneran.urithiru.core.ui.component.UriDialogProperties.Type
 import com.septianbeneran.urithiru.core.ui.component.UriDialogProperties.Type.Alert
 import com.septianbeneran.urithiru.core.ui.component.UriDialogProperties.Type.Confirmation
 import com.septianbeneran.urithiru.core.ui.theme.Neutral
-import com.septianbeneran.urithiru.core.ui.theme.UrithiruTypography
+import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,14 +78,13 @@ private fun TextSection(
     ) {
         Text(
             text = textTitle,
-            style = UrithiruTypography.headlineSmall,
+            style = UrithiruTheme.typography.h3,
             maxLines = 2
         )
 
         Text(
             text = textDescription,
-            style = UrithiruTypography.bodySmall,
-            fontSize = 12.sp,
+            style = UrithiruTheme.typography.bodyS,
             maxLines = 3,
             modifier = Modifier.padding(horizontal = 8.dp),
             textAlign = TextAlign.Center

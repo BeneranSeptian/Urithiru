@@ -16,75 +16,106 @@ val InterFontFamily = FontFamily(
     Font(R.font.inter_extra_bold, FontWeight.ExtraBold)
 )
 
-val UrithiruTypography = Typography(
-    // H1
-    headlineLarge = TextStyle(
+data class UrithiruTypography(
+    val h1: TextStyle,
+    val h2: TextStyle,
+    val h3: TextStyle,
+    val h4: TextStyle,
+    val h5: TextStyle,
+    val bodyXL: TextStyle,
+    val bodyL: TextStyle,
+    val bodyM: TextStyle,
+    val bodyS: TextStyle,
+    val bodyXS: TextStyle,
+    val actionL: TextStyle,
+    val actionM: TextStyle,
+    val actionS: TextStyle,
+    val captionM: TextStyle,
+)
+
+val UrithiruTypographyValues = UrithiruTypography(
+    h1 = TextStyle(
         fontFamily = InterFontFamily,
         fontWeight = FontWeight.ExtraBold,
         fontSize = 24.sp
     ),
-    // H2
-    headlineMedium = TextStyle(
+    h2 = TextStyle(
         fontFamily = InterFontFamily,
         fontWeight = FontWeight.ExtraBold,
         fontSize = 18.sp
     ),
-    // H3
-    headlineSmall = TextStyle(
+    h3 = TextStyle(
         fontFamily = InterFontFamily,
         fontWeight = FontWeight.ExtraBold,
         fontSize = 16.sp
     ),
-    // H4
-    titleLarge = TextStyle(
+    h4 = TextStyle(
         fontFamily = InterFontFamily,
         fontWeight = FontWeight.Bold,
         fontSize = 14.sp
     ),
-    // H5
-    titleMedium = TextStyle(
+    h5 = TextStyle(
         fontFamily = InterFontFamily,
         fontWeight = FontWeight.Bold,
         fontSize = 12.sp
     ),
-
-    // --- Body ---
-    // Body XL
-    bodyLarge = TextStyle(
+    bodyXL = TextStyle(
         fontFamily = InterFontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 18.sp
     ),
-    // Body L
-    bodyMedium = TextStyle(
+    bodyL = TextStyle(
         fontFamily = InterFontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp
     ),
-    // Body M
-    bodySmall = TextStyle(
+    bodyM = TextStyle(
         fontFamily = InterFontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp
     ),
-
-    // --- Action / Caption ---
-    // Action L
-    labelLarge = TextStyle(
+    bodyS = TextStyle(
+        fontFamily = InterFontFamily,
+        fontWeight = FontWeight.Normal,
+        fontSize = 12.sp
+    ),
+    bodyXS = TextStyle(
+        fontFamily = InterFontFamily,
+        fontWeight = FontWeight.Medium,
+        fontSize = 10.sp
+    ),
+    actionL = TextStyle(
         fontFamily = InterFontFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 14.sp
     ),
-    // Action M
-    labelMedium = TextStyle(
+    actionM = TextStyle(
         fontFamily = InterFontFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 12.sp
     ),
-    // Action S & Caption M (Both are SemiBold / 10)
-    labelSmall = TextStyle(
+    actionS = TextStyle(
+        fontFamily = InterFontFamily,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 10.sp
+    ),
+    captionM = TextStyle(
         fontFamily = InterFontFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 10.sp
     )
+)
+
+val MaterialUrithiruTypography = Typography(
+    headlineLarge = UrithiruTypographyValues.h1,
+    headlineMedium = UrithiruTypographyValues.h2,
+    headlineSmall = UrithiruTypographyValues.h3,
+    titleLarge = UrithiruTypographyValues.h4,
+    titleMedium = UrithiruTypographyValues.h5,
+    bodyLarge = UrithiruTypographyValues.bodyXL,
+    bodyMedium = UrithiruTypographyValues.bodyL,
+    bodySmall = UrithiruTypographyValues.bodyM,
+    labelLarge = UrithiruTypographyValues.actionL,
+    labelMedium = UrithiruTypographyValues.actionM,
+    labelSmall = UrithiruTypographyValues.actionS
 )

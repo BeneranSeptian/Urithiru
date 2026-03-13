@@ -38,7 +38,7 @@ import com.septianbeneran.urithiru.core.ui.theme.Highlight.Highlight100
 import com.septianbeneran.urithiru.core.ui.theme.Neutral
 import com.septianbeneran.urithiru.core.ui.theme.Neutral.Light.Light100
 import com.septianbeneran.urithiru.core.ui.theme.Neutral.Light.Light500
-import com.septianbeneran.urithiru.core.ui.theme.UrithiruTypography
+import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
 import com.septianbeneran.urithiru.core.ui.util.NonceObserver
 import com.septianbeneran.urithiru.feature.b.screen.PersonalizeExperienceScreenProperties.InterestItem
 import com.septianbeneran.urithiru.feature.b.screen.stateaction.PersonalizeExperienceScreenAction
@@ -121,12 +121,12 @@ private fun TitleSection(
     ) {
         Text(
             text = "Personalise your experience here in Urithiru Project",
-            style = UrithiruTypography.headlineLarge,
+            style = UrithiruTheme.typography.h1,
             maxLines = 2
         )
         Text(
             text = "Choose your interest.",
-            style = UrithiruTypography.bodySmall,
+            style = UrithiruTheme.typography.bodyM,
             color = Neutral.Dark.Dark200
         )
     }

@@ -23,7 +23,7 @@ import com.septianbeneran.urithiru.core.ui.component.UriBadgeProperties.Type.Ico
 import com.septianbeneran.urithiru.core.ui.component.UriBadgeProperties.Type.Number
 import com.septianbeneran.urithiru.core.ui.theme.Highlight
 import com.septianbeneran.urithiru.core.ui.theme.Neutral
-import com.septianbeneran.urithiru.core.ui.theme.UrithiruTypography
+import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
 
 @Composable
 fun UriBadge(
@@ -50,7 +50,7 @@ fun UriBadge(
             is Number -> Text(
                 text = type.numberText,
                 color = Neutral.Light.Light100,
-                style = UrithiruTypography.labelSmall
+                style = UrithiruTheme.typography.actionS
             )
         }
     }

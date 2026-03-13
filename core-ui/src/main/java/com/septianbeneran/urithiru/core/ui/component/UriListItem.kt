@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.sp
 import com.septianbeneran.urithiru.core.ui.component.UriBadgeProperties.Type.Number
 import com.septianbeneran.urithiru.core.ui.theme.Highlight
 import com.septianbeneran.urithiru.core.ui.theme.Neutral
-import com.septianbeneran.urithiru.core.ui.theme.UrithiruTypography
+import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
 
 @Composable
 fun UriListItem(
@@ -47,7 +47,7 @@ fun UriListItem(
             ) {
                 Text(
                     text = title,
-                    style = UrithiruTypography.bodySmall,
+                    style = UrithiruTheme.typography.bodyM,
                     color = Neutral.Dark.Dark500,
                     maxLines = 1,
                     overflow = Ellipsis
@@ -58,8 +58,7 @@ fun UriListItem(
                     description?.let {
                         Text(
                             text = description,
-                            style = UrithiruTypography.bodySmall,
-                            fontSize = 12.sp,
+                            style = UrithiruTheme.typography.bodyS,
                             color = Neutral.Dark.Dark200,
                             maxLines = 3,
                             overflow = Ellipsis,

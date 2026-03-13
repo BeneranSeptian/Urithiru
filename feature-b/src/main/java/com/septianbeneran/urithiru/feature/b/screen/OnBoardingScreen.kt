@@ -23,7 +23,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.SubcomposeAsyncImage
@@ -39,7 +38,6 @@ import com.septianbeneran.urithiru.core.ui.component.UriButton
 import com.septianbeneran.urithiru.core.ui.component.UriDot
 import com.septianbeneran.urithiru.core.ui.component.UriMediaPlaceHolder
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
-import com.septianbeneran.urithiru.core.ui.theme.UrithiruTypography
 import com.septianbeneran.urithiru.core.ui.util.NonceObserver
 import com.septianbeneran.urithiru.feature.b.screen.stateaction.OnBoardingScreenAction
 import com.septianbeneran.urithiru.feature.b.screen.stateaction.OnBoardingScreenNonce
@@ -201,15 +199,14 @@ fun BottomSection(
     ) {
         Text(
             text = pageData.title,
-            style = UrithiruTypography.headlineLarge,
+            style = UrithiruTheme.typography.h1,
             maxLines = 2
         )
 
         Spacer(modifier = Modifier.height(12.dp))
         Text(
             text = pageData.description,
-            style = UrithiruTypography.bodySmall,
-            fontSize = 12.sp
+            style = UrithiruTheme.typography.bodyS
         )
     }
 }

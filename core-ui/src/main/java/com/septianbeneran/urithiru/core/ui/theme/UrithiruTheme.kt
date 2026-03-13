@@ -4,11 +4,13 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.staticCompositionLocalOf
 import com.septianbeneran.urithiru.core.ui.theme.Highlight.Highlight100
 import com.septianbeneran.urithiru.core.ui.theme.Highlight.Highlight500
 
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
 import com.septianbeneran.urithiru.core.ui.theme.Highlight.Highlight300
 import com.septianbeneran.urithiru.core.ui.theme.Support.Error.Error100
 import com.septianbeneran.urithiru.core.ui.theme.Support.Error.Error300
@@ -54,6 +56,8 @@ private val DarkColorScheme = darkColorScheme(
     onErrorContainer = Error100
 )
 
+val LocalUrithiruTypography = staticCompositionLocalOf { UrithiruTypographyValues }
+
 @Composable
 fun UrithiruTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -66,9 +70,20 @@ fun UrithiruTheme(
         LightColorScheme
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = UrithiruTypography,
-        content = content
-    )
+    CompositionLocalProvider(
+        LocalUrithiruTypography provides UrithiruTypographyValues
+    ) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = MaterialUrithiruTypography,
+            content = content
+        )
+    }
+}
+
+object UrithiruTheme {
+    val typography: UrithiruTypography
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalUrithiruTypography.current
 }

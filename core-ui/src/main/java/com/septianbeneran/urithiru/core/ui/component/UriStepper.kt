@@ -24,7 +24,7 @@ import com.septianbeneran.urithiru.core.ui.component.UriStepperProperties.Type.D
 import com.septianbeneran.urithiru.core.ui.component.UriStepperProperties.Type.Filled
 import com.septianbeneran.urithiru.core.ui.theme.Highlight
 import com.septianbeneran.urithiru.core.ui.theme.Neutral
-import com.septianbeneran.urithiru.core.ui.theme.UrithiruTypography
+import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
 
 @Composable
 fun UriStepper(
@@ -47,7 +47,7 @@ fun UriStepper(
             if(stepText.isNullOrBlank().not() && type != Done) {
                 Text(
                     text = stepText,
-                    style = UrithiruTypography.labelSmall,
+                    style = UrithiruTheme.typography.actionS,
                     color = type.stepTextColor
                 )
             } else {
@@ -67,7 +67,7 @@ fun UriStepper(
         titleText?.let {
             Text(
                 text = it,
-                style = UrithiruTypography.titleMedium,
+                style = UrithiruTheme.typography.h5,
                 color = type.titleTextColor
             )
         }
