@@ -67,8 +67,7 @@ fun UriButton(
             }
             Text(
                 text = text,
-                fontSize = 12.sp,
-                fontWeight = Medium,
+                style = UrithiruTheme.typography.actionM,
                 maxLines = 1
             )
             trailingIcon?.let {
