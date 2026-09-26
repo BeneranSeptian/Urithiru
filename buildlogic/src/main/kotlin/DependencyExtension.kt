@@ -1,5 +1,5 @@
-import gradle.kotlin.dsl.accessors._ed55803fd744f8f83380669f6271a2df.implementation
-import gradle.kotlin.dsl.accessors._ed55803fd744f8f83380669f6271a2df.ksp
+import gradle.kotlin.dsl.accessors._06e74795f8f7e41a911b9c9fe1c1925e.implementation
+import gradle.kotlin.dsl.accessors._0884f16e57f3dc9669657a0bb9efd650.ksp
 import org.gradle.accessors.dm.LibrariesForLibs
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.dependencies

@@ -9,13 +9,14 @@ import androidx.compose.runtime.remember
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.septianbeneran.urithiru.core.navigation.graph.FeatureSplashNavGraph
+import com.septianbeneran.urithiru.core.navigation.util.Navigator
 import com.septianbeneran.urithiru.graph.registerAllFeatureGraphs
 
 @Composable
 fun NavHostChamber() {
     val navController = rememberNavController()
     val navigator = remember {
-        _root_ide_package_.com.septianbeneran.urithiru.core.navigation.util.Navigator(
+        Navigator(
             navController
         )
     }
