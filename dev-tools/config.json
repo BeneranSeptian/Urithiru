@@ -1,0 +1,15 @@
+{
+  "projectRoot": "~/AndroidStudioProjects/YourApp",
+  "paths": {
+    "response": "app/src/main/java/com/yourapp/data/remote/response",
+    "request": "app/src/main/java/com/yourapp/data/remote/request",
+    "entity": "app/src/main/java/com/yourapp/data/entity",
+    "model": "app/src/main/java/com/yourapp/domain/model"
+  },
+  "imports": {
+    "ToEntityMapper": "com.yourapp.core.mapper.ToEntityMapper",
+    "ToModelMapper": "com.yourapp.core.mapper.ToModelMapper",
+    "emptyString": "com.yourapp.core.util.emptyString"
+  },
+  "serialization": "gson"
+}

@@ -1,0 +1,360 @@
+#!/usr/bin/env python3
+"""
+gen-model: generate Response / Request / Entity / Model Kotlin data classes
+from sample JSON files. Field types are inferred from the sample values.
+
+Workflow:
+  1. edit response.json (and request.json if the endpoint takes a request)
+  2. gen-model Testing                 # response only
+     gen-model Testing --with-request  # response + request
+     gen-model Testing --dry-run       # preview, write nothing
+"""
+import argparse
+import json
+import os
+import re
+import sys
+from dataclasses import dataclass, field
+from pathlib import Path
+
+KEYWORDS = {
+    "class", "val", "var", "fun", "object", "in", "is", "as", "when", "if", "else",
+    "for", "while", "return", "interface", "typealias", "package", "this", "super",
+    "null", "true", "false", "try", "throw", "do", "break", "continue",
+}
+MODEL_DEFAULTS = {"Int": "0", "Long": "0L", "Double": "0.0", "Boolean": "false"}
+
+# serialization -> (field import, field annotation, optional (class import, class annotation))
+SERIAL = {
+    "gson": ("com.google.gson.annotations.SerializedName", 'SerializedName("{k}")', None),
+    "moshi": ("com.squareup.moshi.Json", 'Json(name = "{k}")', None),
+    "kotlinx": ("kotlinx.serialization.SerialName", 'SerialName("{k}")',
+                ("kotlinx.serialization.Serializable", "Serializable")),
+}
+
+WARNINGS = []
+
+
+# ------------------------------------------------------------- inference ----
+
+@dataclass
+class Type:
+    kind: str                      # prim | list | obj
+    name: str = ""
+    inner: "Type | None" = None
+    cls: "ClassDef | None" = None
+
+
+@dataclass
+class Field:
+    key: str
+    name: str
+    type: Type
+
+
+@dataclass
+class ClassDef:
+    name: str
+    fields: list = field(default_factory=list)
+
+
+def pascal(s):
+    return "".join(p[:1].upper() + p[1:] for p in re.split(r"[_\-\s]+", s) if p)
+
+
+def camel(s):
+    p = pascal(s)
+    return p[:1].lower() + p[1:]
+
+
+def singular(s):
+    if s.endswith("ies") and len(s) > 3:
+        return s[:-3] + "y"
+    if s.endswith("s") and not s.endswith(("ss", "us", "is")) and len(s) > 1:
+        return s[:-1]
+    return s
+
+
+def ident(name):
+    return f"`{name}`" if name in KEYWORDS else name
+
+
+def is_num(v):
+    return isinstance(v, (int, float)) and not isinstance(v, bool)
+
+
+def infer_fields(dicts):
+    """Merge several JSON objects (same shape) into a field list."""
+    keys = []
+    for d in dicts:
+        for k in d:
+            if k not in keys:
+                keys.append(k)
+    return [Field(k, camel(k), infer([d[k] for d in dicts if k in d], k)) for k in keys]
+
+
+def infer(samples, key, in_list=False):
+    samples = [s for s in samples if s is not None]
+    if not samples:
+        WARNINGS.append(f"'{key}' is null/missing in the sample, defaulted to String")
+        return Type("prim", "String")
+    if all(isinstance(s, dict) for s in samples):
+        name = pascal(singular(key) if in_list else key)
+        return Type("obj", cls=ClassDef(name, infer_fields(samples)))
+    if all(isinstance(s, list) for s in samples):
+        items = [i for s in samples for i in s]
+        if not items:
+            WARNINGS.append(f"'{key}' is an empty array in the sample, defaulted to List<String>")
+            return Type("list", inner=Type("prim", "String"))
+        return Type("list", inner=infer(items, key, in_list=True))
+    if all(isinstance(s, bool) for s in samples):
+        return Type("prim", "Boolean")
+    if all(is_num(s) for s in samples):
+        if any(isinstance(s, float) for s in samples):
+            return Type("prim", "Double")
+        return Type("prim", "Long" if any(abs(s) > 2**31 - 1 for s in samples) else "Int")
+    if all(isinstance(s, str) for s in samples):
+        return Type("prim", "String")
+    WARNINGS.append(f"'{key}' has mixed types in the sample, defaulted to String")
+    return Type("prim", "String")
+
+
+def top_fields(sample):
+    if isinstance(sample, list):
+        sample = [s for s in sample if isinstance(s, dict)]
+        if not sample:
+            sys.exit("Sample JSON must be an object (or an array of objects).")
+        WARNINGS.append("Top-level JSON is an array, used its element shape")
+        return infer_fields(sample)
+    if not isinstance(sample, dict):
+        sys.exit("Sample JSON must be an object (or an array of objects).")
+    return infer_fields([sample])
+
+
+def collect(cls, seen=None):
+    seen = seen if seen is not None else {}
+    if cls.name in seen:
+        if [f.key for f in seen[cls.name].fields] != [f.key for f in cls.fields]:
+            WARNINGS.append(f"Nested class name '{cls.name}' is used by two different shapes")
+        return []
+    seen[cls.name] = cls
+    out = [cls]
+    for f in cls.fields:
+        t = f.type
+        while t.kind == "list":
+            t = t.inner
+        if t.kind == "obj":
+            out += collect(t.cls, seen)
+    return out
+
+
+# ------------------------------------------------------------- rendering ----
+
+def layer_name(n, layer):
+    return {"response": f"Response{n}", "request": f"Request{n}",
+            "entity": f"{n}Entity", "model": n}[layer]
+
+
+def type_str(t, layer):
+    if t.kind == "prim":
+        return t.name
+    if t.kind == "list":
+        return f"List<{type_str(t.inner, layer)}>"
+    return layer_name(t.cls.name, layer)
+
+
+def model_default(t, cfg, imports):
+    if t.kind == "list":
+        return "emptyList()"
+    if t.kind == "obj":
+        return f"{layer_name(t.cls.name, 'model')}()"
+    if t.name == "String":
+        if "emptyString" in cfg["imports"]:
+            imports.add(cfg["imports"]["emptyString"])
+            return "emptyString()"
+        return '""'
+    return MODEL_DEFAULTS[t.name]
+
+
+def to_entity(expr, t, top=True):
+    sep = "?." if top else "."
+    if t.kind == "prim":
+        return expr
+    if t.kind == "obj":
+        return f"{expr}{sep}toEntity()"
+    if t.inner.kind == "prim":
+        return expr
+    return f"{expr}{sep}map {{ {to_entity('it', t.inner, False)} }}"
+
+
+def to_model(expr, t, cfg, imports, top=True):
+    if t.kind == "prim":
+        if not top:
+            return expr
+        if t.name == "String":
+            return f"{expr}.orEmpty()"
+        return f"{expr} ?: {model_default(t, cfg, imports)}"
+    if t.kind == "obj":
+        if not top:
+            return f"{expr}.toModel()"
+        return f"{expr}?.toModel() ?: {model_default(t, cfg, imports)}"
+    if t.inner.kind == "prim":
+        return f"{expr}.orEmpty()" if top else expr
+    inner = to_model("it", t.inner, cfg, imports, False)
+    return f"{expr}?.map {{ {inner} }}.orEmpty()" if top else f"{expr}.map {{ {inner} }}"
+
+
+def render_class(c, layer, cfg, imports):
+    ser = SERIAL.get(cfg.get("serialization", "none"))
+    cname = layer_name(c.name, layer)
+    head, params = "", []
+
+    for f in c.fields:
+        nm = ident(f.name)
+        if layer == "model":
+            params.append(f"val {nm}: {type_str(f.type, layer)} = {model_default(f.type, cfg, imports)}")
+            continue
+        ann = ""
+        if layer in ("response", "request") and ser and f.key != f.name:
+            ann = f"@{ser[1].format(k=f.key)} "
+            imports.add(ser[0])
+        params.append(f"{ann}val {nm}: {type_str(f.type, layer)}? = null")
+
+    if layer in ("response", "request") and ser and ser[2]:
+        imports.add(ser[2][0])
+        head = f"@{ser[2][1]}\n"
+    if layer == "model":
+        head = "@Parcelize\n"
+        imports.update({"kotlinx.parcelize.Parcelize", "android.os.Parcelable"})
+
+    sig = f"{head}data class {cname}(\n" + ",\n".join(f"    {p}" for p in params) + "\n)"
+
+    if layer == "response":
+        imports.add(cfg["imports"]["ToEntityMapper"])
+        tgt = layer_name(c.name, "entity")
+        args = ",\n".join(f"        {ident(f.name)} = {to_entity(ident(f.name), f.type)}" for f in c.fields)
+        return f"{sig} : ToEntityMapper<{tgt}> {{\n    override fun toEntity() = {tgt}(\n{args}\n    )\n}}\n"
+    if layer == "entity":
+        imports.add(cfg["imports"]["ToModelMapper"])
+        tgt = layer_name(c.name, "model")
+        args = ",\n".join(
+            f"        {ident(f.name)} = {to_model(ident(f.name), f.type, cfg, imports)}" for f in c.fields)
+        return f"{sig} : ToModelMapper<{tgt}> {{\n    override fun toModel() = {tgt}(\n{args}\n    )\n}}\n"
+    if layer == "model":
+        return f"{sig} : Parcelable {{}}\n"
+    return f"{sig}\n"
+
+
+def package_of(dir_path):
+    m = re.search(r"/(?:java|kotlin)/(.+)$", "/" + Path(dir_path).as_posix())
+    if not m:
+        sys.exit(f"Cannot derive package from '{dir_path}' (expected .../java/... or .../kotlin/...)")
+    return m.group(1).replace("/", ".")
+
+
+def render_file(layer, top, cfg):
+    classes = collect(top)
+    imports = set()
+    bodies = [render_class(c, layer, cfg, imports) for c in classes]
+
+    pkgs = {k: package_of(v) for k, v in cfg["paths"].items()}
+    cross = {"response": "entity", "entity": "model"}.get(layer)
+    if cross:
+        imports.update(f"{pkgs[cross]}.{layer_name(c.name, cross)}" for c in classes)
+    imports = {i for i in imports if i.rsplit(".", 1)[0] != pkgs[layer]}
+
+    imp = "\n".join(f"import {i}" for i in sorted(imports))
+    return f"package {pkgs[layer]}\n\n" + (imp + "\n\n" if imp else "") + "\n".join(bodies)
+
+
+# ------------------------------------------------------------------- io -----
+
+TOOL_DIR = Path(__file__).resolve().parent
+
+
+def read_json(path):
+    try:
+        return json.loads(path.read_text())
+    except json.JSONDecodeError as e:
+        sys.exit(f"{path}: invalid JSON (line {e.lineno}, column {e.colno}): {e.msg}")
+
+
+def load_json(arg):
+    p = Path(arg).expanduser()
+    if p.is_file():
+        return read_json(p)
+    if arg.lstrip().startswith(("{", "[")):
+        try:
+            return json.loads(arg)
+        except json.JSONDecodeError as e:
+            sys.exit(f"Invalid inline JSON: {e.msg}")
+    sys.exit(f"File not found: {p}")
+
+
+def write_file(path, content, root, opts):
+    shown = path.relative_to(root)
+    if path.exists() and not opts.force:
+        print(f"  SKIP (exists)  {shown}")
+        return
+    if opts.dry_run:
+        print(f"  WOULD CREATE   {shown}\n" + "-" * 60 + f"\n{content}" + "-" * 60)
+        return
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content)
+    print(f"  CREATED        {shown}")
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("model", nargs="?", help="Model name in PascalCase, e.g. Testing")
+    ap.add_argument("--response", default=str(TOOL_DIR / "response.json"),
+                    help="Response sample: file path or inline JSON (default: response.json in the tool folder)")
+    ap.add_argument("--with-request", action="store_true",
+                    help="Also generate the request class from request.json")
+    ap.add_argument("--request", help="Request sample: file path or inline JSON (implies --with-request)")
+    ap.add_argument("--project", help="Android project root (overrides config / ANDROID_PROJECT_ROOT)")
+    ap.add_argument("--config", default=str(TOOL_DIR / "config.json"))
+    ap.add_argument("--dry-run", action="store_true", help="Print the files instead of writing them")
+    ap.add_argument("--force", action="store_true", help="Overwrite existing files")
+    opts = ap.parse_args()
+
+    cfg = read_json(Path(opts.config).expanduser())
+
+    root_str = opts.project or os.environ.get("ANDROID_PROJECT_ROOT") or cfg.get("projectRoot")
+    root = Path(root_str or "").expanduser().resolve()
+    if not root_str or not root.is_dir():
+        sys.exit(f"Android project root not found: {root_str!r}\n"
+                 f"Set projectRoot in {opts.config} or pass --project /path/to/project")
+
+    model = opts.model
+    if not model:
+        if not sys.stdin.isatty():
+            ap.error("model name is required")
+        model = input("Model name (e.g. Testing): ").strip()
+    if not re.fullmatch(r"[A-Z][A-Za-z0-9]*", model):
+        sys.exit("Model name must be PascalCase, e.g. Testing")
+
+    response = load_json(opts.response)
+    request = None
+    if opts.request or opts.with_request:
+        request = load_json(opts.request or str(TOOL_DIR / "request.json"))
+
+    fields = top_fields(response)
+    jobs = [
+        ("response", ClassDef(model, fields), f"Response{model}.kt"),
+        ("entity", ClassDef(model, fields), f"{model}Entity.kt"),
+        ("model", ClassDef(model, fields), f"{model}.kt"),
+    ]
+    if request is not None:
+        jobs.insert(1, ("request", ClassDef(model, top_fields(request)), f"Request{model}.kt"))
+
+    print(f"\nProject: {root}\nModel:   {model}\n")
+    for layer, cls, filename in jobs:
+        write_file(root / cfg["paths"][layer] / filename, render_file(layer, cls, cfg), root, opts)
+
+    for w in dict.fromkeys(WARNINGS):
+        print(f"  WARNING: {w}")
+
+
+if __name__ == "__main__":
+    main()
