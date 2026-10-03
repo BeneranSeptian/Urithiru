@@ -1,29 +1,32 @@
-# model-gen
+# dev-tools
 
-Generates the Response, Request (optional), Entity and Model Kotlin data classes
-from sample JSON. Types are inferred from the values in the sample.
+```
+dev-tools/
+├── config.json        shared by every tool: projectRoot, paths, imports, DI snippets
+├── bin/               put this on PATH; one symlink per command
+├── model-gen/         gen-model     (own git repo)
+└── usecase-gen/       gen-usecase   (own git repo)
+```
 
 ## Setup (once)
 
-1. Edit `config.json`: set `projectRoot`, the four `paths` (relative to the project root),
-   the mapper `imports`, and `serialization` (`gson`, `moshi`, `kotlinx` or `none`).
-2. Put the tool on your PATH (see the parent folder's `bin/`).
+```bash
+cd ~/dev-tools
+mkdir -p bin
+ln -s ~/dev-tools/model-gen/gen-model     bin/gen-model
+ln -s ~/dev-tools/usecase-gen/gen-usecase bin/gen-usecase
+echo 'export PATH="$HOME/dev-tools/bin:$PATH"' >> ~/.zshrc && source ~/.zshrc
+nano config.json        # projectRoot, paths (relative to projectRoot), import paths
+```
+Without PATH: `python3 ~/dev-tools/usecase-gen/gen-usecase ...`. Requires Python 3.8+, nothing else.
 
-## Usage
+## Pipeline (run in this order, they are separate commands)
 
-    nano response.json                  # paste the response payload (not the outer envelope)
-    nano request.json                   # only if the endpoint takes a request
-    gen-model Testing --dry-run         # preview
-    gen-model Testing                   # response, entity, model
-    gen-model Testing --with-request    # + request
+Step 0: edit `model-gen/response.json` (and `request.json` if there is a request).
 
-Other options: `--force` (overwrite), `--project DIR` (another project),
-`--response FILE_OR_JSON`, `--request FILE_OR_JSON`.
-Existing files are never overwritten unless `--force` is given.
+1. `gen-model Example --with-request`        response/request data classes + mappers
+2. `gen-usecase getExampleUseCase`           (does not create models, stops if missing) service -> datasource -> impl -> remote DI
+3. (planned) repository, repository impl, data DI, use case, domain DI
 
-## Inference rules
-
-String, Boolean, Int (Long if > 2^31-1), Double (any decimal in the sample),
-nested object -> nested class, array -> List<T> (elements merged).
-A null value, empty array or mixed types default to String with a warning.
-Whole-number IDs come out as Int; change to Long by hand if needed.
+Both tools skip files that exist and refuse to create a class/file name that is already
+declared anywhere in the project. Use `--dry-run` first.

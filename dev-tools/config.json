@@ -1,15 +1,49 @@
 {
   "projectRoot": "~/AndroidStudioProjects/YourApp",
+  "serialization": "gson",
   "paths": {
     "response": "app/src/main/java/com/yourapp/data/remote/response",
     "request": "app/src/main/java/com/yourapp/data/remote/request",
     "entity": "app/src/main/java/com/yourapp/data/entity",
-    "model": "app/src/main/java/com/yourapp/domain/model"
+    "model": "app/src/main/java/com/yourapp/domain/model",
+    "service": "app/src/main/java/com/yourapp/data/remote/service",
+    "dataSource": "app/src/main/java/com/yourapp/data/datasource",
+    "dataSourceImpl": "app/src/main/java/com/yourapp/data/datasource/impl",
+    "remoteModule": "app/src/main/java/com/yourapp/data/di"
   },
   "imports": {
     "ToEntityMapper": "com.yourapp.core.mapper.ToEntityMapper",
     "ToModelMapper": "com.yourapp.core.mapper.ToModelMapper",
-    "emptyString": "com.yourapp.core.util.emptyString"
+    "FromEntityMapper": "com.yourapp.core.mapper.FromEntityMapper",
+    "FromModelMapper": "com.yourapp.core.mapper.FromModelMapper",
+    "emptyString": "com.yourapp.core.util.emptyString",
+    "BaseResponse": "com.yourapp.core.network.BaseResponse",
+    "ResponseEntity": "com.yourapp.core.network.ResponseEntity",
+    "toEntityWithData": "com.yourapp.core.network.toEntityWithData"
   },
-  "serialization": "gson"
+  "naming": {
+    "dataSourceSuffix": "RemoteDataSource"
+  },
+  "di": {
+    "container": "\\bmodule\\b(?=\\s*\\{)",
+    "imports": [],
+    "service": {
+      "template": "factory { createService<{Service}>(get()) }",
+      "detect": [
+        "createService<\\s*{Service}\\s*>"
+      ],
+      "marker": "//\\s*new\\s+service\\b",
+      "after": "createService<",
+      "blank": false
+    },
+    "dataSource": {
+      "template": "factory<{DataSource}> { {DataSourceImpl}(get()) }",
+      "detect": [
+        "<\\s*{DataSource}\\s*>"
+      ],
+      "marker": "//\\s*new\\s+data\\s*source\\b",
+      "after": "<\\w*DataSource>\\s*\\{",
+      "blank": false
+    }
+  }
 }

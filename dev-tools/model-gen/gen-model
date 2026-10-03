@@ -1,13 +1,18 @@
 #!/usr/bin/env python3
 """
-gen-model: generate Response / Request / Entity / Model Kotlin data classes
-from sample JSON files. Field types are inferred from the sample values.
+gen-model: generate Kotlin data classes from sample JSON files.
+Field types are inferred from the sample values.
+
+Response chain (response.json):  ResponseX -> XEntity -> X
+Request chain  (request.json):   X(Spec) -> XSpecEntity -> RequestX
+                                 (model)     (entity)      (remote)
 
 Workflow:
-  1. edit response.json (and request.json if the endpoint takes a request)
-  2. gen-model Testing                 # response only
-     gen-model Testing --with-request  # response + request
-     gen-model Testing --dry-run       # preview, write nothing
+  1. edit response.json (and request.json if the endpoint takes a request)  <- don't forget!
+  2. gen-model Testing                  # response chain only
+     gen-model Testing --with-request   # + request chain
+     gen-model Testing --with-request --no-from-mapper   # only RequestTesting, no mappers
+     gen-model Testing --dry-run        # preview, write nothing
 """
 import argparse
 import json
@@ -23,6 +28,7 @@ KEYWORDS = {
     "null", "true", "false", "try", "throw", "do", "break", "continue",
 }
 MODEL_DEFAULTS = {"Int": "0", "Long": "0L", "Double": "0.0", "Boolean": "false"}
+SKIP_DIRS = {"build", ".git", ".gradle", ".idea", "node_modules"}
 
 # serialization -> (field import, field annotation, optional (class import, class annotation))
 SERIAL = {
@@ -31,6 +37,12 @@ SERIAL = {
     "kotlinx": ("kotlinx.serialization.SerialName", 'SerialName("{k}")',
                 ("kotlinx.serialization.Serializable", "Serializable")),
 }
+
+# layer -> config path key (where the file goes / which package it gets)
+PATH_KEY = {"response": "response", "request": "request", "entity": "entity",
+            "specEntity": "entity", "model": "model", "spec": "model"}
+DEFAULT_LAYERS = ("model", "spec")          # non-null fields with default values, @Parcelize
+NEXT_LAYER = {"response": "entity", "entity": "model", "request": "specEntity", "specEntity": "spec"}
 
 WARNINGS = []
 
@@ -151,8 +163,8 @@ def collect(cls, seen=None):
 # ------------------------------------------------------------- rendering ----
 
 def layer_name(n, layer):
-    return {"response": f"Response{n}", "request": f"Request{n}",
-            "entity": f"{n}Entity", "model": n}[layer]
+    return {"response": f"Response{n}", "request": f"Request{n}", "entity": f"{n}Entity",
+            "specEntity": f"{n}SpecEntity", "model": n, "spec": f"{n}Spec"}[layer]
 
 
 def type_str(t, layer):
@@ -163,11 +175,11 @@ def type_str(t, layer):
     return layer_name(t.cls.name, layer)
 
 
-def model_default(t, cfg, imports):
+def default_value(t, cfg, imports, layer):
     if t.kind == "list":
         return "emptyList()"
     if t.kind == "obj":
-        return f"{layer_name(t.cls.name, 'model')}()"
+        return f"{layer_name(t.cls.name, layer)}()"
     if t.name == "String":
         if "emptyString" in cfg["imports"]:
             imports.add(cfg["imports"]["emptyString"])
@@ -177,6 +189,7 @@ def model_default(t, cfg, imports):
 
 
 def to_entity(expr, t, top=True):
+    """response -> entity (values pass through, nested objects/lists are mapped)."""
     sep = "?." if top else "."
     if t.kind == "prim":
         return expr
@@ -188,31 +201,56 @@ def to_entity(expr, t, top=True):
 
 
 def to_model(expr, t, cfg, imports, top=True):
+    """entity -> model (nullable -> non-null with defaults)."""
     if t.kind == "prim":
         if not top:
             return expr
         if t.name == "String":
             return f"{expr}.orEmpty()"
-        return f"{expr} ?: {model_default(t, cfg, imports)}"
+        return f"{expr} ?: {default_value(t, cfg, imports, 'model')}"
     if t.kind == "obj":
         if not top:
             return f"{expr}.toModel()"
-        return f"{expr}?.toModel() ?: {model_default(t, cfg, imports)}"
+        return f"{expr}?.toModel() ?: {default_value(t, cfg, imports, 'model')}"
     if t.inner.kind == "prim":
         return f"{expr}.orEmpty()" if top else expr
     inner = to_model("it", t.inner, cfg, imports, False)
     return f"{expr}?.map {{ {inner} }}.orEmpty()" if top else f"{expr}.map {{ {inner} }}"
 
 
-def render_class(c, layer, cfg, imports):
+def req_from_entity(expr, t, top=True):
+    """specEntity (nullable) -> request (nullable)."""
+    if t.kind == "prim":
+        return expr
+    if t.kind == "obj":
+        r = layer_name(t.cls.name, "request")
+        return f"{expr}?.let {{ {r}.fromEntity(it) }}" if top else f"{r}.fromEntity({expr})"
+    if t.inner.kind == "prim":
+        return expr
+    sep = "?." if top else "."
+    return f"{expr}{sep}map {{ {req_from_entity('it', t.inner, False)} }}"
+
+
+def spec_from_model(expr, t):
+    """spec model (non-null) -> specEntity."""
+    if t.kind == "prim":
+        return expr
+    if t.kind == "obj":
+        return f"{layer_name(t.cls.name, 'specEntity')}.fromModel({expr})"
+    if t.inner.kind == "prim":
+        return expr
+    return f"{expr}.map {{ {spec_from_model('it', t.inner)} }}"
+
+
+def render_class(c, layer, cfg, imports, mappers=True):
     ser = SERIAL.get(cfg.get("serialization", "none"))
     cname = layer_name(c.name, layer)
     head, params = "", []
 
     for f in c.fields:
         nm = ident(f.name)
-        if layer == "model":
-            params.append(f"val {nm}: {type_str(f.type, layer)} = {model_default(f.type, cfg, imports)}")
+        if layer in DEFAULT_LAYERS:
+            params.append(f"val {nm}: {type_str(f.type, layer)} = {default_value(f.type, cfg, imports, layer)}")
             continue
         ann = ""
         if layer in ("response", "request") and ser and f.key != f.name:
@@ -223,26 +261,40 @@ def render_class(c, layer, cfg, imports):
     if layer in ("response", "request") and ser and ser[2]:
         imports.add(ser[2][0])
         head = f"@{ser[2][1]}\n"
-    if layer == "model":
+    if layer in DEFAULT_LAYERS:
         head = "@Parcelize\n"
         imports.update({"kotlinx.parcelize.Parcelize", "android.os.Parcelable"})
 
     sig = f"{head}data class {cname}(\n" + ",\n".join(f"    {p}" for p in params) + "\n)"
 
-    if layer == "response":
-        imports.add(cfg["imports"]["ToEntityMapper"])
-        tgt = layer_name(c.name, "entity")
-        args = ",\n".join(f"        {ident(f.name)} = {to_entity(ident(f.name), f.type)}" for f in c.fields)
-        return f"{sig} : ToEntityMapper<{tgt}> {{\n    override fun toEntity() = {tgt}(\n{args}\n    )\n}}\n"
-    if layer == "entity":
-        imports.add(cfg["imports"]["ToModelMapper"])
-        tgt = layer_name(c.name, "model")
-        args = ",\n".join(
-            f"        {ident(f.name)} = {to_model(ident(f.name), f.type, cfg, imports)}" for f in c.fields)
-        return f"{sig} : ToModelMapper<{tgt}> {{\n    override fun toModel() = {tgt}(\n{args}\n    )\n}}\n"
-    if layer == "model":
-        return f"{sig} : Parcelable {{}}\n"
-    return f"{sig}\n"
+    if layer in ("response", "entity"):
+        iface, method = ("ToEntityMapper", "toEntity") if layer == "response" else ("ToModelMapper", "toModel")
+        imports.add(cfg["imports"][iface])
+        tgt = layer_name(c.name, NEXT_LAYER[layer])
+        if layer == "response":
+            conv = lambda f: to_entity(ident(f.name), f.type)
+        else:
+            conv = lambda f: to_model(ident(f.name), f.type, cfg, imports)
+        args = ",\n".join(f"        {ident(f.name)} = {conv(f)}" for f in c.fields)
+        return f"{sig} : {iface}<{tgt}> {{\n    override fun {method}() = {tgt}(\n{args}\n    )\n}}\n"
+
+    if layer in ("request", "specEntity"):
+        if layer == "request" and not mappers:
+            return f"{sig}\n"
+        if layer == "request":
+            iface, meth, src = "FromEntityMapper", "fromEntity", layer_name(c.name, "specEntity")
+            param = f"entity: {src}?"
+            conv = lambda f: req_from_entity(f"entity?.{ident(f.name)}", f.type)
+        else:
+            iface, meth, src = "FromModelMapper", "fromModel", layer_name(c.name, "spec")
+            param = f"model: {src}"
+            conv = lambda f: spec_from_model(f"model.{ident(f.name)}", f.type)
+        imports.add(cfg["imports"][iface])
+        args = ",\n".join(f"            {ident(f.name)} = {conv(f)}" for f in c.fields)
+        return (f"{sig} {{\n    companion object : {iface}<{src}, {cname}> {{\n"
+                f"        override fun {meth}({param}) = {cname}(\n{args}\n        )\n    }}\n}}\n")
+
+    return f"{sig} : Parcelable {{}}\n"          # model / spec
 
 
 def package_of(dir_path):
@@ -252,24 +304,86 @@ def package_of(dir_path):
     return m.group(1).replace("/", ".")
 
 
-def render_file(layer, top, cfg):
+def render_file(layer, top, cfg, mappers=True):
     classes = collect(top)
     imports = set()
-    bodies = [render_class(c, layer, cfg, imports) for c in classes]
+    bodies = [render_class(c, layer, cfg, imports, mappers) for c in classes]
 
     pkgs = {k: package_of(v) for k, v in cfg["paths"].items()}
-    cross = {"response": "entity", "entity": "model"}.get(layer)
-    if cross:
-        imports.update(f"{pkgs[cross]}.{layer_name(c.name, cross)}" for c in classes)
-    imports = {i for i in imports if i.rsplit(".", 1)[0] != pkgs[layer]}
+    own = pkgs[PATH_KEY[layer]]
+    nxt = NEXT_LAYER.get(layer)
+    if nxt and not (layer == "request" and not mappers):
+        imports.update(f"{pkgs[PATH_KEY[nxt]]}.{layer_name(c.name, nxt)}" for c in classes)
+    imports = {i for i in imports if i.rsplit(".", 1)[0] != own}
 
     imp = "\n".join(f"import {i}" for i in sorted(imports))
-    return f"package {pkgs[layer]}\n\n" + (imp + "\n\n" if imp else "") + "\n".join(bodies)
+    text = f"package {own}\n\n" + (imp + "\n\n" if imp else "") + "\n".join(bodies)
+    return text, [layer_name(c.name, layer) for c in classes]
+
+
+# ----------------------------------------------------- duplicate guard ------
+
+DECL_RE = re.compile(
+    r"^(?:(?:public|internal|private|protected|abstract|open|sealed|data|enum|annotation|inline|value|fun)\s+)*"
+    r"(?:class|interface|object)\s+(\w+)", re.M)
+
+
+def build_index(root):
+    """top-level class/interface/object name -> files that declare it."""
+    idx = {}
+    for dp, dns, fns in os.walk(root):
+        dns[:] = [d for d in dns if d not in SKIP_DIRS]
+        for fn in fns:
+            if fn.endswith(".kt"):
+                p = Path(dp) / fn
+                try:
+                    text = p.read_text(errors="ignore")
+                except OSError:
+                    continue
+                for m in DECL_RE.finditer(text):
+                    idx.setdefault(m.group(1), []).append(p)
+    return idx
 
 
 # ------------------------------------------------------------------- io -----
 
 TOOL_DIR = Path(__file__).resolve().parent
+
+# Same content as the shipped response.json / request.json, used to detect "not edited yet".
+DEFAULT_SAMPLES = {
+    "response": {"user_id": "abc123", "title": "Sample title", "description": "Sample description"},
+    "request": {"id": "abc123", "name": "Sample name"},
+}
+
+
+def ago(path):
+    import time
+    secs = int(time.time() - path.stat().st_mtime)
+    for size, unit in ((86400, "day"), (3600, "hour"), (60, "minute")):
+        if secs >= size:
+            n = secs // size
+            return f"{n} {unit}{'s' if n != 1 else ''} ago"
+    return "just now"
+
+
+def remind(label, arg, data):
+    """Print which sample file is used, when it was last edited, and whether it is still the default."""
+    p = Path(arg).expanduser()
+    if not p.is_file():
+        return False
+    stale = data == DEFAULT_SAMPLES[label]
+    print(f"  {label + '.json':<14} {p}  (edited {ago(p)})")
+    if stale:
+        print(f"  {'':<14} ! still the default sample. Edit it first:  nano {p}")
+    return stale
+
+
+def find_config(explicit):
+    for c in (explicit, os.environ.get("DEV_TOOLS_CONFIG"), TOOL_DIR.parent / "config.json", TOOL_DIR / "config.json"):
+        if c and Path(c).expanduser().is_file():
+            return Path(c).expanduser()
+    sys.exit("config.json not found. Expected at ../config.json (next to the tool folders), "
+             "or pass --config / set DEV_TOOLS_CONFIG.")
 
 
 def read_json(path):
@@ -291,17 +405,23 @@ def load_json(arg):
     sys.exit(f"File not found: {p}")
 
 
-def write_file(path, content, root, opts):
+def write_file(path, content, class_names, root, index, opts):
     shown = path.relative_to(root)
     if path.exists() and not opts.force:
-        print(f"  SKIP (exists)  {shown}")
+        print(f"  SKIP (file exists)      {shown}")
+        return
+    clashes = {n: [p for p in index.get(n, []) if p != path] for n in class_names}
+    clashes = {n: ps for n, ps in clashes.items() if ps}
+    if clashes:
+        n, ps = next(iter(clashes.items()))
+        print(f"  SKIP (duplicate class)  {shown}: '{n}' is already declared in {ps[0].relative_to(root)}")
         return
     if opts.dry_run:
-        print(f"  WOULD CREATE   {shown}\n" + "-" * 60 + f"\n{content}" + "-" * 60)
+        print(f"  WOULD CREATE            {shown}\n" + "-" * 60 + f"\n{content}" + "-" * 60)
         return
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content)
-    print(f"  CREATED        {shown}")
+    print(f"  CREATED                 {shown}")
 
 
 def main():
@@ -310,21 +430,28 @@ def main():
     ap.add_argument("--response", default=str(TOOL_DIR / "response.json"),
                     help="Response sample: file path or inline JSON (default: response.json in the tool folder)")
     ap.add_argument("--with-request", action="store_true",
-                    help="Also generate the request class from request.json")
+                    help="Also generate the request chain from request.json")
     ap.add_argument("--request", help="Request sample: file path or inline JSON (implies --with-request)")
+    ap.add_argument("--no-from-mapper", action="store_true",
+                    help="Request: generate only RequestX as a plain data class (no spec entity/model, no mappers)")
     ap.add_argument("--project", help="Android project root (overrides config / ANDROID_PROJECT_ROOT)")
-    ap.add_argument("--config", default=str(TOOL_DIR / "config.json"))
+    ap.add_argument("--config", help="Path to config.json (default: ../config.json)")
     ap.add_argument("--dry-run", action="store_true", help="Print the files instead of writing them")
     ap.add_argument("--force", action="store_true", help="Overwrite existing files")
+    ap.add_argument("--yes", "-y", action="store_true", help="Skip the 'did you update the JSON files?' question")
     opts = ap.parse_args()
 
-    cfg = read_json(Path(opts.config).expanduser())
+    cfg_path = find_config(opts.config)
+    cfg = read_json(cfg_path)
+    for k in ("response", "request", "entity", "model"):
+        if k not in cfg.get("paths", {}):
+            sys.exit(f"{cfg_path}: missing paths.{k}")
 
     root_str = opts.project or os.environ.get("ANDROID_PROJECT_ROOT") or cfg.get("projectRoot")
     root = Path(root_str or "").expanduser().resolve()
     if not root_str or not root.is_dir():
         sys.exit(f"Android project root not found: {root_str!r}\n"
-                 f"Set projectRoot in {opts.config} or pass --project /path/to/project")
+                 f"Set projectRoot in {cfg_path} or pass --project /path/to/project")
 
     model = opts.model
     if not model:
@@ -339,18 +466,30 @@ def main():
     if opts.request or opts.with_request:
         request = load_json(opts.request or str(TOOL_DIR / "request.json"))
 
-    fields = top_fields(response)
-    jobs = [
-        ("response", ClassDef(model, fields), f"Response{model}.kt"),
-        ("entity", ClassDef(model, fields), f"{model}Entity.kt"),
-        ("model", ClassDef(model, fields), f"{model}.kt"),
-    ]
+    print("\nSample files used:")
+    stale = remind("response", opts.response, response)
     if request is not None:
-        jobs.insert(1, ("request", ClassDef(model, top_fields(request)), f"Request{model}.kt"))
+        stale = remind("request", opts.request or str(TOOL_DIR / "request.json"), request) or stale
+    if sys.stdin.isatty() and not opts.yes and not opts.dry_run:
+        msg = "Still the default sample, generate anyway?" if stale else "Are these up to date?"
+        if input(f"\n{msg} [y/N]: ").strip().lower() != "y":
+            sys.exit("Aborted. Edit the JSON file(s), then run again.")
 
+    fields = top_fields(response)
+    jobs = [("response", fields, True), ("entity", fields, True), ("model", fields, True)]
+    if request is not None:
+        rf = top_fields(request)
+        if opts.no_from_mapper:
+            jobs.append(("request", rf, False))
+        else:
+            jobs += [("request", rf, True), ("specEntity", rf, True), ("spec", rf, True)]
+
+    index = build_index(root)
     print(f"\nProject: {root}\nModel:   {model}\n")
-    for layer, cls, filename in jobs:
-        write_file(root / cfg["paths"][layer] / filename, render_file(layer, cls, cfg), root, opts)
+    for layer, flds, mappers in jobs:
+        text, names = render_file(layer, ClassDef(model, flds), cfg, mappers)
+        path = root / cfg["paths"][PATH_KEY[layer]] / f"{layer_name(model, layer)}.kt"
+        write_file(path, text, names, root, index, opts)
 
     for w in dict.fromkeys(WARNINGS):
         print(f"  WARNING: {w}")
