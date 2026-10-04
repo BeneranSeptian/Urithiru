@@ -51,8 +51,9 @@ class ProjectIndex:
                 if fn.endswith(".kt"):
                     p = Path(dp) / fn
                     try:
-                        if re.search(pattern, mask(p.read_text(errors="ignore"))):
-                            out.append(p)
+                        raw = p.read_text(errors="ignore")
                     except OSError:
-                        pass
+                        continue
+                    if re.search(pattern, raw) and re.search(pattern, mask(raw)):
+                        out.append(p)
         return out

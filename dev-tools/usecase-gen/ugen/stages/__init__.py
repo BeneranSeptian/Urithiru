@@ -19,7 +19,7 @@ PREFLIGHT = preflight
 REQUIRES = {
     "service": ([], ["BaseResponse"]),
     "datasource": ([], ["ResponseEntity"]),
-    "datasource_impl": ([], ["toEntityWithData"]),
+    "datasource_impl": ([], []),
     "remote_di": (["remoteModule"], []),
     "repository": (["repository"], ["DataState"]),
     "repository_impl": (["repositoryImpl", "repository"], ["DataStateBoundResource"]),

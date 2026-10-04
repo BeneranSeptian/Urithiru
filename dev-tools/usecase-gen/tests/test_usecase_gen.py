@@ -28,12 +28,13 @@ CONFIG = {
         "dataSourceImpl": f"{BASE}/data/datasource/impl", "remoteModule": f"{BASE}/data/di",
         "repository": f"{BASE}/domain/repository", "repositoryImpl": f"{BASE}/data/repository",
         "dataModule": f"{BASE}/data/di", "useCase": f"{BASE}/domain/usecase",
+        "useCaseModule": f"{BASE}/domain/di",
     },
     "imports": {
         "ToEntityMapper": "com.yourapp.core.mapper.ToEntityMapper", "ToModelMapper": "com.yourapp.core.mapper.ToModelMapper",
         "FromEntityMapper": "com.yourapp.core.mapper.FromEntityMapper", "FromModelMapper": "com.yourapp.core.mapper.FromModelMapper",
         "emptyString": "com.yourapp.core.util.emptyString", "BaseResponse": "com.yourapp.core.network.BaseResponse",
-        "ResponseEntity": "com.yourapp.core.network.ResponseEntity", "toEntityWithData": "com.yourapp.core.network.toEntityWithData",
+        "ResponseEntity": "com.yourapp.core.network.ResponseEntity",
         "DataState": "com.yourapp.core.state.DataState", "DataStateBoundResource": "com.yourapp.core.state.DataStateBoundResource",
     },
 }
@@ -261,27 +262,65 @@ class FullPipeline(Base):
         self.assertIn("Nothing to change", r.stdout)
         self.assertEqual(again, self.snapshot())
 
-    def test_imports_only_in_new_files_and_warnings_for_existing(self):
+    def test_new_files_get_all_imports_existing_files_get_project_imports(self):
         r = self.uc("getExampleUseCase")
         new_svc = self.read("data/remote/service/example/sub/ExampleService.kt")
         self.assertIn("import com.yourapp.core.network.BaseResponse", new_svc)
         self.assertIn("import retrofit2.http.GET", new_svc)
-        for existing in ("data/di/RemoteModule.kt", "data/di/DataModule.kt", "domain/di/UseCaseModule.kt"):
-            self.assertNotIn("import ", self.read(existing))
-        self.assertIn("no imports were added", r.stdout)
-        self.assertIn("import com.yourapp.data.repository.example.sub.ExampleRepositoryImpl", r.stdout)
+        self.assertNotIn("toEntityWithData", self.read("data/datasource/impl/example/sub/ExampleRemoteDataSourceImpl.kt").split("class ")[0])
+        remote, data, cl = (self.read(f) for f in ("data/di/RemoteModule.kt", "data/di/DataModule.kt", "domain/di/UseCaseModule.kt"))
+        for imp in ("data.remote.service.example.sub.ExampleService", "data.datasource.example.sub.ExampleRemoteDataSource",
+                    "data.datasource.impl.example.sub.ExampleRemoteDataSourceImpl"):
+            self.assertIn(f"import com.yourapp.{imp}", remote)
+        self.assertIn("import com.yourapp.domain.repository.example.sub.ExampleRepository\n", data)
+        self.assertIn("import com.yourapp.data.repository.example.sub.ExampleRepositoryImpl", data)
+        self.assertIn("import com.yourapp.domain.usecase.GetExampleUseCase", cl)
+        # second run: the service now exists -> POST adds its http imports + request class to the existing file
+        self.uc("postExampleUseCase")
+        svc = self.read("data/remote/service/example/sub/ExampleService.kt")
+        for imp in ("retrofit2.http.POST", "retrofit2.http.Body", "com.yourapp.data.remote.request.RequestExample"):
+            self.assertEqual(svc.count(f"import {imp}\n"), 1, imp)
 
-    def test_existing_file_with_wildcard_imports_keeps_its_import_block(self):
+    def test_existing_file_with_wildcard_imports(self):
         self.put("data/remote/service/example/sub/ExampleService.kt",
                  "package com.yourapp.data.remote.service.example.sub\n\nimport retrofit2.http.*\n\n"
                  "interface ExampleService {\n    @GET(\"old\")\n    suspend fun getOld(): Foo\n}\n")
         before = self.snapshot()
         r = self.uc("postExampleUseCase")
         svc = self.read("data/remote/service/example/sub/ExampleService.kt")
-        self.assertEqual(svc.count("import "), 1)
         self.assertIn("suspend fun postExample(", svc)
-        self.assertNotIn("import retrofit2.http.POST", r.stdout)         # covered by the wildcard
+        self.assertNotIn("import retrofit2.http.POST", svc)             # covered by the wildcard
+        self.assertNotIn("import retrofit2.http.Body", svc)
+        for imp in ("data.remote.request.RequestExample", "data.remote.response.ResponseExample", "data.entity.ExampleEntity"):
+            self.assertIn(f"import com.yourapp.{imp}\n", svc)          # project classes: added
+        self.assertNotIn("import com.yourapp.core.network.BaseResponse", svc)   # base class: warning only
         self.assertIn("import com.yourapp.core.network.BaseResponse", r.stdout)
+        self.assert_additions_only(before)
+
+    def test_every_existing_file_kind_gets_its_missing_project_imports(self):
+        self.put("data/datasource/example/sub/ExampleRemoteDataSource.kt", "package x\n\ninterface ExampleRemoteDataSource {\n}\n")
+        self.put("data/datasource/impl/example/sub/ExampleRemoteDataSourceImpl.kt",
+                 "package x\n\nclass ExampleRemoteDataSourceImpl(\n    private val exampleService: ExampleService\n) : ExampleRemoteDataSource {\n}\n")
+        self.put("domain/repository/example/sub/ExampleRepository.kt", "package x\n\ninterface ExampleRepository {\n}\n")
+        self.put("data/repository/example/sub/ExampleRepositoryImpl.kt",
+                 "package x\n\nclass ExampleRepositoryImpl(\n    private val exampleRemoteDataSource: ExampleRemoteDataSource\n) : ExampleRepository {\n}\n")
+        before = self.snapshot()
+        r = self.uc("postExampleUseCase")
+        want = {
+            "data/datasource/example/sub/ExampleRemoteDataSource.kt": ["data.entity.ExampleEntity", "data.entity.ExampleSpecEntity"],
+            "data/datasource/impl/example/sub/ExampleRemoteDataSourceImpl.kt": ["data.remote.request.RequestExample", "data.entity.ExampleSpecEntity"],
+            "domain/repository/example/sub/ExampleRepository.kt": ["domain.model.Example", "domain.model.ExampleSpec"],
+            "data/repository/example/sub/ExampleRepositoryImpl.kt": ["data.entity.ExampleSpecEntity", "domain.model.ExampleSpec"],
+        }
+        for f, imps in want.items():
+            txt = self.read(f)
+            for imp in imps:
+                self.assertEqual(txt.count(f"import com.yourapp.{imp}\n"), 1, f"{f} {imp}")
+        for f, base in (("data/datasource/example/sub/ExampleRemoteDataSource.kt", "ResponseEntity"),
+                        ("domain/repository/example/sub/ExampleRepository.kt", "DataState"),
+                        ("data/repository/example/sub/ExampleRepositoryImpl.kt", "DataStateBoundResource")):
+            self.assertNotIn(f"core.{'network' if base == 'ResponseEntity' else 'state'}.{base}", self.read(f))
+            self.assertIn(base, r.stdout)
         self.assert_additions_only(before)
 
     def test_existing_impls_without_dependency_get_one_constructor_param_and_a_warning(self):
@@ -295,6 +334,10 @@ class FullPipeline(Base):
         self.assertIn("    private val cache: Cache,\n    private val exampleRemoteDataSource: ExampleRemoteDataSource\n)",
                       self.read("data/repository/example/sub/ExampleRepositoryImpl.kt"))
         self.assertEqual(r.stdout.count("added constructor parameter"), 2)
+        self.assertIn("import com.yourapp.data.remote.service.example.sub.ExampleService\n",
+                      self.read("data/datasource/impl/example/sub/ExampleRemoteDataSourceImpl.kt"))
+        self.assertIn("import com.yourapp.data.datasource.example.sub.ExampleRemoteDataSource\n",
+                      self.read("data/repository/example/sub/ExampleRepositoryImpl.kt"))
 
     def test_empty_one_line_datasource_is_extended_but_code_on_closing_line_is_an_error(self):
         p = self.put("data/datasource/example/sub/ExampleRemoteDataSource.kt",
@@ -334,12 +377,18 @@ class UseCaseAndCluster(Base):
         self.assertIn("cluster module 'nopeModule' not found", r.stderr)
         self.assertEqual(before, self.snapshot())
 
-    def test_no_cluster_only_prints_the_line(self):
+    def test_cluster_none_only_prints_the_line(self):
         before = self.read("domain/di/UseCaseModule.kt")
-        r = self.uc("getExampleUseCase", cluster=None)
+        r = self.uc("getExampleUseCase", cluster="none")
         self.assertEqual(before, self.read("domain/di/UseCaseModule.kt"))
         self.assertIn("To do by hand", r.stdout)
         self.assertIn("factory { GetExampleUseCase(get()) }", r.stdout)
+
+    def test_named_cluster_gets_the_use_case_and_its_import(self):
+        self.uc("getExampleUseCase")
+        cl = self.read("domain/di/UseCaseModule.kt")
+        self.assertIn("    factory { GetBUseCase(get()) }\n    factory { GetExampleUseCase(get()) }\n}", cl)
+        self.assertIn("import com.yourapp.domain.usecase.GetExampleUseCase", cl)
 
     def test_use_case_that_already_exists_somewhere_is_skipped_not_duplicated(self):
         self.put("other/pkg/GetExampleUseCase.kt", "package other.pkg\n\nclass GetExampleUseCase\n")
@@ -370,6 +419,61 @@ class UseCaseAndCluster(Base):
                     "--request-model", "ExampleSpec", ok=False)
         self.assertIn("has no fromModel()", r.stderr)
         self.assertFalse(self.exists("data/remote/service/example/sub/ExampleService.kt"))
+
+
+class InlineUseCaseModule(Base):
+    """No cluster given: an inline `module { factory { X(get()) } },` element goes into createList(...)."""
+
+    def test_inline_element_is_added_at_the_top_for_every_use_case(self):
+        before = self.snapshot()
+        self.uc("getExampleUseCase", cluster=None)
+        self.uc("postExampleUseCase", cluster=None)
+        cl = self.read("domain/di/UseCaseModule.kt")
+        self.assertIn("val usecaseModule = createList(\n"
+                      "    module { factory { PostExampleUseCase(get()) } },\n"
+                      "    module { factory { GetExampleUseCase(get()) } },\n"
+                      "    featureAUseCaseModule,\n    featureBUseCaseModule\n)", cl)
+        self.assertIn("import com.yourapp.domain.usecase.GetExampleUseCase", cl)
+        self.assert_additions_only(before)
+        again = self.snapshot()
+        self.assertIn("Nothing to change", self.uc("postExampleUseCase", cluster=None).stdout)
+        self.assertEqual(again, self.snapshot())
+
+    def test_already_registered_in_a_cluster_is_not_registered_again(self):
+        p = self.root / BASE / "domain/di/UseCaseModule.kt"
+        p.write_text(p.read_text().replace("factory { GetBUseCase(get()) }",
+                                           "factory { GetBUseCase(get()) }\n    factory { GetExampleUseCase(get()) }"))
+        self.uc("getExampleUseCase", cluster=None)
+        self.assertEqual(p.read_text().count("GetExampleUseCase(get())"), 1)
+        self.assertNotIn("module { factory { GetExampleUseCase", p.read_text())
+
+    def test_empty_list_has_no_trailing_comma(self):
+        self.put("domain/di/UseCaseModule.kt", "package com.yourapp.domain.di\n\nval usecaseModule = createList(\n)\n")
+        self.uc("getExampleUseCase", cluster=None)
+        self.assertIn("createList(\n    module { factory { GetExampleUseCase(get()) } }\n)", self.read("domain/di/UseCaseModule.kt"))
+
+    def test_one_line_create_list_is_an_error_and_writes_nothing(self):
+        self.put("domain/di/UseCaseModule.kt", "package x\n\nval usecaseModule = createList(a, b)\n")
+        before = self.snapshot()
+        r = self.uc("getExampleUseCase", cluster=None, ok=False)
+        self.assertIn("elements on separate lines", r.stderr)
+        self.assertEqual(before, self.snapshot())
+
+    def test_missing_file_or_no_create_list_is_an_error(self):
+        (self.root / BASE / "domain/di/UseCaseModule.kt").unlink()
+        r = self.uc("getExampleUseCase", cluster=None, ok=False)
+        self.assertIn("paths.useCaseModule", r.stderr)
+        self.put("domain/di/UseCaseModule.kt", "package x\n\nval a = 1\n")
+        r = self.uc("getExampleUseCase", cluster=None, ok=False)
+        self.assertIn("no createList( call", r.stderr)
+
+    def test_config_key_is_only_required_for_inline_mode(self):
+        cfg = {**CONFIG, "projectRoot": str(self.root)}
+        cfg["paths"] = {k: v for k, v in cfg["paths"].items() if k != "useCaseModule"}
+        self.cfg.write_text(json.dumps(cfg))
+        r = self.uc("getExampleUseCase", cluster=None, ok=False)
+        self.assertIn("paths.useCaseModule", r.stderr)
+        self.uc("getExampleUseCase", cluster=CLUSTER)          # named cluster works without it
 
 
 class OtherBehaviour(Base):
@@ -419,7 +523,7 @@ class OtherBehaviour(Base):
 
     def test_only_the_config_a_stage_needs_is_required(self):
         cfg = {**CONFIG, "projectRoot": str(self.root)}
-        cfg["paths"] = {k: v for k, v in cfg["paths"].items() if k not in ("repository", "repositoryImpl", "useCase", "dataModule")}
+        cfg["paths"] = {k: v for k, v in cfg["paths"].items() if k not in ("repository", "repositoryImpl", "useCase", "useCaseModule", "dataModule")}
         self.cfg.write_text(json.dumps(cfg))
         self.uc("getExampleUseCase", "a/BService.kt", "t/v1", "--only", "service,datasource,datasource_impl,remote_di")
         r = self.uc("getExampleUseCase", "a/BService.kt", "t/v1", "--only", "repository", ok=False)

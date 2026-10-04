@@ -69,8 +69,9 @@ def run(argv):
     ap.add_argument("--model", help="Model name used by gen-model, e.g. Example")
     ap.add_argument("--request-entity", help="Entity type for the body (default <Model>SpecEntity)")
     ap.add_argument("--request-model", help="Model type for the body (default <Model>Spec, or read from the entity)")
-    ap.add_argument("--cluster", help="Use case cluster module name, e.g. featureAUseCaseModule "
-                                      "(omit to only print the line to add)")
+    ap.add_argument("--cluster", help="Where to register the use case: a cluster module name "
+                                      "(e.g. featureAUseCaseModule); omit = inline module element in "
+                                      "UseCaseModule.kt's createList; 'none' = only print the line")
     ap.add_argument("--only", help=f"Comma separated stages to run: {', '.join(STAGE_NAMES)}")
     ap.add_argument("--skip", help="Comma separated stages to skip")
     ap.add_argument("--stages", action="store_true", help="List the stages and exit")
@@ -115,8 +116,10 @@ def run(argv):
         req_entity = ask("Request entity type", o.request_entity, default=req_entity, interactive=tty)
     cluster = ""
     if any(n == "usecase_cluster" for n, _ in run_stages):
-        cluster = ask("Cluster module (e.g. featureAUseCaseModule, Enter to skip)", o.cluster,
-                      interactive=tty, optional=True)
+        cluster = ask("Cluster module (e.g. featureAUseCaseModule, Enter = inline in UseCaseModule.kt, "
+                      "'none' = only print)", o.cluster, interactive=tty, optional=True)
+        if cluster == "":
+            cfg.require(["useCaseModule"])
 
     ctx = Ctx(cfg=cfg, fs=VirtualFS(), index=ProjectIndex(cfg.root), verbose=o.verbose, use_case=use_case,
               func=func, method=method, endpoint=endpoint, model=model, svc_dir=svc_dir, svc_name=svc_name,

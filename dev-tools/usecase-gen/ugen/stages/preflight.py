@@ -111,6 +111,10 @@ def run(ctx):
             if label == "usecase":
                 state = "EXISTS  -> skip" if ctx.fs.exists(path) else "MISSING -> create new file"
             ctx.say(NAME, f"{label:<15} {state:<27} {ctx.rel(path)}")
+        elif st == "usecase_cluster" and ctx.cluster == "" and "useCaseModule" in ctx.cfg.paths:
+            path = ctx.use_case_module_path
+            state = "EXISTS  -> append" if ctx.fs.exists(path) else "NOT FOUND (stage will fail)"
+            ctx.say(NAME, f"{st:<15} {state:<27} {ctx.rel(path)}")
         elif st in STAGE_MODULE:
             lbl, prop = STAGE_MODULE[st]
             path = getattr(ctx, prop)

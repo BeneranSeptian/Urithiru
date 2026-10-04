@@ -74,7 +74,7 @@ HTTP method [POST]:                                  <- Enter accepts the guess 
 Endpoint (e.g. testing/v1): testing/v1
 Model name (e.g. Example): Example
 Request entity type [ExampleSpecEntity]:             <- POST/PUT/PATCH only, Enter accepts
-Cluster module (e.g. featureAUseCaseModule, Enter to skip): featureAUseCaseModule
+Cluster module (e.g. featureAUseCaseModule, Enter = inline in UseCaseModule.kt, 'none' = only print):   <- Enter
 ```
 Then it shows every file it would create or change as a diff, plus warnings, and asks
 `Apply these changes? [y/N]`. Nothing is written before you answer `y`.
@@ -82,9 +82,11 @@ Use `--dry-run` to only look, `--yes` to skip the question.
 
 **Step 3 - finish by hand**
 
-1. Move `PostExampleUseCase.kt` from `paths.useCase` to its real package (and fix the import
-   the tool listed for the cluster file).
-2. Add any imports listed under `Warnings` (existing files never get imports added, see rules).
+1. The use case is usable right away: it is registered in `UseCaseModule.kt`, so you can inject it into a
+   ViewModel and test it. Later, move `PostExampleUseCase.kt` from `paths.useCase` to its real package
+   (Android Studio's Move refactor fixes the imports) and, if you want, move its registration line into
+   the right cluster module.
+2. Add any imports listed under `Warnings` (base classes from `config.json` that an existing file lacks).
 3. `git add` the new files, build.
 
 ### What you get for `postExampleUseCase`, service `example/sub/ExampleService.kt`
@@ -109,7 +111,8 @@ gen-usecase                                        new file, or one function app
                                                    lines added to existing files
   data/di/RemoteModule.kt     createService<ExampleService> + factory<ExampleRemoteDataSource>
   data/di/DataModule.kt       factory<ExampleRepository>
-  <your cluster module>       factory { PostExampleUseCase(get()) }
+  domain/di/UseCaseModule.kt  module { factory { PostExampleUseCase(get()) } },   (top of createList)
+                              or factory { ... } in the cluster module you named
 ```
 
 Naming comes from the service file: `ExampleService` -> `ExampleRemoteDataSource` ->
@@ -127,18 +130,25 @@ Naming comes from the service file: `ExampleService` -> `ExampleRemoteDataSource
   exceptions: an empty one-line body like `interface X {}` is opened, and if an existing impl class does
   not inject the needed dependency, one constructor parameter is added (with a warning that its DI line
   may need another `get()`).
-- **Imports only in newly created files.** Existing files (modules, existing interfaces, ...) are never
-  given imports; anything truly missing is listed under `Warnings` with the exact `import` line.
+- **Imports:** a new file gets every import it needs. An existing file only gets import *lines added*, and
+  only for what the new code uses: the http annotations (`GET`, `Body`, ...), the response/request/entity/model
+  classes, the injected type, and the classes registered in a DI module. Anything already imported, covered
+  by a wildcard (`pkg.*`) or in the same package is left alone. Base classes from `config.json`
+  (`BaseResponse`, `ResponseEntity`, `DataState`, `DataStateBoundResource`) are not added to existing files;
+  if one is missing it is listed under `Warnings` with the exact `import` line.
 - **Dry run first, all-or-nothing:** everything is computed in memory, you see the diff and confirm.
   Any error means nothing at all is written.
 - **DI lines** (Koin by default) go below the last existing line of the same kind
-  (`createService<`, `factory<...DataSource>`, `factory<...Repository>`, the last `factory` of the cluster).
+  (`createService<`, `factory<...DataSource>`, `factory<...Repository>`, the last `factory` of a named cluster).
   If there is none, they go at the end of the `module { }` block.
+- **Use case registration:** by default an inline `module { factory { XUseCase(get()) } },` element is added as
+  the first element of `createList(` in `UseCaseModule.kt` (so no existing line needs a new comma).
+  A use case that is already registered anywhere in the project is not registered again.
 
 ## 4. Not supported yet
 
 Path parameters (`testing/{id}`), query parameters, list responses, cache injection in repositories,
-creating a new use case cluster module (you name an existing one).
+creating a new use case cluster module (you can name an existing one).
 
 ## 5. config.json reference
 
@@ -150,7 +160,8 @@ creating a new use case cluster module (you name an existing one).
 | `paths.service/dataSource/dataSourceImpl/repository/repositoryImpl` | where `gen-usecase` writes, plus the sub-folder from the service path |
 | `paths.remoteModule` / `paths.dataModule` | folders containing `RemoteModule.kt` / `DataModule.kt` |
 | `paths.useCase` | where use case files are created (no sub-folder) |
-| `imports.*` | import paths of `ToEntityMapper`, `ToModelMapper`, `FromEntityMapper`, `FromModelMapper`, `emptyString`, `BaseResponse`, `ResponseEntity`, `toEntityWithData`, `DataState`, `DataStateBoundResource` |
+| `paths.useCaseModule` | folder containing `UseCaseModule.kt` (with a multi-line `createList(` call); only needed when no cluster is named |
+| `imports.*` | import paths of `ToEntityMapper`, `ToModelMapper`, `FromEntityMapper`, `FromModelMapper`, `emptyString`, `BaseResponse`, `ResponseEntity`, `DataState`, `DataStateBoundResource` |
 | `naming.dataSourceSuffix` | default `RemoteDataSource` (`ExampleService` -> `ExampleRemoteDataSource`) |
 | `di` | DI snippets and detection, see `usecase-gen/README.md` |
 
@@ -163,7 +174,8 @@ creating a new use case cluster module (you name an existing one).
 | `Android project root not found` | set `projectRoot` or pass `--project` |
 | `class 'ResponseExample' not found ... Run gen-model first` | run `gen-model <Model>` (with `--with-request` for POST/PUT/PATCH) |
 | `... would be created at X, but it already exists at Y` | the service path is mistyped; use the existing file's path |
-| `cluster module 'x' not found` | the name must match `internal val x = module {`; press Enter to skip instead |
+| `cluster module 'x' not found` | the name must match `internal val x = module {`; press Enter for the inline entry or type `none` to only print the line |
+| `write createList( with its elements on separate lines` | `UseCaseModule.kt` has `createList(a, b)` on one line; put each element on its own line |
 | `the closing brace shares a line with code` | an existing interface is written `{ fun a() }`; put `}` on its own line |
 | `invalid JSON (line X, column Y)` | syntax error in `response.json` / `request.json` |
 | `SKIP (exists)` / `already has a function` | nothing to do, that part was already generated |

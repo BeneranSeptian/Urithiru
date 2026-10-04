@@ -13,10 +13,9 @@ def run(ctx):
         fn = f"suspend fun {ctx.func}(): {ret}"
     member = f'@{ctx.method}("{ctx.endpoint}")\n{fn}'
 
-    imports = [ctx.cfg.imports["BaseResponse"], f"retrofit2.http.{ctx.method}",
-               ctx.fq(f"Response{m}"), ctx.fq(f"{m}Entity")]
+    imports = [f"retrofit2.http.{ctx.method}", ctx.fq(f"Response{m}"), ctx.fq(f"{m}Entity")]
     if ctx.has_body:
         imports += ["retrofit2.http.Body", ctx.fq(f"Request{m}")]
 
     upsert(ctx, NAME, ctx.svc_path, ctx.pkgs["service"], ctx.svc_name, f"interface {ctx.svc_name}",
-           member, ctx.func, imports, blank_default=None)
+           member, ctx.func, imports, soft_imports=[ctx.cfg.imports["BaseResponse"]])

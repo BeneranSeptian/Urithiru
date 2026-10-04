@@ -2,7 +2,7 @@
 import re
 
 from ..errors import GenError
-from ..kotlin import (append_members, body_range, indent_block, line_indent, mask, missing_imports)
+from ..kotlin import add_imports, append_members, body_range, indent_block, line_indent, mask, package_of_text
 
 
 def statement_end(masked, start):
@@ -65,8 +65,7 @@ def register(ctx, stage, path, items):
 
     if not added:
         return
+    pkg = package_of_text(text) or ""
+    text = add_imports(text, [i for i in imports if i.rsplit(".", 1)[0] != pkg])
     ctx.fs.write(path, text)
     ctx.say(stage, f"APPEND  {rel}  (+ {added} registration(s))")
-    missing = missing_imports(text, imports)
-    if missing:
-        ctx.warn_imports(stage, path, missing)

@@ -16,11 +16,11 @@ def run(ctx):
                 f"    {call}\n"
                 f"}}.getResult()")
 
-    sig = (f"class {ctx.repo_impl_name}(\n    private val {ctx.ds_prop}: {ctx.ds_name}\n) : {ctx.repo_name}")
-    imports = [f"{ctx.pkgs['datasource']}.{ctx.ds_name}", f"{ctx.pkgs['repository']}.{ctx.repo_name}",
-               ctx.cfg.imports["DataStateBoundResource"]]
-    if ctx.has_body:
-        imports += [ctx.fq(ctx.req_entity), ctx.fq(ctx.req_model)]
+    ds_fq = f"{ctx.pkgs['datasource']}.{ctx.ds_name}"
+    sig = f"class {ctx.repo_impl_name}(\n    private val {ctx.ds_prop}: {ctx.ds_name}\n) : {ctx.repo_name}"
+    imports = [ctx.fq(ctx.req_entity), ctx.fq(ctx.req_model)] if ctx.has_body else []
+    skeleton = [ds_fq, f"{ctx.pkgs['repository']}.{ctx.repo_name}"]
 
     upsert(ctx, NAME, ctx.repo_impl_path, ctx.pkgs["repository_impl"], ctx.repo_impl_name, sig, member,
-           ctx.func, imports, blank_default=None, ctor=(ctx.ds_name, ctx.ds_prop))
+           ctx.func, imports, ctor=(ctx.ds_name, ctx.ds_prop, ds_fq), skeleton_imports=skeleton,
+           soft_imports=[ctx.cfg.imports["DataStateBoundResource"]])

@@ -9,9 +9,9 @@ def run(ctx):
     params = f"entity: {ctx.req_entity}" if ctx.has_body else ""
     member = f"suspend fun {ctx.func}({params}): ResponseEntity<{m}Entity>"
 
-    imports = [ctx.cfg.imports["ResponseEntity"], ctx.fq(f"{m}Entity")]
+    imports = [ctx.fq(f"{m}Entity")]
     if ctx.has_body:
         imports.append(ctx.fq(ctx.req_entity))
 
     upsert(ctx, NAME, ctx.ds_path, ctx.pkgs["datasource"], ctx.ds_name, f"interface {ctx.ds_name}",
-           member, ctx.func, imports, blank_default=None)
+           member, ctx.func, imports, soft_imports=[ctx.cfg.imports["ResponseEntity"]])

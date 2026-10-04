@@ -23,11 +23,10 @@ def run(ctx):
             return one
         return f"{head} =\n    {call}\n        {tail}"
 
+    svc_fq = f"{ctx.pkgs['service']}.{ctx.svc_name}"
     sig = f"class {ctx.impl_name}(\n    private val {default_prop}: {ctx.svc_name}\n) : {ctx.ds_name}"
-    imports = [f"{ctx.pkgs['datasource']}.{ctx.ds_name}", f"{ctx.pkgs['service']}.{ctx.svc_name}",
-               ctx.cfg.imports["toEntityWithData"]]
-    if ctx.has_body:
-        imports += [ctx.fq(f"Request{m}"), ctx.fq(ctx.req_entity)]
+    imports = [ctx.fq(f"Request{m}"), ctx.fq(ctx.req_entity)] if ctx.has_body else []
+    skeleton = [f"{ctx.pkgs['datasource']}.{ctx.ds_name}", svc_fq]
 
     upsert(ctx, NAME, ctx.impl_path, ctx.pkgs["impl"], ctx.impl_name, sig, member, ctx.func, imports,
-           blank_default=None, ctor=(ctx.svc_name, default_prop))
+           ctor=(ctx.svc_name, default_prop, svc_fq), skeleton_imports=skeleton)

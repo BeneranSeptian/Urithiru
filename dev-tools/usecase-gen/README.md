@@ -18,7 +18,7 @@ The overall guide is in `../README.md`; this file is the reference for `gen-usec
 | model name | `--model` | the name you gave `gen-model` |
 | request entity | `--request-entity` | POST/PUT/PATCH only, default `<Model>SpecEntity` |
 | request model | `--request-model` | normally derived: `<Model>Spec`, or read from `FromModelMapper<Model, Entity>` of a custom entity |
-| cluster | `--cluster` | name of an existing `internal val x = module {`; empty = only print the line |
+| cluster | `--cluster` | omit / Enter = inline element in `UseCaseModule.kt`; a name = existing `internal val x = module {`; `none` = only print the line |
 
 Other flags: `--only a,b`, `--skip a,b`, `--stages`, `--dry-run`, `--yes`, `--verbose`, `--project`, `--config`.
 
@@ -38,13 +38,13 @@ GET and DELETE have none.
 | preflight | validates input, finds the classes the selected stages use, says which files exist |
 | service | `@METHOD("endpoint") suspend fun f(...): BaseResponse<ResponseX, XEntity>` |
 | datasource | `suspend fun f(...): ResponseEntity<XEntity>` |
-| datasource_impl | `override suspend fun f(...) = service.f(...).toEntityWithData { it?.toEntity() }` |
+| datasource_impl | `override suspend fun f(...) = service.f(...).toEntityWithData { it?.toEntity() }` (`toEntityWithData` is a member of the response, nothing to import) |
 | remote_di | `createService<XService>` and `factory<XRemoteDataSource>` in RemoteModule.kt |
 | repository | `suspend fun f(...): DataState<X>` |
 | repository_impl | `override suspend fun f(...) = DataStateBoundResource.createNetworkCall { ds.f(...) }.getResult()` |
 | data_di | `factory<XRepository> { XRepositoryImpl(get()) }` in DataModule.kt |
 | usecase | `class GetXUseCase(private val xRepository: XRepository) { suspend fun invoke() ... }` |
-| usecase_cluster | `factory { GetXUseCase(get()) }` in the cluster module you name |
+| usecase_cluster | `module { factory { GetXUseCase(get()) } },` as the first element of `createList(` in UseCaseModule.kt, or `factory { GetXUseCase(get()) }` in the cluster you name |
 
 Generated code, POST example:
 
@@ -64,8 +64,11 @@ class PostExampleUseCase(private val exampleRepository: ExampleRepository) {
 
 ## Rules
 
-New file: written with all imports. Existing file: lines are only added, no imports (missing ones are
-reported as warnings), existing functions/registrations are skipped. The use case file is never appended
+New file: written with all imports. Existing file: lines are only added; missing imports for what the new code
+uses are added too (http annotations, response/request/entity/model classes, the injected type, DI classes),
+unless already imported, covered by `pkg.*` or in the same package. Base classes from config.json
+(`BaseResponse`, `ResponseEntity`, `DataState`, `DataStateBoundResource`) are only reported as warnings for
+existing files. Existing functions/registrations are skipped. The use case file is never appended
 to; if `GetXUseCase` already exists anywhere in the project it is skipped (you move the files by hand).
 Between two multi-line members a blank line is added; one-line members stay compact. If a file already
 has two or more functions, its own blank-line style is copied.
@@ -92,8 +95,27 @@ Everything is under `di` in config.json. For each binding (`service`, `dataSourc
 
 `container` is the regex of the module declaration (default `\bmodule\b(?=\s*\{)`).
 Placeholders: `{Service} {service} {DataSource} {DataSourceImpl} {Repository} {RepositoryImpl}`.
-`createService` must already be imported in RemoteModule.kt. The use case cluster uses
-`factory { GetXUseCase(get()) }` below the last `factory`/`single`/`viewModel` of the cluster.
+`createService` must already be imported in RemoteModule.kt.
+
+### Use case registration
+
+- **Default (no cluster):** `UseCaseModule.kt` in `paths.useCaseModule` must contain a `createList(` call whose
+  elements start on the line after it. Each use case adds one inline element as the FIRST element
+  (newest on top, and no existing line needs a new comma):
+
+```kotlin
+val usecaseModule = createList(
+    module { factory { PostExampleUseCase(get()) } },
+    module { factory { GetExampleUseCase(get()) } },
+    featureAUseCaseModule,
+    featureBUseCaseModule
+)
+```
+
+- **Named cluster:** `--cluster featureAUseCaseModule` adds `factory { GetXUseCase(get()) }` below the last
+  `factory`/`single`/`viewModel` of `internal val featureAUseCaseModule = module { ... }`.
+- **`--cluster none`:** nothing is written, the line and import are printed.
+- A use case that is already registered anywhere (`GetXUseCase(get(` or `::GetXUseCase`) is skipped.
 
 Hilt example (replace the `di` block):
 
@@ -116,5 +138,6 @@ Hilt example (replace the `di` block):
 
     python3 -m unittest discover -s tests -v
 
-29 tests: Kotlin text helpers, plus end-to-end runs on a scratch project that check the generated code,
-that existing files only ever gain lines, imports, duplicates, the cluster step, DI variants and errors.
+37 tests: Kotlin text helpers, plus end-to-end runs on a scratch project that check the generated code,
+that existing files only ever gain lines, imports (new vs existing files), duplicates, inline and named
+use case registration, DI variants and errors.

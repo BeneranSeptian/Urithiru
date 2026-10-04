@@ -13,7 +13,8 @@
     "repository": "app/src/main/java/com/yourapp/domain/repository",
     "repositoryImpl": "app/src/main/java/com/yourapp/data/repository",
     "dataModule": "app/src/main/java/com/yourapp/data/di",
-    "useCase": "app/src/main/java/com/yourapp/domain/usecase"
+    "useCase": "app/src/main/java/com/yourapp/domain/usecase",
+    "useCaseModule": "app/src/main/java/com/yourapp/domain/di"
   },
   "imports": {
     "ToEntityMapper": "com.yourapp.core.mapper.ToEntityMapper",
@@ -23,7 +24,6 @@
     "emptyString": "com.yourapp.core.util.emptyString",
     "BaseResponse": "com.yourapp.core.network.BaseResponse",
     "ResponseEntity": "com.yourapp.core.network.ResponseEntity",
-    "toEntityWithData": "com.yourapp.core.network.toEntityWithData",
     "DataState": "com.yourapp.core.state.DataState",
     "DataStateBoundResource": "com.yourapp.core.state.DataStateBoundResource"
   },

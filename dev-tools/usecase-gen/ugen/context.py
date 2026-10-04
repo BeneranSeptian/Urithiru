@@ -18,7 +18,7 @@ class Ctx:
     svc_name: str           # "ExampleService"
     req_entity: str         # "ExampleSpecEntity" (or a custom one)
     req_model: str = ""     # "ExampleSpec" (resolved by preflight)
-    cluster: str = ""       # use case cluster module name ("" = just print the line)
+    cluster: str = ""       # "" = inline in UseCaseModule.kt, "none" = only print, else a cluster module name
     interactive: bool = False
     selected: list = field(default_factory=list)
     classes: dict = field(default_factory=dict)    # existing project classes: name -> (path, package)
@@ -93,6 +93,10 @@ class Ctx:
         return self.cfg.dir_of("remoteModule") / "RemoteModule.kt"
 
     @property
+    def use_case_module_path(self):
+        return self.cfg.dir_of("useCaseModule") / "UseCaseModule.kt"
+
+    @property
     def data_module_path(self):
         return self.cfg.dir_of("dataModule") / "DataModule.kt"
 
@@ -112,8 +116,8 @@ class Ctx:
 
     def warn_imports(self, stage, path, missing):
         lines = "\n".join(f"      import {i}" for i in missing)
-        self.warnings.append(f"[{stage}] {self.rel(path)} already exists, so no imports were added. "
-                             f"Add these if they are not covered:\n{lines}")
+        self.warnings.append(f"[{stage}] {self.rel(path)} already exists. These imports come from config.json and "
+                             f"are not added to existing files; add them if they are not covered:\n{lines}")
 
     def note(self, msg):
         self.notes.append(msg)
