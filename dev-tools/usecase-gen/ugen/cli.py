@@ -8,23 +8,27 @@ from .errors import GenError
 from .index import ProjectIndex
 from .names import (BODY_METHODS, infer_method, parse_endpoint, parse_method, parse_service_path,
                     parse_use_case)
-from .stages import PREFLIGHT, STAGES
+from .stages import PREFLIGHT, REQUIRES, STAGES
 from .vfs import VirtualFS
 
 STAGE_NAMES = [n for n, _ in STAGES]
 
 
-def ask(label, given, default=None, parse=None, interactive=True):
+def ask(label, given, default=None, parse=None, interactive=True, optional=False):
     """Value from the CLI flag, else prompt (re-asks on invalid input), else default."""
     if given:
         return parse(given) if parse else given
     if not interactive:
         if default:
             return parse(default) if parse else default
+        if optional:
+            return ""
         raise GenError(f"{label} is required (pass it as an option).")
     while True:
         raw = input(f"{label}{f' [{default}]' if default else ''}: ").strip() or (default or "")
         if not raw:
+            if optional:
+                return ""
             print("  required.")
             continue
         try:
@@ -43,15 +47,30 @@ def print_diff(ctx, changes):
     print()
 
 
+def print_report(ctx):
+    if ctx.warnings:
+        print("\nWarnings:")
+        for w in ctx.warnings:
+            print("  ! " + w.replace("\n", "\n    "))
+    if ctx.notes:
+        print("\nTo do by hand:")
+        for n in ctx.notes:
+            print("  - " + n.replace("\n", "\n    "))
+
+
 def run(argv):
-    ap = argparse.ArgumentParser(prog="gen-usecase", description="Generate service -> datasource -> impl -> DI "
-                                 "for one use case. Run gen-model first so the data classes exist.")
-    ap.add_argument("use_case", nargs="?", help="e.g. getTestingUseCase")
+    ap = argparse.ArgumentParser(prog="gen-usecase", description="Generate service -> datasource -> impl -> DI -> "
+                                 "repository -> impl -> DI -> use case for one use case. Run gen-model first so the "
+                                 "data classes exist.")
+    ap.add_argument("use_case", nargs="?", help="e.g. getExampleUseCase")
     ap.add_argument("--service", help="e.g. example/sub/ExampleService.kt (relative to paths.service)")
     ap.add_argument("--method", help="GET|POST|PUT|PATCH|DELETE (default inferred from the use case name)")
     ap.add_argument("--endpoint", help='e.g. testing/v1  (or @GET("testing/v1"))')
     ap.add_argument("--model", help="Model name used by gen-model, e.g. Example")
     ap.add_argument("--request-entity", help="Entity type for the body (default <Model>SpecEntity)")
+    ap.add_argument("--request-model", help="Model type for the body (default <Model>Spec, or read from the entity)")
+    ap.add_argument("--cluster", help="Use case cluster module name, e.g. featureAUseCaseModule "
+                                      "(omit to only print the line to add)")
     ap.add_argument("--only", help=f"Comma separated stages to run: {', '.join(STAGE_NAMES)}")
     ap.add_argument("--skip", help="Comma separated stages to skip")
     ap.add_argument("--stages", action="store_true", help="List the stages and exit")
@@ -74,11 +93,15 @@ def run(argv):
     if bad:
         raise GenError(f"Unknown stage(s): {', '.join(bad)}. Available: {', '.join(STAGE_NAMES)}")
     run_stages = [(n, m) for n, m in STAGES if n in selected and n not in skipped]
+    if not run_stages:
+        raise GenError("No stage selected.")
 
     cfg = config_mod.load(o.config, o.project)
+    for name, _ in run_stages:
+        cfg.require(*REQUIRES[name])
     tty = sys.stdin.isatty()
 
-    use_case = ask("Use case name (e.g. getTestingUseCase)", o.use_case, interactive=tty)
+    use_case = ask("Use case name (e.g. getExampleUseCase)", o.use_case, interactive=tty)
     func, verb = parse_use_case(use_case)
     svc_dir, svc_name = ask("Service file (e.g. example/sub/ExampleService.kt)", o.service,
                             parse=parse_service_path, interactive=tty)
@@ -90,10 +113,15 @@ def run(argv):
     req_entity = f"{model}SpecEntity"
     if method in BODY_METHODS:
         req_entity = ask("Request entity type", o.request_entity, default=req_entity, interactive=tty)
+    cluster = ""
+    if any(n == "usecase_cluster" for n, _ in run_stages):
+        cluster = ask("Cluster module (e.g. featureAUseCaseModule, Enter to skip)", o.cluster,
+                      interactive=tty, optional=True)
 
     ctx = Ctx(cfg=cfg, fs=VirtualFS(), index=ProjectIndex(cfg.root), verbose=o.verbose, use_case=use_case,
-              func=func, method=method, endpoint=endpoint, model=model, svc_dir=svc_dir,
-              svc_name=svc_name, req_entity=req_entity)
+              func=func, method=method, endpoint=endpoint, model=model, svc_dir=svc_dir, svc_name=svc_name,
+              req_entity=req_entity, req_model=o.request_model or "", cluster=cluster, interactive=tty,
+              selected=[n for n, _ in run_stages])
 
     print(f"\nProject: {cfg.root}\nConfig:  {cfg.path}\n")
     PREFLIGHT.run(ctx)
@@ -103,23 +131,25 @@ def run(argv):
     changes = ctx.fs.changes()
     if not changes:
         print("\nNothing to change.")
+        print_report(ctx)
         return
     print("\nPlan:")
     for path, old, _ in changes:
         print(f"  {'NEW   ' if old is None else 'MODIFY'}  {ctx.rel(path)}")
     if o.dry_run or o.verbose or not o.yes:
         print_diff(ctx, changes)
+    print_report(ctx)
     if o.dry_run:
-        print("Dry run: nothing was written.")
+        print("\nDry run: nothing was written.")
         return
     if not o.yes:
         if not tty:
             raise GenError("Not a terminal: pass --yes to apply the changes.")
-        if input("Apply these changes? [y/N]: ").strip().lower() != "y":
+        if input("\nApply these changes? [y/N]: ").strip().lower() != "y":
             print("Aborted, nothing was written.")
             return
     ctx.fs.apply()
-    print("Done.")
+    print("\nDone.")
 
 
 def main(argv=None):

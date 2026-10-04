@@ -6,6 +6,8 @@ Indexes found in the masked text are valid in the original text.
 """
 import re
 
+from .errors import GenError
+
 PACKAGE_RE = re.compile(r"^package\s+([\w.]+)", re.M)
 IMPORT_LINE = re.compile(r"^import\s+(\S+)")
 _CHAR_LIT = re.compile(r"'(?:\\.[^']*|[^\\'])'")
@@ -118,20 +120,31 @@ def has_fun(masked_body, name):
 
 
 def append_members(text, masked, decl_match, open_idx, close_idx, block, blank_default):
-    """Insert `block` (unindented) as the last member(s) of the body, before the closing brace."""
+    """Insert `block` (unindented) as the last member(s) of the body.
+
+    Existing lines are never modified: the block is inserted as new lines right above the closing
+    brace. The single exception is an empty one-line body (`interface X {}`), which has to be opened.
+    """
     decl_indent = line_indent(text, decl_match.start())
     body = text[open_idx + 1:close_idx]
-    if body.strip() == "":
-        new = "\n" + indent_block(block, decl_indent + "    ") + "\n" + decl_indent
-        return text[:open_idx + 1] + new + text[close_idx:]
+    line_start = text.rfind("\n", 0, close_idx) + 1
+    if text[line_start:close_idx].strip() != "":
+        if body.strip() == "":
+            new = "\n" + indent_block(block, decl_indent + "    ") + "\n" + decl_indent
+            return text[:open_idx + 1] + new + text[close_idx:]
+        raise GenError("the closing brace shares a line with code; put it on its own line so that "
+                       "lines can be added without changing existing ones")
     first = next((l for l in body.splitlines() if l.strip()), "")
-    indent = re.match(r"[ \t]*", first).group() or decl_indent + "    "
-    if len(re.findall(r"\bfun\b", masked[open_idx + 1:close_idx])) >= 2:
+    indent = (re.match(r"[ \t]*", first).group() if first else "") or decl_indent + "    "
+    if body.strip() == "":
+        blank = False
+    elif len(re.findall(r"\bfun\b", masked[open_idx + 1:close_idx])) >= 2:
         blank = re.search(r"\n[ \t]*\n", body.strip()) is not None
     else:
         blank = blank_default
-    new = body.rstrip() + "\n" + ("\n" if blank else "") + indent_block(block, indent) + "\n" + decl_indent
-    return text[:open_idx + 1] + new + text[close_idx:]
+    pre = text[:line_start]
+    sep = "\n" if blank and not re.search(r"\n[ \t]*\n\Z", pre) else ""
+    return pre + sep + indent_block(block, indent) + "\n" + text[line_start:]
 
 
 def ensure_ctor_param(text, masked, decl_match, type_name, default_prop):
@@ -189,3 +202,16 @@ def add_imports(text, new):
                 lines.insert(at + 1, "")
         existing.add(imp)
     return "\n".join(lines)
+
+
+def missing_imports(text, imports):
+    """Imports (fully qualified) that `text` does not cover: not explicit, not `pkg.*`, not same package."""
+    existing = {m.group(1) for l in text.split("\n") if (m := IMPORT_LINE.match(l))}
+    pkg = package_of_text(text)
+    out = []
+    for i in sorted(set(imports)):
+        p = i.rsplit(".", 1)[0]
+        if i in existing or p + ".*" in existing or p == pkg:
+            continue
+        out.append(i)
+    return out

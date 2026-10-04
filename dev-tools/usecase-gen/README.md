@@ -1,83 +1,120 @@
 # usecase-gen
 
-    gen-usecase getExampleUseCase
-    # asks: service file, HTTP method (default from the name), endpoint, model name,
-    #       request entity (POST/PUT/PATCH only, default <Model>SpecEntity)
+Generates the whole data/domain chain for one use case. Run `gen-model` first.
+The overall guide is in `../README.md`; this file is the reference for `gen-usecase`.
 
+    gen-usecase getExampleUseCase                       # interactive
     gen-usecase postExampleUseCase --service example/sub/ExampleService.kt \
-        --endpoint testing/v1 --model Example --dry-run
+        --endpoint testing/v1 --model Example --cluster featureAUseCaseModule --dry-run
 
-Naming: `getExampleUseCase` -> function `getExample`. `ExampleService` -> `ExampleRemoteDataSource`
--> `ExampleRemoteDataSourceImpl` (property `exampleService`). The same sub-folder (`example/sub/`)
-is used under paths.service, paths.dataSource and paths.dataSourceImpl.
+## Inputs
 
-HTTP: POST/PUT/PATCH imply `@Body request: RequestX`; GET/DELETE have no body. Default method comes
-from the verb (get/fetch/load -> GET, post/create/submit -> POST, update -> PUT, delete/remove -> DELETE).
-Path parameters (`{id}`) and query parameters are not supported yet.
+| Input | Flag | Notes |
+|---|---|---|
+| use case name | first argument | `getExampleUseCase` -> function `getExample`, class `GetExampleUseCase` |
+| service file | `--service` | `example/sub/ExampleService.kt`, relative to `paths.service`; must end in `Service` |
+| HTTP method | `--method` | default from the verb: get/fetch/load -> GET, post/create/submit -> POST, update -> PUT, patch -> PATCH, delete/remove -> DELETE |
+| endpoint | `--endpoint` | `testing/v1` (leading `/` stripped, `@GET("testing/v1")` also accepted) |
+| model name | `--model` | the name you gave `gen-model` |
+| request entity | `--request-entity` | POST/PUT/PATCH only, default `<Model>SpecEntity` |
+| request model | `--request-model` | normally derived: `<Model>Spec`, or read from `FromModelMapper<Model, Entity>` of a custom entity |
+| cluster | `--cluster` | name of an existing `internal val x = module {`; empty = only print the line |
 
-## Stages (debugging)
+Other flags: `--only a,b`, `--skip a,b`, `--stages`, `--dry-run`, `--yes`, `--verbose`, `--project`, `--config`.
 
-    gen-usecase --stages                       list
-    gen-usecase ... --only service             run one stage (preflight always runs)
-    gen-usecase ... --skip remote_di
-    gen-usecase ... --dry-run -v               every decision + full diffs, writes nothing
+POST, PUT and PATCH have a body: `@Body request: RequestExample` in the service, `entity: ExampleSpecEntity`
+in the datasource, `request: ExampleSpec` in the repository and the use case.
+GET and DELETE have none.
 
-| stage           | does |
-|-----------------|------|
-| preflight       | validates input, finds Response/Entity/Request/Spec classes, reports which files exist |
-| service         | add `@METHOD` function to the service interface (new or existing) |
-| datasource      | add function to the datasource interface |
-| datasource_impl | add override; adds the service to the constructor if missing |
-| remote_di       | add service + datasource bindings to RemoteModule.kt |
+## Stages (for debugging)
 
-All stages work in memory; files are written together at the end, after the diff and a y/N
-confirmation (`--yes` skips it). Any error means nothing is written.
+    gen-usecase --stages                          list them
+    gen-usecase ... --only repository_impl        run one stage (preflight always runs)
+    gen-usecase ... --skip usecase_cluster
+    gen-usecase ... --dry-run -v                  every decision + full diffs, writes nothing
 
-## Duplicate protection
+| Stage | Does |
+|---|---|
+| preflight | validates input, finds the classes the selected stages use, says which files exist |
+| service | `@METHOD("endpoint") suspend fun f(...): BaseResponse<ResponseX, XEntity>` |
+| datasource | `suspend fun f(...): ResponseEntity<XEntity>` |
+| datasource_impl | `override suspend fun f(...) = service.f(...).toEntityWithData { it?.toEntity() }` |
+| remote_di | `createService<XService>` and `factory<XRemoteDataSource>` in RemoteModule.kt |
+| repository | `suspend fun f(...): DataState<X>` |
+| repository_impl | `override suspend fun f(...) = DataStateBoundResource.createNetworkCall { ds.f(...) }.getResult()` |
+| data_di | `factory<XRepository> { XRepositoryImpl(get()) }` in DataModule.kt |
+| usecase | `class GetXUseCase(private val xRepository: XRepository) { suspend fun invoke() ... }` |
+| usecase_cluster | `factory { GetXUseCase(get()) }` in the cluster module you name |
 
-Never overwrites a file. Skips (with a message) a function that already exists in the target
-interface/class. Refuses to create an interface/class whose name or file name already exists
-elsewhere in the project (usually a typo in the service path). Skips DI bindings that already exist.
+Generated code, POST example:
+
+```kotlin
+// repository impl
+override suspend fun postExample(request: ExampleSpec) = DataStateBoundResource.createNetworkCall {
+    exampleRemoteDataSource.postExample(ExampleSpecEntity.fromModel(request))
+}.getResult()
+
+// use case
+class PostExampleUseCase(private val exampleRepository: ExampleRepository) {
+    suspend fun invoke(request: ExampleSpec): DataState<Example> {
+        return exampleRepository.postExample(request)
+    }
+}
+```
+
+## Rules
+
+New file: written with all imports. Existing file: lines are only added, no imports (missing ones are
+reported as warnings), existing functions/registrations are skipped. The use case file is never appended
+to; if `GetXUseCase` already exists anywhere in the project it is skipped (you move the files by hand).
+Between two multi-line members a blank line is added; one-line members stay compact. If a file already
+has two or more functions, its own blank-line style is copied.
+
+## Typical situations
+
+- **Second use case in the same service:** same `--service` path. Functions are appended to the existing
+  service, datasource, impl, repository and repository impl; DI lines are skipped as already registered.
+- **A new service:** a new service path. New files are created and registered below the last existing line.
+- **Only part of the chain:** `--only datasource,datasource_impl` etc.
+- **Existing impl that does not inject the dependency:** one constructor parameter is added and a warning
+  tells you to check its `get()` list in the DI module.
 
 ## DI (Koin by default)
 
-`remote_di` edits `paths.remoteModule/RemoteModule.kt`. For each binding it:
+Everything is under `di` in config.json. For each binding (`service`, `dataSource`, `repository`):
 
-1. skips it if it is already registered (`detect` regexes),
-2. else inserts it ABOVE a marker comment (`// new service will go here`,
-   `// new datasource will go here`; spacing/case don't matter),
-3. else inserts it after the LAST existing matching line (`createService<...>` / `factory<...DataSource>`),
-4. else appends it to the end of the `module { }` block.
+| Key | Meaning |
+|---|---|
+| `template` | the Kotlin to insert |
+| `detect` | regexes; if one matches the file the binding is skipped |
+| `after` | regex; the new line goes below the LAST line matching it (else at the end of the module) |
+| `blank` | blank line between members when appended at the end |
 
-Generated lines:
-
-    factory { createService<ExampleService>(get()) }
-    factory<ExampleRemoteDataSource> { ExampleRemoteDataSourceImpl(get()) }
-
-The impl gets only the service (`get()`), matching the constructor the generator creates.
-Everything is under `di` in config.json (`container`, `imports`, and per binding `template`, `detect`,
-`marker`, `after`, `blank`). Placeholders: `{Service} {service} {DataSource} {DataSourceImpl}`.
-Your own `createService` helper must already be imported in RemoteModule.kt (add it to `di.imports` if not).
+`container` is the regex of the module declaration (default `\bmodule\b(?=\s*\{)`).
+Placeholders: `{Service} {service} {DataSource} {DataSourceImpl} {Repository} {RepositoryImpl}`.
+`createService` must already be imported in RemoteModule.kt. The use case cluster uses
+`factory { GetXUseCase(get()) }` below the last `factory`/`single`/`viewModel` of the cluster.
 
 Hilt example (replace the `di` block):
 
-    "di": {
-      "container": "\\b(?:object|class)\\s+\\w*Module\\b",
-      "imports": ["dagger.Provides", "javax.inject.Singleton", "retrofit2.Retrofit"],
-      "service": {
-        "template": "@Provides\n@Singleton\nfun provide{Service}(retrofit: Retrofit): {Service} =\n    retrofit.create({Service}::class.java)",
-        "detect": ["\\bfun\\s+provide{Service}\\b"], "blank": true },
-      "dataSource": {
-        "template": "@Provides\n@Singleton\nfun provide{DataSource}({service}: {Service}): {DataSource} =\n    {DataSourceImpl}({service})",
-        "detect": ["\\bfun\\s+provide{DataSource}\\b"], "blank": true }
-    }
-
-## Naming
-
-Datasource name = service name with `Service` replaced by `naming.dataSourceSuffix`
-(default `RemoteDataSource`): `ExampleService` -> `ExampleRemoteDataSource` -> `ExampleRemoteDataSourceImpl`.
-Set it to `DataSource` in config.json to get `ExampleDataSource` instead.
+```json
+"di": {
+  "container": "\\b(?:object|class)\\s+\\w*Module\\b",
+  "service": {
+    "template": "@Provides\n@Singleton\nfun provide{Service}(retrofit: Retrofit): {Service} =\n    retrofit.create({Service}::class.java)",
+    "detect": ["\\bfun\\s+provide{Service}\\b"], "blank": true },
+  "dataSource": {
+    "template": "@Provides\n@Singleton\nfun provide{DataSource}({service}: {Service}): {DataSource} =\n    {DataSourceImpl}({service})",
+    "detect": ["\\bfun\\s+provide{DataSource}\\b"], "blank": true },
+  "repository": {
+    "template": "@Provides\n@Singleton\nfun provide{Repository}(ds: {DataSource}): {Repository} =\n    {RepositoryImpl}(ds)",
+    "detect": ["\\bfun\\s+provide{Repository}\\b"], "blank": true }
+}
+```
 
 ## Tests
 
     python3 -m unittest discover -s tests -v
+
+29 tests: Kotlin text helpers, plus end-to-end runs on a scratch project that check the generated code,
+that existing files only ever gain lines, imports, duplicates, the cluster step, DI variants and errors.

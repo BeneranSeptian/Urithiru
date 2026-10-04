@@ -3,6 +3,8 @@ import os
 import re
 from pathlib import Path
 
+from .kotlin import mask
+
 SKIP_DIRS = {"build", ".git", ".gradle", ".idea", "node_modules"}
 DECL_RE = re.compile(
     r"^(?:(?:public|internal|private|protected|abstract|open|sealed|data|enum|annotation|inline|value|fun)\s+)*"
@@ -39,3 +41,18 @@ class ProjectIndex:
         if self._files is None:
             self._build()
         return list(self._files.get(stem, []))
+
+    def find_text(self, pattern):
+        """Files whose code (strings/comments masked out) matches the regex."""
+        out = []
+        for dp, dns, fns in os.walk(self.root):
+            dns[:] = [d for d in dns if d not in SKIP_DIRS]
+            for fn in fns:
+                if fn.endswith(".kt"):
+                    p = Path(dp) / fn
+                    try:
+                        if re.search(pattern, mask(p.read_text(errors="ignore"))):
+                            out.append(p)
+                    except OSError:
+                        pass
+        return out

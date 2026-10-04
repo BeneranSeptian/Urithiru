@@ -18,5 +18,5 @@ def run(ctx):
     if ctx.has_body:
         imports += ["retrofit2.http.Body", ctx.fq(f"Request{m}")]
 
-    upsert(ctx, NAME, ctx.svc_path, ctx.svc_pkg, ctx.svc_name, f"interface {ctx.svc_name}",
-           member, ctx.func, imports, blank_default=True)
+    upsert(ctx, NAME, ctx.svc_path, ctx.pkgs["service"], ctx.svc_name, f"interface {ctx.svc_name}",
+           member, ctx.func, imports, blank_default=None)

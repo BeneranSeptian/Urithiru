@@ -8,44 +8,51 @@ from .errors import GenError
 TOOL_DIR = Path(__file__).resolve().parent.parent
 
 # Koin defaults. Override any key under "di" in config.json (see README for a Hilt example).
-# Placeholders: {Service} {service} {DataSource} {DataSourceImpl}
+# Placeholders: {Service} {service} {DataSource} {DataSourceImpl} {Repository} {RepositoryImpl}
 # Per binding:
 #   template  the Kotlin to insert
 #   detect    regexes; if any matches the file the binding already exists -> skipped
-#   marker    regex of a comment line; the binding is inserted ABOVE it (marker is kept)
-#   after     regex; used when there is no marker: insert after the LAST line that matches
-#   blank     blank line between members when appended at the end of the module
+#   after     regex (multiline); the new line goes below the LAST line that matches
+#   blank     blank line between members when there is no match and it is appended at the end
+# Existing files never get new imports; missing ones are reported as warnings.
 DEFAULT_DI = {
     "container": r"\bmodule\b(?=\s*\{)",
-    "imports": [],
     "service": {
         "template": "factory { createService<{Service}>(get()) }",
         "detect": [r"createService<\s*{Service}\s*>"],
-        "marker": r"//\s*new\s+service\b",
         "after": r"createService<",
         "blank": False,
     },
     "dataSource": {
         "template": "factory<{DataSource}> { {DataSourceImpl}(get()) }",
         "detect": [r"<\s*{DataSource}\s*>"],
-        "marker": r"//\s*new\s+data\s*source\b",
         "after": r"<\w*DataSource>\s*\{",
+        "blank": False,
+    },
+    "repository": {
+        "template": "factory<{Repository}> { {RepositoryImpl}(get()) }",
+        "detect": [r"<\s*{Repository}\s*>"],
+        "after": r"<\w*Repository>\s*\{",
         "blank": False,
     },
 }
 
-REQUIRED_PATHS = ["response", "request", "entity", "model", "service", "dataSource",
-                  "dataSourceImpl", "remoteModule"]
-REQUIRED_IMPORTS = ["BaseResponse", "ResponseEntity", "toEntityWithData"]
+BASE_PATHS = ["service", "dataSource", "dataSourceImpl"]
 
 
 class Config:
     def __init__(self, path, raw, root):
         self.path, self.raw, self.root = path, raw, root
-        self.paths = raw["paths"]
-        self.imports = raw["imports"]
+        self.paths = raw.get("paths", {})
+        self.imports = raw.get("imports", {})
         self.di = {**DEFAULT_DI, **raw.get("di", {})}
         self.naming = {"dataSourceSuffix": "RemoteDataSource", **raw.get("naming", {})}
+
+    def require(self, paths=(), imports=()):
+        missing = [f"paths.{k}" for k in paths if k not in self.paths]
+        missing += [f"imports.{k}" for k in imports if k not in self.imports]
+        if missing:
+            raise GenError(f"{self.path} is missing: " + ", ".join(dict.fromkeys(missing)))
 
     def dir_of(self, key, subdir=""):
         return self.root / self.paths[key] / subdir
@@ -78,8 +85,6 @@ def load(explicit=None, project=None):
     if not root_str or not root.is_dir():
         raise GenError(f"Android project root not found: {root_str!r}\n"
                        f"Set projectRoot in {path} or pass --project /path/to/project")
-    missing = [f"paths.{k}" for k in REQUIRED_PATHS if k not in raw.get("paths", {})]
-    missing += [f"imports.{k}" for k in REQUIRED_IMPORTS if k not in raw.get("imports", {})]
-    if missing:
-        raise GenError(f"{path} is missing: " + ", ".join(missing))
-    return Config(path, raw, root)
+    cfg = Config(path, raw, root)
+    cfg.require(BASE_PATHS)
+    return cfg

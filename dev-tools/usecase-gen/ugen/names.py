@@ -17,6 +17,10 @@ def lower_first(s):
     return s[:1].lower() + s[1:]
 
 
+def upper_first(s):
+    return s[:1].upper() + s[1:]
+
+
 def parse_use_case(raw):
     """'getTestingUseCase' -> ('getTesting', 'get')"""
     m = re.fullmatch(r"([A-Za-z][A-Za-z0-9]*?)UseCase", raw.strip())

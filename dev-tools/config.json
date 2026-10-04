@@ -9,7 +9,11 @@
     "service": "app/src/main/java/com/yourapp/data/remote/service",
     "dataSource": "app/src/main/java/com/yourapp/data/datasource",
     "dataSourceImpl": "app/src/main/java/com/yourapp/data/datasource/impl",
-    "remoteModule": "app/src/main/java/com/yourapp/data/di"
+    "remoteModule": "app/src/main/java/com/yourapp/data/di",
+    "repository": "app/src/main/java/com/yourapp/domain/repository",
+    "repositoryImpl": "app/src/main/java/com/yourapp/data/repository",
+    "dataModule": "app/src/main/java/com/yourapp/data/di",
+    "useCase": "app/src/main/java/com/yourapp/domain/usecase"
   },
   "imports": {
     "ToEntityMapper": "com.yourapp.core.mapper.ToEntityMapper",
@@ -19,20 +23,20 @@
     "emptyString": "com.yourapp.core.util.emptyString",
     "BaseResponse": "com.yourapp.core.network.BaseResponse",
     "ResponseEntity": "com.yourapp.core.network.ResponseEntity",
-    "toEntityWithData": "com.yourapp.core.network.toEntityWithData"
+    "toEntityWithData": "com.yourapp.core.network.toEntityWithData",
+    "DataState": "com.yourapp.core.state.DataState",
+    "DataStateBoundResource": "com.yourapp.core.state.DataStateBoundResource"
   },
   "naming": {
     "dataSourceSuffix": "RemoteDataSource"
   },
   "di": {
     "container": "\\bmodule\\b(?=\\s*\\{)",
-    "imports": [],
     "service": {
       "template": "factory { createService<{Service}>(get()) }",
       "detect": [
         "createService<\\s*{Service}\\s*>"
       ],
-      "marker": "//\\s*new\\s+service\\b",
       "after": "createService<",
       "blank": false
     },
@@ -41,8 +45,15 @@
       "detect": [
         "<\\s*{DataSource}\\s*>"
       ],
-      "marker": "//\\s*new\\s+data\\s*source\\b",
       "after": "<\\w*DataSource>\\s*\\{",
+      "blank": false
+    },
+    "repository": {
+      "template": "factory<{Repository}> { {RepositoryImpl}(get()) }",
+      "detect": [
+        "<\\s*{Repository}\\s*>"
+      ],
+      "after": "<\\w*Repository>\\s*\\{",
       "blank": false
     }
   }

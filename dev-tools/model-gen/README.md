@@ -1,5 +1,7 @@
 # model-gen
 
+Part of dev-tools: see `../README.md` for setup and the full workflow. Run this before `gen-usecase`.
+
 Generates Kotlin data classes from sample JSON. Types are inferred from the values.
 
     nano response.json                      # the payload your BaseResponse wraps
