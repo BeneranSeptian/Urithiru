@@ -1,4 +1,4 @@
-package com.septianbeneran.urithiru.api.a.data.repository
+package com.septianbeneran.urithiru.api.a.repository
 
 import com.septianbeneran.urithiru.api.a.data.local.WeaponCache
 import com.septianbeneran.urithiru.core.entity.a.Weapon
