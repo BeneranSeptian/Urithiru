@@ -8,7 +8,6 @@ import retrofit2.http.Query
 import retrofit2.http.Url
 
 interface WeaponApi {
-
     @GET
     suspend fun getWeaponList(
         @Url url: String,

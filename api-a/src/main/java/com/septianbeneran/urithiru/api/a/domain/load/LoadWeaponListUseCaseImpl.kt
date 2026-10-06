@@ -1,6 +1,6 @@
 package com.septianbeneran.urithiru.api.a.domain.load
 
-import com.septianbeneran.urithiru.api.a.data.repository.WeaponRepository
+import com.septianbeneran.urithiru.api.a.repository.WeaponRepository
 import javax.inject.Inject
 
 class LoadWeaponListUseCaseImpl @Inject constructor(

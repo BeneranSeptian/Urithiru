@@ -1,6 +1,6 @@
 package com.septianbeneran.urithiru.api.a.di
 
-import com.septianbeneran.urithiru.api.a.data.repository.WeaponRepository
+import com.septianbeneran.urithiru.api.a.repository.WeaponRepository
 import com.septianbeneran.urithiru.api.a.domain.get.GetWeaponDetailUseCase
 import com.septianbeneran.urithiru.api.a.domain.get.GetWeaponDetailUseCaseImpl
 import com.septianbeneran.urithiru.api.a.domain.get.GetWeaponListUseCase
