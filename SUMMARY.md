@@ -39,8 +39,8 @@ Feature modules never depend on each other. They navigate using shared route cla
 ## Build System (`buildlogic/`)
 
 Convention plugins (`buildlogic/src/main/kotlin`):
-- **`base-convention`**: Android library, Hilt and KSP, namespace `com.septianbeneran.urithiru.<module.name>`, flavors, Java 21, plus `baseDependencies()` (Hilt, kotlinx-serialization, DataStore).
-- **`api-convention`**: base convention plus Retrofit and Gson. It also loads the module's `microservice.properties` into `BuildConfig` (for example `WEAPONS_V1=weapons/` and `BOSSES_V1=bosses/`).
+- **`base-convention`**: Android library, Hilt and KSP, namespace `com.septianbeneran.urithiru.<module.name>`, flavors, Java 21, the kotlinx-serialization compiler plugin, plus `baseDependencies()` (Hilt, kotlinx-serialization-json, DataStore).
+- **`api-convention`**: base convention plus Retrofit and kotlinx-serialization-json. It also loads the module's `microservice.properties` into `BuildConfig` (for example `WEAPONS_V1=weapons/` and `BOSSES_V1=bosses/`).
 - **`compose-convention`**: base convention plus Compose, Navigation, Coil, Hilt-navigation, and `ksp(project(":navigation-processor"))`.
 - **`app-convention`**: application setup with the same flavor logic plus `applicationIdSuffix`.
 
@@ -54,7 +54,7 @@ Convention plugins (`buildlogic/src/main/kotlin`):
 
 ```
 Screen ─► ViewModel ─► UseCase ─► Repository ─► RemoteDataSource ─► Retrofit Api
-                                      └──► Cache (BaseDataStore / Gson JSON)
+                                      └──► Cache (BaseDataStore / kotlinx JSON)
 ```
 
 **Core building blocks (`:core`)**
@@ -63,8 +63,10 @@ Screen ─► ViewModel ─► UseCase ─► Repository ─► RemoteDataSource
 - `BaseRepository.mapToEntity(transform, saveResult)` maps the DTO to an entity. If `saveResult` is given, it also saves the result to the cache on the `@ApplicationScope` coroutine scope.
 - `ApiDto<T>(success, count, data)` is the Elden Ring envelope. `JsonBinDto` is the JSONBin envelope.
 - `BaseState`: `StateInitial | StateLoading | StateSuccess | StateFailed` (UI-side state).
-- `NetworkModule` provides one `Retrofit` per backend, using the qualifiers `@EldenRingNetwork`, `@TwitchNetwork`, `@IgdbNetwork` and `@JsonBinNetwork`.
-- `BaseDataStore` is a Preferences DataStore with primitive save/read and `saveObject`/`readObject` through Gson.
+- `NetworkModule` provides one `Retrofit` per backend, using the qualifiers `@EldenRingNetwork`, `@TwitchNetwork`, `@IgdbNetwork` and `@JsonBinNetwork`. Every `Retrofit` uses the kotlinx-serialization converter.
+- `SerializationModule` provides the single shared `Json` instance (`ignoreUnknownKeys = true`, `explicitNulls = false`), used by both Retrofit and `BaseDataStore`. Gson is not used anywhere.
+- JSON models must be `@Serializable`: DTOs, the `ApiDto`/`JsonBinDto` envelopes, and any entity stored with `saveObject`. Rename fields with `@SerialName`, not `@SerializedName`.
+- `BaseDataStore` is a Preferences DataStore with primitive save/read and `saveObject`/`readObject` through kotlinx-serialization (the shared `Json`).
 
 **Per-API module layout** (for example `api-a`):
 ```
@@ -146,24 +148,27 @@ Each step pops the previous screen with `popUpTo(..., inclusive = true)`.
 
 ## Suggested Improvements
 
+> **Status:** items that are ~~crossed out~~ and marked ✅ are done. Everything else is still open.
+
 ### Correctness & robustness
 - **Cancel in-flight requests in `BaseViewModel.collectApi`.** Each call starts a new `viewModelScope.launch` and keeps no handle to it. When a user taps search several times quickly, those requests run at the same time and can append results out of order. Return the `Job` and cancel the previous one for the same key, or switch to a `MutableStateFlow` of queries combined with `flatMapLatest`.
 - **Remove the `TODO()` calls in `TwitchRepositoryImpl`** (`saveTwitchToken` and `loadTwitchToken`). These functions crash at runtime if anything calls them. Either implement them using `TwitchCache` or take them out of the interface.
-- **Pick one JSON library.** Retrofit uses `GsonConverterFactory`, but the DTOs carry kotlinx `@Serializable` and some also carry Gson `@SerializedName`. The kotlinx converter is a dependency but is never used. Gson ignores Kotlin nullability and default values, so a missing field can silently become `null` inside a non-null type. Standardizing on kotlinx-serialization (for both Retrofit and `BaseDataStore`) would avoid that.
+- ~~**Pick one JSON library.** Retrofit uses `GsonConverterFactory`, but the DTOs carry kotlinx `@Serializable` and some also carry Gson `@SerializedName`. The kotlinx converter is a dependency but is never used. Gson ignores Kotlin nullability and default values, so a missing field can silently become `null` inside a non-null type. Standardizing on kotlinx-serialization (for both Retrofit and `BaseDataStore`) would avoid that.~~
+  ✅ **Done (2026-10-07).** Retrofit and `BaseDataStore` both use kotlinx-serialization through one shared `Json`. Gson and the unused JakeWharton converter are removed. `base-convention` now applies the serialization compiler plugin; before this, `@Serializable` in `api-*` and `core-entity` generated nothing.
 - **Replace the magic error code `6969`.** Use typed errors instead, for example `sealed class AppError { Network, Http(code), Parse, Unknown }`, so the UI can show meaningful messages and offer a retry only when it makes sense.
 - **Get the page size from one place.** `isEndReached = size < 20` assumes the API returns 20 items, but no `limit` is sent with the request. Send `limit` explicitly and compare against the same constant.
 - **Keep secrets out of source.** Twitch `client_id`/`client_secret` should come from `local.properties` or CI secrets and be injected into `BuildConfig`, not hardcoded. The JSONBin `binId` should move to `microservice.properties`.
 
 ### Security & release readiness
 - **Limit `LogcatInterceptor` to debug builds.** Today it logs every header, including `Authorization`, and full bodies in all flavors, `prod` included. Add it only when `BuildConfig.DEBUG` is true, or redact sensitive headers.
-- **Add a `buildTypes { release { isMinifyEnabled = true; isShrinkResources = true } }` block** with R8 keep rules for Retrofit, kotlinx-serialization and Gson models. No minify or shrink setup exists yet.
+- **Add a `buildTypes { release { isMinifyEnabled = true; isShrinkResources = true } }` block** with R8 keep rules for Retrofit and kotlinx-serialization models. No minify or shrink setup exists yet.
 - **Set `targetSdk` closer to `compileSdk`.** `targetSdk` is 35 while `compileSdk` is 37, and Play's target API requirements will catch up.
 
 ### Architecture & DI
 - **Make the DI style consistent.** Classes have `@Inject constructor` *and* are also built by hand in `@Provides` methods. Use `@Binds` abstract modules instead (`@Binds fun bind(impl: WeaponRepositoryImpl): WeaponRepository`), which removes boilerplate and keeps constructor changes in one place.
 - **Don't make use cases `@Singleton`.** They are stateless, so unscoped (or `@Reusable`) is enough.
 - **Stop exposing `cache` from repositories.** `LoadWeaponListUseCase` reads `repository.cache` directly, which leaks the data layer. Add a `repository.observeWeaponList()` method, or go offline-first so the repository emits the cached value and then the network value.
-- **Use Room for list caching.** Storing whole lists as Gson JSON in Preferences DataStore doesn't scale and can't be queried. Room is a better fit, and Paging 3 could replace the manual paging in `WeaponListViewModel`.
+- **Use Room for list caching.** Storing whole lists as JSON strings in Preferences DataStore doesn't scale and can't be queried. Room is a better fit, and Paging 3 could replace the manual paging in `WeaponListViewModel`.
 - **Clean up `BaseViewModel`.** `baseScreenUiState` is declared as `var` but should be `val`. `permissionHandler` is field-injected through `lateinit`, so try constructor injection or a composable-level handler. `showErrorDialog` and `errorMessage` exist in `BaseScreenUiState` but nothing uses them, so either wire a shared error dialog into `BaseScreen` or remove them.
 - **Move `domain/` out of the `api-*` modules.** Use cases currently live in the API modules, so features depend on data-layer modules. If you want strict Clean Architecture, split them into `domain-*` modules, or rename the API modules to `data-*` so the layering is honest.
 
