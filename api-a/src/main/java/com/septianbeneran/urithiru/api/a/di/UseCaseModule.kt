@@ -1,36 +1,26 @@
 package com.septianbeneran.urithiru.api.a.di
 
-import com.septianbeneran.urithiru.api.a.repository.WeaponRepository
 import com.septianbeneran.urithiru.api.a.domain.get.GetWeaponDetailUseCase
 import com.septianbeneran.urithiru.api.a.domain.get.GetWeaponDetailUseCaseImpl
 import com.septianbeneran.urithiru.api.a.domain.get.GetWeaponListUseCase
 import com.septianbeneran.urithiru.api.a.domain.get.GetWeaponListUseCaseImpl
 import com.septianbeneran.urithiru.api.a.domain.load.LoadWeaponListUseCase
 import com.septianbeneran.urithiru.api.a.domain.load.LoadWeaponListUseCaseImpl
+import dagger.Binds
 import dagger.Module
-import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-class UseCaseModule {
-    @Singleton
-    @Provides
-    internal fun provideGetWeaponListUseCase(
-        repo: WeaponRepository
-    ): GetWeaponListUseCase = GetWeaponListUseCaseImpl(repo)
+abstract class UseCaseModule {
 
-    @Singleton
-    @Provides
-    internal fun provideGetWeaponDetail(
-        repo: WeaponRepository
-    ): GetWeaponDetailUseCase = GetWeaponDetailUseCaseImpl(repo)
+    @Binds
+    abstract fun bindGetWeaponListUseCase(impl: GetWeaponListUseCaseImpl): GetWeaponListUseCase
 
-    @Singleton
-    @Provides
-    internal fun provideLoadWeaponListUseCase(
-        repo: WeaponRepository
-    ): LoadWeaponListUseCase = LoadWeaponListUseCaseImpl(repo)
+    @Binds
+    abstract fun bindGetWeaponDetailUseCase(impl: GetWeaponDetailUseCaseImpl): GetWeaponDetailUseCase
+
+    @Binds
+    abstract fun bindLoadWeaponListUseCase(impl: LoadWeaponListUseCaseImpl): LoadWeaponListUseCase
 }

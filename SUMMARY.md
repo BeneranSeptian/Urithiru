@@ -77,7 +77,7 @@ data/local/              XCache + Impl (wraps BaseDataStore)
 repository/              XRepository + Impl (extends BaseRepository, exposes `cache`)
 domain/get/              Get*UseCase: network-backed Flow<ApiResult<Entity>>
 domain/load/             Load*UseCase: cache-backed Flow<Entity>
-di/                      Hilt @Provides modules (Api, DataSource, Cache, Repository, UseCases)
+di/                      Hilt modules: @Binds for Impl → interface, @Provides only for the Retrofit Api
 ```
 
 **Presentation pattern (`:core-ui` + features)**
@@ -165,8 +165,10 @@ Each step pops the previous screen with `popUpTo(..., inclusive = true)`.
 - **Set `targetSdk` closer to `compileSdk`.** `targetSdk` is 35 while `compileSdk` is 37, and Play's target API requirements will catch up.
 
 ### Architecture & DI
-- **Make the DI style consistent.** Classes have `@Inject constructor` *and* are also built by hand in `@Provides` methods. Use `@Binds` abstract modules instead (`@Binds fun bind(impl: WeaponRepositoryImpl): WeaponRepository`), which removes boilerplate and keeps constructor changes in one place.
-- **Don't make use cases `@Singleton`.** They are stateless, so unscoped (or `@Reusable`) is enough.
+- ~~**Make the DI style consistent.** Classes have `@Inject constructor` *and* are also built by hand in `@Provides` methods. Use `@Binds` abstract modules instead (`@Binds fun bind(impl: WeaponRepositoryImpl): WeaponRepository`), which removes boilerplate and keeps constructor changes in one place.~~
+  ✅ **Done (2026-10-07)** in `api-a`, `api-b` and `api-twitch`. Each `di/` module is an `abstract class` of `@Binds`, with a `companion object` `@Provides` only for the Retrofit-created `Api`.
+- ~~**Don't make use cases `@Singleton`.** They are stateless, so unscoped (or `@Reusable`) is enough.~~
+  ✅ **Done (2026-10-07).** Use cases are bound unscoped. Data sources, caches and repositories stay `@Singleton`.
 - **Stop exposing `cache` from repositories.** `LoadWeaponListUseCase` reads `repository.cache` directly, which leaks the data layer. Add a `repository.observeWeaponList()` method, or go offline-first so the repository emits the cached value and then the network value.
 - **Use Room for list caching.** Storing whole lists as JSON strings in Preferences DataStore doesn't scale and can't be queried. Room is a better fit, and Paging 3 could replace the manual paging in `WeaponListViewModel`.
 - **Clean up `BaseViewModel`.** `baseScreenUiState` is declared as `var` but should be `val`. `permissionHandler` is field-injected through `lateinit`, so try constructor injection or a composable-level handler. `showErrorDialog` and `errorMessage` exist in `BaseScreenUiState` but nothing uses them, so either wire a shared error dialog into `BaseScreen` or remove them.
