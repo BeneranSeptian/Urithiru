@@ -39,10 +39,11 @@ Feature modules never depend on each other. They navigate using shared route cla
 ## Build System (`buildlogic/`)
 
 Convention plugins (`buildlogic/src/main/kotlin`):
-- **`base-convention`**: Android library, Hilt and KSP, namespace `com.septianbeneran.urithiru.<module.name>`, flavors, Java 21, the kotlinx-serialization compiler plugin, plus `baseDependencies()` (Hilt, kotlinx-serialization-json, DataStore).
+- **`AndroidExtension.kt`**: `configureAndroid(project)` holds the Android setup shared by the app and every library (compileSdk, minSdk, Java 21, BuildConfig/resValues, and the product flavors). Both `base-convention` and `app-convention` call it, so flavor logic lives in one place.
+- **`base-convention`**: Android library, Hilt and KSP, namespace `com.septianbeneran.urithiru.<module.name>`, `configureAndroid`, the kotlinx-serialization compiler plugin, plus `baseDependencies()` (Hilt, kotlinx-serialization-json, DataStore).
 - **`api-convention`**: base convention plus Retrofit and kotlinx-serialization-json. It also loads the module's `microservice.properties` into `BuildConfig` (for example `WEAPONS_V1=weapons/` and `BOSSES_V1=bosses/`).
 - **`compose-convention`**: base convention plus Compose, Navigation, Coil, Hilt-navigation, and `ksp(project(":navigation-processor"))`.
-- **`app-convention`**: application setup with the same flavor logic plus `applicationIdSuffix`.
+- **`app-convention`**: application setup through `configureAndroid` (flavors also get their `applicationIdSuffix`), plus `targetSdk` and `versionCode`.
 
 **Product flavors** (dimension `environment`): `dev` (default, `.dev`), `uat` (`.uat`), `beta` (`.beta`), `prod`. Each flavor reads `productFlavorProperties/<flavor>.properties` and turns every key into a `BuildConfig` String field. The keys are `APP_NAME`, `ELDEN_RING_BASE_URL`, `TWITCH_BASE_URL`, `IGDB_BASE_URL` and `JSON_BIN_BASE_URL`.
 
@@ -175,7 +176,8 @@ Each step pops the previous screen with `popUpTo(..., inclusive = true)`.
 - **Move `domain/` out of the `api-*` modules.** Use cases currently live in the API modules, so features depend on data-layer modules. If you want strict Clean Architecture, split them into `domain-*` modules, or rename the API modules to `data-*` so the layering is honest.
 
 ### Build logic
-- **Remove the duplication between conventions.** The flavor and `BuildConfig` code is copied between `base-convention` and `app-convention`. Pull it into a shared `configureFlavors()` extension in `buildlogic`.
+- ~~**Remove the duplication between conventions.** The flavor and `BuildConfig` code is copied between `base-convention` and `app-convention`. Pull it into a shared `configureFlavors()` extension in `buildlogic`.~~
+  ✅ **Done (2026-10-07).** `buildlogic/AndroidExtension.kt` has `configureAndroid(project)`, which covers SDKs, Java 21, build features and flavors. `applicationIdSuffix` is only set for the app. The generated applicationIds and `BuildConfig` fields were checked to match the old output for dev, uat and prod.
 - **Fix the hardcoded accessors in `DependencyExtension.kt`.** It imports generated accessors with hashed names (`gradle.kotlin.dsl.accessors._06e7…`), which break whenever Gradle regenerates them. Use `dependencies.add("implementation", …)` or `"ksp"(…)` instead.
 - ~~**Make module wiring consistent.** `:core-navigation` and `:app` use `project(":x")` while others use `moduleImplementation("x")`. Pick one.~~
   ✅ **Done (2026-10-07).** Every module build file uses `moduleImplementation(projects.xxx)`, with type-safe project accessors (`ksp(projects.navigationProcessor)` in `:app`). The only `project(":navigation-processor")` left is inside `buildlogic`'s `composeDependencies()`, because an included build can't see the generated accessors.
