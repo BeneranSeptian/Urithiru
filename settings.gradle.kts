@@ -24,7 +24,9 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Urithiru Project"
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
+rootProject.name = "Urithiru"
 include(":app")
 include(":core")
 include(":api-a")

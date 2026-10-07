@@ -46,7 +46,7 @@ Convention plugins (`buildlogic/src/main/kotlin`):
 
 **Product flavors** (dimension `environment`): `dev` (default, `.dev`), `uat` (`.uat`), `beta` (`.beta`), `prod`. Each flavor reads `productFlavorProperties/<flavor>.properties` and turns every key into a `BuildConfig` String field. The keys are `APP_NAME`, `ELDEN_RING_BASE_URL`, `TWITCH_BASE_URL`, `IGDB_BASE_URL` and `JSON_BIN_BASE_URL`.
 
-`moduleImplementation("name")` (`GradleExtension.kt`) resolves to `project(":name")`. If the root `extra` defines a version for that name, it resolves to the Maven artifact `com.septianbeneran.urithiru:name:version` instead, which lets a module be swapped for a published version.
+`moduleImplementation(projects.xxx)` (`GradleExtension.kt`) takes a type-safe project accessor. These are enabled by `enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")` in `settings.gradle.kts` and generated from its `include(...)` list, so only modules that exist can be referenced, and the IDE autocompletes them. Adding a module to `settings.gradle.kts` creates its accessor (`api-twitch` → `projects.apiTwitch`). The root project is named `Urithiru`, because accessors require a name without spaces. If the root `extra` defines a version for that module name, it resolves to the Maven artifact `com.septianbeneran.urithiru:name:version` instead, which lets a module be swapped for a published version.
 
 ---
 
@@ -177,7 +177,8 @@ Each step pops the previous screen with `popUpTo(..., inclusive = true)`.
 ### Build logic
 - **Remove the duplication between conventions.** The flavor and `BuildConfig` code is copied between `base-convention` and `app-convention`. Pull it into a shared `configureFlavors()` extension in `buildlogic`.
 - **Fix the hardcoded accessors in `DependencyExtension.kt`.** It imports generated accessors with hashed names (`gradle.kotlin.dsl.accessors._06e7…`), which break whenever Gradle regenerates them. Use `dependencies.add("implementation", …)` or `"ksp"(…)` instead.
-- **Make module wiring consistent.** `:core-navigation` and `:app` use `project(":x")` while others use `moduleImplementation("x")`. Pick one.
+- ~~**Make module wiring consistent.** `:core-navigation` and `:app` use `project(":x")` while others use `moduleImplementation("x")`. Pick one.~~
+  ✅ **Done (2026-10-07).** Every module build file uses `moduleImplementation(projects.xxx)`, with type-safe project accessors (`ksp(projects.navigationProcessor)` in `:app`). The only `project(":navigation-processor")` left is inside `buildlogic`'s `composeDependencies()`, because an included build can't see the generated accessors.
 - **Turn KSP incremental processing back on.** `ksp.incremental=false` slows builds. Once the processors declare their originating files correctly (`Dependencies(aggregating, sources)`), it can be re-enabled. Also consider enabling the Gradle configuration cache.
 - **Trim `compose-convention`.** It adds Coil, Hilt-navigation and the `navigation-processor` to every compose module, including `core-ui` and `core-navigation`, which don't need them all.
 

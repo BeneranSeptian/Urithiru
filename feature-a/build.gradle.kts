@@ -3,10 +3,10 @@ plugins {
 }
 
 dependencies {
-    moduleImplementation("api-a")
+    moduleImplementation(projects.apiA)
 
-    moduleImplementation("core")
-    moduleImplementation("core-entity")
-    moduleImplementation("core-navigation")
-    moduleImplementation("core-ui")
+    moduleImplementation(projects.core)
+    moduleImplementation(projects.coreEntity)
+    moduleImplementation(projects.coreNavigation)
+    moduleImplementation(projects.coreUi)
 }

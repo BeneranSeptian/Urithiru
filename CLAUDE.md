@@ -24,7 +24,7 @@ Urithiru is a modular Android app template (Clean Architecture, Jetpack Compose,
 - **Package root is always `com.septianbeneran.urithiru`.** A module's namespace is `com.septianbeneran.urithiru.<module-name with - replaced by .>`. For example, `api-twitch` uses `com.septianbeneran.urithiru.api.twitch`. Source folders must match the package.
 - Dependency direction: `app → feature-* → api-* → core, core-entity`. Features may also use `core-ui` and `core-navigation`.
 - **Feature modules never depend on each other.** They navigate through shared `@Serializable` route classes in `core-navigation`.
-- Use `moduleImplementation("name")` (from `buildlogic/GradleExtension.kt`) for inter-module dependencies in new modules.
+- Use `moduleImplementation(projects.xxx)` (from `buildlogic/GradleExtension.kt`) for every inter-module dependency, e.g. `moduleImplementation(projects.coreUi)`. `projects.*` are Gradle's type-safe project accessors, generated from the `include(...)` list in `settings.gradle.kts`, so a misspelled or missing module fails to compile. Never use `project(":x")` in module build files. (The only exception is inside `buildlogic`, which is an included build and can't see the accessors.)
 - New modules apply one convention plugin:
   - `api-convention` for data/API modules
   - `compose-convention` for UI/feature modules
