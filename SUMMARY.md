@@ -21,9 +21,9 @@ A modular Android app template built with Clean Architecture, Jetpack Compose, H
 | `:api-a` | api lib | Elden Ring **weapons** (list with paging/search, detail, and a DataStore cache) |
 | `:api-b` | api lib | **JSONBin** onboarding pages (with a cache) |
 | `:api-twitch` | api lib | Twitch OAuth `client_credentials` token and `RefreshTokenImpl` |
-| `:feature-splash` | compose lib | Splash screen. It fetches onboarding data, then navigates to onboarding |
-| `:feature-b` | compose lib | OnBoarding → PersonalizeExperience → Home/Landing, plus a BossList screen |
-| `:feature-a` | compose lib | Weapon list (search, infinite scroll) and weapon detail |
+| `:feature-splash` | feature lib | Splash screen. It fetches onboarding data, then navigates to onboarding |
+| `:feature-b` | feature lib | OnBoarding → PersonalizeExperience → Home/Landing, plus a BossList screen |
+| `:feature-a` | feature lib | Weapon list (search, infinite scroll) and weapon detail |
 | `:navigation-processor` | JVM (KSP) | Generates route and graph builders from annotations |
 
 ### Dependency direction
@@ -42,7 +42,8 @@ Convention plugins (`buildlogic/src/main/kotlin`):
 - **`AndroidExtension.kt`**: `configureAndroid(project)` holds the Android setup shared by the app and every library (compileSdk, minSdk, Java 21, BuildConfig/resValues, and the product flavors). Both `base-convention` and `app-convention` call it, so flavor logic lives in one place.
 - **`base-convention`**: Android library, Hilt and KSP, namespace `com.septianbeneran.urithiru.<module.name>`, `configureAndroid`, the kotlinx-serialization compiler plugin, plus `baseDependencies()` (Hilt, kotlinx-serialization-json, DataStore).
 - **`api-convention`**: base convention plus Retrofit and kotlinx-serialization-json. It also loads the module's `microservice.properties` into `BuildConfig` (for example `WEAPONS_V1=weapons/` and `BOSSES_V1=bosses/`).
-- **`compose-convention`**: base convention plus Compose, Navigation, Coil, Hilt-navigation, and `ksp(project(":navigation-processor"))`.
+- **`compose-convention`**: base convention plus Compose (BOM, UI, Material3, tooling), navigation-compose and activity-compose. Used by `core-ui` and `core-navigation`. (`core-ui` also adds Coil itself, for image-loading components.)
+- **`feature-convention`**: compose convention plus Hilt-navigation (`hiltViewModel()`), Coil, and `ksp(project(":navigation-processor"))`. Used by every `feature-*` module.
 - **`app-convention`**: application setup through `configureAndroid` (flavors also get their `applicationIdSuffix`), plus `targetSdk` and `versionCode`.
 - `DependencyExtension.kt` adds dependencies by configuration name (`"implementation"(…)`, `"ksp"(…)`), never through Gradle's generated hashed accessor imports.
 
@@ -130,7 +131,7 @@ Each step pops the previous screen with `popUpTo(..., inclusive = true)`.
 
 **Add a screen:** add the route (plus a graph object if this is a new feature) in `core-navigation`, add the `@FeatureRoute` composable, ViewModel and stateaction in the feature module, then build.
 
-**Add a feature module:** use `compose-convention` and depend on `core`, `core-entity`, `core-navigation`, `core-ui` and the needed `api-*`. Add it to `settings.gradle.kts` and to the `app` dependencies.
+**Add a feature module:** use `feature-convention` and depend on `core`, `core-entity`, `core-navigation`, `core-ui` and the needed `api-*`. Add it to `settings.gradle.kts` and to the `app` dependencies.
 
 ---
 
@@ -184,7 +185,8 @@ Each step pops the previous screen with `popUpTo(..., inclusive = true)`.
 - ~~**Make module wiring consistent.** `:core-navigation` and `:app` use `project(":x")` while others use `moduleImplementation("x")`. Pick one.~~
   ✅ **Done (2026-10-07).** Every module build file uses `moduleImplementation(projects.xxx)`, with type-safe project accessors (`ksp(projects.navigationProcessor)` in `:app`). The only `project(":navigation-processor")` left is inside `buildlogic`'s `composeDependencies()`, because an included build can't see the generated accessors.
 - **Turn KSP incremental processing back on.** `ksp.incremental=false` slows builds. Once the processors declare their originating files correctly (`Dependencies(aggregating, sources)`), it can be re-enabled. Also consider enabling the Gradle configuration cache.
-- **Trim `compose-convention`.** It adds Coil, Hilt-navigation and the `navigation-processor` to every compose module, including `core-ui` and `core-navigation`, which don't need them all.
+- ~~**Trim `compose-convention`.** It adds Coil, Hilt-navigation and the `navigation-processor` to every compose module, including `core-ui` and `core-navigation`, which don't need them all.~~
+  ✅ **Done (2026-10-07).** The feature-only extras moved to the new `feature-convention`. `core-ui` keeps Coil explicitly for future image components. The unused `kotlin-parcelize` plugin was dropped.
 
 ### Navigation processor
 - **Report errors through `KSPLogger.error(msg, symbol)` instead of `error(...)`.** That way problems such as "Multiple start destination" point to the offending file and line.

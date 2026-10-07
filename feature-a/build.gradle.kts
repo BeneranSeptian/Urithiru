@@ -1,5 +1,5 @@
 plugins {
-    id("compose-convention")
+    id("feature-convention")
 }
 
 dependencies {
