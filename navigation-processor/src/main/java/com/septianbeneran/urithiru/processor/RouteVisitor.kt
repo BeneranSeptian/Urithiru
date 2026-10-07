@@ -18,7 +18,10 @@ class RouteVisitor : KSDefaultVisitor<RouteData, FileSpec>() {
             .generateRouteSpec(
                 functionName = simpleName,
                 packageName = sourcePackageName,
-                routeParams = data.routeParams
+                routeParams = data.routeParams,
+                originatingFile = requireNotNull(function.containingFile) {
+                    "@FeatureRoute function ${function.qualifiedName?.asString()} must be declared in a source file"
+                }
             ).build()
 
         return fileSpec

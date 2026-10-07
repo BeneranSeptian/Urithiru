@@ -46,6 +46,7 @@ Convention plugins (`buildlogic/src/main/kotlin`):
 - **`feature-convention`**: compose convention plus Hilt-navigation (`hiltViewModel()`), Coil, and `ksp(project(":navigation-processor"))`. Used by every `feature-*` module.
 - **`app-convention`**: application setup through `configureAndroid` (flavors also get their `applicationIdSuffix`), plus `targetSdk` and `versionCode`.
 - `DependencyExtension.kt` adds dependencies by configuration name (`"implementation"(…)`, `"ksp"(…)`), never through Gradle's generated hashed accessor imports.
+- `gradle.properties` enables incremental KSP (the default) and the configuration cache.
 
 **Product flavors** (dimension `environment`): `dev` (default, `.dev`), `uat` (`.uat`), `beta` (`.beta`), `prod`. Each flavor reads `productFlavorProperties/<flavor>.properties` and turns every key into a `BuildConfig` String field. The keys are `APP_NAME`, `ELDEN_RING_BASE_URL`, `TWITCH_BASE_URL`, `IGDB_BASE_URL` and `JSON_BIN_BASE_URL`.
 
@@ -184,7 +185,8 @@ Each step pops the previous screen with `popUpTo(..., inclusive = true)`.
   ✅ **Done (2026-10-07).** All helpers use `"implementation"(…)` and `"ksp"(…)`.
 - ~~**Make module wiring consistent.** `:core-navigation` and `:app` use `project(":x")` while others use `moduleImplementation("x")`. Pick one.~~
   ✅ **Done (2026-10-07).** Every module build file uses `moduleImplementation(projects.xxx)`, with type-safe project accessors (`ksp(projects.navigationProcessor)` in `:app`). The only `project(":navigation-processor")` left is inside `buildlogic`'s `composeDependencies()`, because an included build can't see the generated accessors.
-- **Turn KSP incremental processing back on.** `ksp.incremental=false` slows builds. Once the processors declare their originating files correctly (`Dependencies(aggregating, sources)`), it can be re-enabled. Also consider enabling the Gradle configuration cache.
+- ~~**Turn KSP incremental processing back on.** `ksp.incremental=false` slows builds. Once the processors declare their originating files correctly (`Dependencies(aggregating, sources)`), it can be re-enabled. Also consider enabling the Gradle configuration cache.~~
+  ✅ **Done (2026-10-07).** Each generated route declares its screen file as its origin (isolating), and the feature graph declares *all* screen files (aggregating), so editing any screen reprocesses the whole graph. Tested incrementally: editing a non-start screen, adding and removing a screen, and adding and removing a feature graph that `:app`'s registry must pick up. The configuration cache is also on, and it was checked to invalidate when a flavor `.properties` file changes.
 - ~~**Trim `compose-convention`.** It adds Coil, Hilt-navigation and the `navigation-processor` to every compose module, including `core-ui` and `core-navigation`, which don't need them all.~~
   ✅ **Done (2026-10-07).** The feature-only extras moved to the new `feature-convention`. `core-ui` keeps Coil explicitly for future image components. The unused `kotlin-parcelize` plugin was dropped.
 
