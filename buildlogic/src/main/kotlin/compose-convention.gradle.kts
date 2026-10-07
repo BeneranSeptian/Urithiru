@@ -1,7 +1,6 @@
 plugins {
     id("com.android.library")
     id("base-convention")
-    id("kotlin-parcelize")
     id("com.google.devtools.ksp")
     id("org.jetbrains.kotlin.plugin.compose")
 }

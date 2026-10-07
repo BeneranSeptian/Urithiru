@@ -8,4 +8,6 @@ dependencies {
 
     moduleImplementation(projects.coreEntity)
     moduleImplementation(projects.coreNavigation)
+
+    implementation(libs.coil.compose)
 }

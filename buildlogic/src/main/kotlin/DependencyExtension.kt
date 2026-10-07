@@ -19,12 +19,14 @@ fun Project.baseDependencies() {
 
 fun Project.apiDependencies() {
     val libs = the<LibrariesForLibs>()
+
     dependencies {
         "implementation"(libs.retrofit)
         "implementation"(libs.kotlinx.serialization.json)
     }
 }
 
+/** Compose UI and navigation-compose. Used by every module with composables (core-ui, core-navigation, features, app). */
 fun Project.composeDependencies() {
     val libs = the<LibrariesForLibs>()
 
@@ -36,9 +38,18 @@ fun Project.composeDependencies() {
         "implementation"(libs.androidx.compose.ui.tooling)
         "implementation"(libs.androidx.compose.material3)
         "implementation"(libs.androidx.navigation.compose)
+        "implementation"(libs.androidx.activity.compose)
+    }
+}
+
+/** Extras only feature modules need: hiltViewModel(), image loading, and the @FeatureRoute processor. */
+fun Project.featureDependencies() {
+    val libs = the<LibrariesForLibs>()
+
+    dependencies {
         "implementation"(libs.androidx.hilt.navigation.compose)
         "implementation"(libs.coil.compose)
-        "implementation"(libs.androidx.activity.compose)
+        // buildlogic is an included build, so it can't use the `projects.*` accessors
         "ksp"(project(":navigation-processor"))
     }
 }

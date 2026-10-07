@@ -27,7 +27,8 @@ Urithiru is a modular Android app template (Clean Architecture, Jetpack Compose,
 - Use `moduleImplementation(projects.xxx)` (from `buildlogic/GradleExtension.kt`) for every inter-module dependency, e.g. `moduleImplementation(projects.coreUi)`. `projects.*` are Gradle's type-safe project accessors, generated from the `include(...)` list in `settings.gradle.kts`, so a misspelled or missing module fails to compile. Never use `project(":x")` in module build files. (The only exception is inside `buildlogic`, which is an included build and can't see the accessors.)
 - New modules apply one convention plugin:
   - `api-convention` for data/API modules
-  - `compose-convention` for UI/feature modules
+  - `feature-convention` for `feature-*` modules (Compose + Hilt-navigation, Coil and the navigation processor)
+  - `compose-convention` for shared Compose libraries without screens (`core-ui`, `core-navigation`)
   - `base-convention` for plain libraries
 
 ## Layering per API module (`api-*`)
