@@ -11,6 +11,8 @@ import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.MemberName
 import com.squareup.kotlinpoet.TypeName
+import com.squareup.kotlinpoet.ksp.addOriginatingKSFile
+import com.squareup.kotlinpoet.ksp.originatingKSFiles
 import com.squareup.kotlinpoet.ksp.writeTo
 
 fun generateRouteGraph(
@@ -48,6 +50,10 @@ fun generateRouteGraph(
             }
 
             endControlFlow()
+
+            // Aggregating output: it lists every route, so it depends on every screen file.
+            // Declaring them all makes KSP reprocess the whole set on any change instead of only the edited file.
+            routeFiles.flatMap { it.originatingKSFiles() }.distinct().forEach { addOriginatingKSFile(it) }
         }
         .build()
 

@@ -1,5 +1,6 @@
 package com.septianbeneran.urithiru.processor.generator
 
+import com.google.devtools.ksp.symbol.KSFile
 import com.google.devtools.ksp.symbol.KSType
 import com.septianbeneran.urithiru.processor.util.Constant.NAVIGATOR_CLASS_NAME
 import com.septianbeneran.urithiru.processor.util.Constant.NAVIGATOR_CLASS_PACKAGE
@@ -8,12 +9,14 @@ import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.MemberName
+import com.squareup.kotlinpoet.ksp.addOriginatingKSFile
 import com.squareup.kotlinpoet.ksp.toClassName
 
 fun FileSpec.Builder.generateRouteSpec(
     functionName: String,
     packageName: String,
-    routeParams: KSType
+    routeParams: KSType,
+    originatingFile: KSFile
 ): FileSpec.Builder {
     val targetPackage = packageName.replace(".screen", ".route")
     val generatedFuncName = functionName.replaceFirstChar { it.lowercase() } + "Generated"
@@ -33,6 +36,8 @@ fun FileSpec.Builder.generateRouteSpec(
                 .beginControlFlow("%M<%T>", composableExtension, routeParams.toClassName())
                 .addStatement("%M(navigator)", targetComposableMember)
                 .endControlFlow()
+                // Isolating output: it only depends on the screen file that declares the route
+                .addOriginatingKSFile(originatingFile)
                 .build()
         )
     return fileSpec
