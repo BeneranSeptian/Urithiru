@@ -7,48 +7,36 @@ import com.septianbeneran.urithiru.api.b.data.remote.service.ApiJsonBinRemoteDat
 import com.septianbeneran.urithiru.api.b.data.remote.service.ApiJsonBinRemoteDataSourceImpl
 import com.septianbeneran.urithiru.api.b.repository.ApiJsonBinRepository
 import com.septianbeneran.urithiru.api.b.repository.ApiJsonBinRepositoryImpl
-import com.septianbeneran.urithiru.core.annotation.ApplicationScope
 import com.septianbeneran.urithiru.core.annotation.JsonBinNetwork
-import com.septianbeneran.urithiru.core.util.CoroutineDispatcherProvider
-import com.septianbeneran.urithiru.core.util.datastore.BaseDataStore
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.CoroutineScope
 import retrofit2.Retrofit
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-class ApiJsonBinModule {
-    @Provides
+abstract class ApiJsonBinModule {
+
+    @Binds
     @Singleton
-    fun provideApiJsonBin(
-        @JsonBinNetwork retrofit: Retrofit
-    ): ApiJsonBin {
-        return retrofit.create(ApiJsonBin::class.java)
+    abstract fun bindApiJsonBinRemoteDataSource(impl: ApiJsonBinRemoteDataSourceImpl): ApiJsonBinRemoteDataSource
+
+    @Binds
+    @Singleton
+    abstract fun bindJsonBinCache(impl: JsonBinCacheImpl): JsonBinCache
+
+    @Binds
+    @Singleton
+    abstract fun bindApiJsonBinRepository(impl: ApiJsonBinRepositoryImpl): ApiJsonBinRepository
+
+    companion object {
+        @Provides
+        @Singleton
+        fun provideApiJsonBin(
+            @JsonBinNetwork retrofit: Retrofit
+        ): ApiJsonBin = retrofit.create(ApiJsonBin::class.java)
     }
-
-    @Provides
-    @Singleton
-    fun provideApiJsonBinRemoteDataSource(
-        api: ApiJsonBin
-    ): ApiJsonBinRemoteDataSource = ApiJsonBinRemoteDataSourceImpl(api)
-
-    @Provides
-    @Singleton
-    fun provideWeaponCache(
-        baseDataStore: BaseDataStore
-    ): JsonBinCache = JsonBinCacheImpl(baseDataStore)
-
-    @Provides
-    @Singleton
-    fun provideRepository(
-        remote: ApiJsonBinRemoteDataSource,
-        dispatcherProvider: CoroutineDispatcherProvider,
-        cache: JsonBinCache,
-        @ApplicationScope applicationScope: CoroutineScope
-    ): ApiJsonBinRepository =
-        ApiJsonBinRepositoryImpl(applicationScope, cache, remote, dispatcherProvider)
 }

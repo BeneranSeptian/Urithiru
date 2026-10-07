@@ -39,8 +39,10 @@ data/remote/service/    XRemoteDataSource + Impl, extending BaseDataSource; wrap
 data/local/             XCache + Impl, wrapping BaseDataStore
 repository/             XRepository + Impl, extending BaseRepository; use resultFlow(...).mapToEntity(...)
 domain/get|load|post/   One use case per action: interface + Impl, with operator fun invoke
-di/                     Hilt @Module classes installed in SingletonComponent
+di/                     Hilt modules in SingletonComponent: @Binds Impl → interface; @Provides only for the Retrofit Api
 ```
+
+Every `Impl` has an `@Inject constructor` and is wired with `@Binds`, never built by hand in `@Provides`. Data sources, caches and repositories are `@Singleton`; use cases are unscoped.
 
 Network calls return `Flow<ApiResult<T>>` (`Loading` → `Success`/`Error`). UI state uses `BaseState`.
 

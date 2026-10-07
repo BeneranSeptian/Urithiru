@@ -7,48 +7,36 @@ import com.septianbeneran.urithiru.api.a.data.remote.service.ApiARemoteDataSourc
 import com.septianbeneran.urithiru.api.a.data.remote.service.ApiARemoteDataSourceImpl
 import com.septianbeneran.urithiru.api.a.repository.WeaponRepository
 import com.septianbeneran.urithiru.api.a.repository.WeaponRepositoryImpl
-import com.septianbeneran.urithiru.core.annotation.ApplicationScope
 import com.septianbeneran.urithiru.core.annotation.EldenRingNetwork
-import com.septianbeneran.urithiru.core.util.CoroutineDispatcherProvider
-import com.septianbeneran.urithiru.core.util.datastore.BaseDataStore
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.CoroutineScope
 import retrofit2.Retrofit
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-class ApiAModule {
+abstract class ApiAModule {
 
-    @Provides
+    @Binds
     @Singleton
-    fun provideEldenRingApi(
-        @EldenRingNetwork retrofit: Retrofit
-    ): WeaponApi {
-        return retrofit.create(WeaponApi::class.java)
+    abstract fun bindApiARemoteDataSource(impl: ApiARemoteDataSourceImpl): ApiARemoteDataSource
+
+    @Binds
+    @Singleton
+    abstract fun bindWeaponCache(impl: WeaponCacheImpl): WeaponCache
+
+    @Binds
+    @Singleton
+    abstract fun bindWeaponRepository(impl: WeaponRepositoryImpl): WeaponRepository
+
+    companion object {
+        @Provides
+        @Singleton
+        fun provideWeaponApi(
+            @EldenRingNetwork retrofit: Retrofit
+        ): WeaponApi = retrofit.create(WeaponApi::class.java)
     }
-
-    @Provides
-    @Singleton
-    fun provideApiARemoteDataSource(
-        api: WeaponApi
-    ): ApiARemoteDataSource = ApiARemoteDataSourceImpl(api)
-
-    @Provides
-    @Singleton
-    fun provideWeaponCache(
-        baseDataStore: BaseDataStore
-    ): WeaponCache = WeaponCacheImpl(baseDataStore)
-
-    @Provides
-    @Singleton
-    fun provideRepository(
-        remote: ApiARemoteDataSource,
-        dispatcherProvider: CoroutineDispatcherProvider,
-        @ApplicationScope applicationScope: CoroutineScope,
-        cache: WeaponCache
-    ): WeaponRepository = WeaponRepositoryImpl(remote, dispatcherProvider, applicationScope, cache)
 }
