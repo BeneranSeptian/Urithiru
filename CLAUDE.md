@@ -44,6 +44,8 @@ di/                     Hilt @Module classes installed in SingletonComponent
 
 Network calls return `Flow<ApiResult<T>>` (`Loading` → `Success`/`Error`). UI state uses `BaseState`.
 
+JSON is kotlinx-serialization only, through the shared `Json` from `core/di/SerializationModule`. Never add Gson. Mark DTOs, and any entity saved with `BaseDataStore.saveObject`, as `@Serializable`, and rename fields with `@SerialName`.
+
 ## Presentation conventions (feature modules)
 
 - Each screen has `screen/stateaction/XStateAction.kt` with:

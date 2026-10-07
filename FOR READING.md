@@ -99,7 +99,7 @@ Make `ApiResult.Error` carry `AppError`, and delete the `6969` code.
 ```kotlin
 catch (e: UnknownHostException)   -> AppError.NoInternet
 catch (e: SocketTimeoutException) -> AppError.Timeout
-catch (e: SerializationException) -> AppError.Parse(e)   // or JsonSyntaxException while on Gson
+catch (e: SerializationException) -> AppError.Parse(e)
 catch (e: IOException)            -> AppError.NoInternet
 catch (e: Exception)              -> AppError.Unknown(e)
 // non-2xx: map by response.code(), and read errorBody() for the server's message

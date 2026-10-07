@@ -20,8 +20,6 @@ fun Project.apiDependencies() {
     val libs = the<LibrariesForLibs>()
     dependencies {
         implementation(libs.retrofit)
-        implementation(libs.retrofit2.kotlinx.serialization.converter)
-        implementation(libs.converter.gson)
         implementation(libs.kotlinx.serialization.json)
     }
 }
