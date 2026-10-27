@@ -1,7 +1,7 @@
 package com.septianbeneran.urithiru.core.base
 
 import com.septianbeneran.urithiru.core.remote.entity.ApiResult
-import com.septianbeneran.urithiru.core.remote.entity.ErrorResponse
+import com.septianbeneran.urithiru.core.remote.entity.AppError
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -25,8 +25,9 @@ open class BaseRepository (
                 ApiResult.Success(entity)
             }
         }
-    } catch (t: Throwable) {
-        ApiResult.Error(ErrorResponse(6969, t.message))
+    } catch (e: Exception) {
+        // transform() turns a DTO into an entity, so a failure here means the response had unexpected data
+        ApiResult.Error(AppError.Parse(e))
     }
 
     protected fun <ResponsePlain, Entity> Flow<ApiResult<ResponsePlain>>.mapToEntity(
