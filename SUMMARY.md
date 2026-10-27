@@ -1,6 +1,6 @@
 # Urithiru Project — Summary
 
-A modular Android app template built with Clean Architecture, Jetpack Compose, Hilt, Retrofit and Coroutines/Flow. The sample domain is **Elden Ring** data (weapons, bosses) from `eldenring.fanapis.com`, plus onboarding content from **JSONBin** and an OAuth token flow for **Twitch/IGDB**.
+A modular Android app template built with Clean Architecture, Jetpack Compose, Hilt, Retrofit and Coroutines/Flow. It ships as **Urithiru Showcase**: a live onboarding (text from **JSONBin**), a **DummyJSON** login, and four tabs (Catalog · Shop · Explore · Profile). Explore uses **Elden Ring** data from `eldenring.fanapis.com`; Shop and Profile are placeholders for now. An unused Twitch/IGDB OAuth token flow is still in `api-twitch`. The plan and roadmap are in `FOR READING.md`.
 
 - Package root: `com.septianbeneran.urithiru` for every module. A module's namespace is the root plus its module name, with `-` replaced by `.`
 - SDK: compileSdk 37, minSdk 24, targetSdk 35, Java 21

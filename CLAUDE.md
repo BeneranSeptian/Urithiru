@@ -4,7 +4,7 @@ Guidance for Claude Code when working in this repository. For the full project o
 
 ## Project
 
-Urithiru is a modular Android app template (Clean Architecture, Jetpack Compose, Hilt, Retrofit, Coroutines/Flow, and KSP-generated navigation). The sample data is Elden Ring (weapons and bosses) from `eldenring.fanapis.com`, onboarding text from JSONBin, login from DummyJSON (`api-dummyjson`, `feature-auth`), and a Twitch OAuth flow. It is becoming "Urithiru Showcase", a working template app with 4 tabs (Catalog, Shop, Explore, Profile); see `FOR READING.md`.
+Urithiru is a modular Android app template (Clean Architecture, Jetpack Compose, Hilt, Retrofit, Coroutines/Flow, and KSP-generated navigation). The sample data is Elden Ring (weapons and bosses) from `eldenring.fanapis.com`, onboarding text from JSONBin, login from DummyJSON (`api-dummyjson`, `feature-auth`), and a Twitch OAuth flow. It is "Urithiru Showcase", a working template app with 4 tabs (Catalog, Shop, Explore, Profile). The plan, roadmap and next steps are in `FOR READING.md` (sections 2, 3 and 10).
 
 ## Commands
 

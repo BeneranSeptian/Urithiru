@@ -4,6 +4,29 @@
 A modular Android application template built with Clean Architecture principles.  
 Designed to be scalable, maintainable, and easy to extend — even for beginners.
 
+It ships as **Urithiru Showcase**, a working app that shows the template off:
+a live onboarding, a DummyJSON login, and four tabs (**Catalog · Shop · Explore · Profile**).
+The Catalog tab demos every `Uri*` component in every state.
+
+## ▶️ Try it
+1. Build and install the dev flavor: `./gradlew :app:installDevDebug`
+2. On first launch you get a 4-page onboarding. Page 3 lets you pick Light, Dark or Match system.
+3. Sign in with the DummyJSON demo account (**`emilys`** / **`emilyspass`**), or continue as a guest.
+4. Later launches skip onboarding. To see it again: `adb shell pm clear com.septianbeneran.urithiru.dev`
+
+## 🗺 App structure
+```
+Splash ─┬─► Onboarding (first launch only) ─┬─► Login ─► Tabs
+        │                                   └─► Continue as guest ─► Tabs
+        └─► Tabs (onboarding already done)
+
+Tabs (bottom bar on phones, rail on tablets):
+  Catalog (home) · Shop · Explore · Profile
+```
+- The tabs are listed in `TopLevelDestination` in `:app`. The bar only shows on a tab's root screen.
+- `navigator.navigateToTopLevel(graph)` switches tabs; each tab keeps its own history.
+- `navigator.navigateToHome()` opens the first tab and clears the back stack.
+
 ## 🧰 Tech Stack
 * Jetpack Compose for UI creation
 * Retrofit + kotlinx-serialization for API calls
@@ -220,4 +243,78 @@ You don't need to manually register the screen in the App module!
 
 The KSP processor automatically tags the generated feature graph with `@FeatureGraph`. The App module will scan for this and automatically include your new screen in the main `NavHost` via the generated `registerAllFeatureGraphs` function.
 
+</details>
+
+<details>
+<summary><h2>🧭 Adding a New Tab</h2></summary>
+
+A tab is a feature module whose start screen is listed in `TopLevelDestination`. Features never know about the bar.
+
+#### Step A: Create the feature module
+Copy `feature-catalog`'s `build.gradle.kts`, `.gitignore`, `*.pro` files and `src/main/AndroidManifest.xml` into `feature-x`. Then register it:
+
+```kotlin
+// settings.gradle.kts
+include(":feature-x")
+
+// app/build.gradle.kts
+moduleImplementation(projects.featureX)
+```
+
+#### Step B: Add the graph and the start screen
+```kotlin
+// core-navigation/.../graph/FeatureXNavGraph.kt
+@Serializable
+object FeatureXNavGraph
+
+// core-navigation/.../routeparams/feature_x/XRoute.kt
+@Serializable
+object XRoute
+
+// feature-x/.../screen/XScreen.kt
+@FeatureRoute(
+    routeParams = XRoute::class,
+    graph = FeatureXNavGraph::class // the tab's root screen
+)
+@Composable
+fun XRoute(navigator: Navigator) {
+    // BaseScreen(viewModel = …, topAppBarArgs = defaults(title = "X", backIcon = null)) { … }
+}
+```
+
+#### Step C: Add the tab
+Add two official Material Symbols icons to `core-ui/src/main/res/drawable` (`x.xml` outlined, `x_filled.xml` filled), then one line in `:app`:
+
+```kotlin
+enum class TopLevelDestination(...) {
+    // ...
+    X("X", R.drawable.x, R.drawable.x_filled, FeatureXNavGraph)
+}
+```
+
+Build. The bar shows the new tab, switching to it keeps its own history, and Back returns to the first tab.
+</details>
+
+<details>
+<summary><h2>🧩 Adding a Component to the Catalog</h2></summary>
+
+Every shared component in `core-ui/component` should appear in the Catalog tab, so it can be tried in both themes.
+
+1. Add an entry to the right section in `feature-catalog/.../catalog/CatalogEntries.kt`:
+   ```kotlin
+   CatalogEntry("my_thing", "UriMyThing", "One sentence about what it's for.")
+   ```
+2. Map it to a demo in `screen/demo/ComponentDemo.kt`:
+   ```kotlin
+   "my_thing" -> MyThingDemo()
+   ```
+3. Write the demo in the matching `*Demos.kt` file, one `DemoSection` per variant or state:
+   ```kotlin
+   @Composable
+   fun MyThingDemo() {
+       DemoSection("Default") { UriMyThing() }
+       DemoSection("Disabled") { UriMyThing(enabled = false) }
+   }
+   ```
+4. Open it in dark mode too (`adb shell cmd uimode night yes`). Components must use `MaterialTheme.colorScheme`, not fixed palette colors.
 </details>
