@@ -1,5 +1,6 @@
 package com.septianbeneran.urithiru.core.di
 
+import com.septianbeneran.urithiru.core.BuildConfig
 import com.septianbeneran.urithiru.core.BuildConfig.ELDEN_RING_BASE_URL
 import com.septianbeneran.urithiru.core.BuildConfig.IGDB_BASE_URL
 import com.septianbeneran.urithiru.core.BuildConfig.JSON_BIN_BASE_URL
@@ -28,7 +29,9 @@ object NetworkModule {
     @Singleton
     fun provideOkHttpClient(): OkHttpClient {
         return OkHttpClient.Builder()
-            .addInterceptor(LogcatInterceptor())
+            .apply {
+                if (BuildConfig.DEBUG) addInterceptor(LogcatInterceptor())
+            }
             .build()
     }
 
