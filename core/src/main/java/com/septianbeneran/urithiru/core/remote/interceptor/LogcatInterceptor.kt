@@ -15,7 +15,6 @@ import java.nio.charset.StandardCharsets.UTF_8
 class LogcatInterceptor : Interceptor {
 
     private val maxLogLength = 100
-    // Logcat cuts off a single entry at roughly 4 KB
     private val maxLogcatEntryLength = 4000
     private val border = "-".repeat(maxLogLength + 4)
 
@@ -123,7 +122,6 @@ class LogcatInterceptor : Interceptor {
     private fun log(text: String) {
         if (text.isBlank()) return
 
-        // Split on line boundaries so long responses aren't cut off by Logcat
         val chunk = StringBuilder()
         text.lineSequence().forEach { line ->
             if (chunk.length + line.length + 1 > maxLogcatEntryLength && chunk.isNotEmpty()) {
