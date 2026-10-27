@@ -6,13 +6,7 @@ import android.content.res.Configuration
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
-
-/** Which color scheme the app uses. [System] follows the phone's dark mode setting. */
-enum class ThemeMode {
-    System,
-    Light,
-    Dark
-}
+import com.septianbeneran.urithiru.core.settings.ThemeMode
 
 @Composable
 fun ThemeMode.isDarkTheme(): Boolean = when (this) {
