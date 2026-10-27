@@ -9,4 +9,7 @@
     <string name="error_http">The request failed. Please try again later.</string>
     <string name="error_parse">We received data we couldn\'t read.</string>
     <string name="error_unknown">An unexpected error occurred.</string>
+    <string name="list_load_more_failed">Couldn\'t load more</string>
+    <string name="search_icon_description">Search</string>
+    <string name="search_clear_description">Clear search</string>
 </resources>
