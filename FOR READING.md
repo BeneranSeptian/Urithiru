@@ -1,187 +1,261 @@
 # For Reading: What To Do Next
 
-Notes for working on Urithiru away from the main laptop. Read this on your phone, pick something, and do it at the office (no AI needed). For how the project is built, see `SUMMARY.md`.
+Notes for reading on your phone (before sleeping, while commuting) and for working away from the main laptop without AI. Each section starts with its status. For how the code is built, see `SUMMARY.md`; for the rules Claude follows, see `CLAUDE.md`.
+
+Last updated: 2026-10-28, branch `improvement` (nothing pushed yet).
 
 ---
 
-## 1. Build a real demo app
+## 1. Where things stand
 
-The template is strong, but a template only convinces people once it ships something. Pick **one** app that makes every part of the architecture do real work.
+The app is becoming **Urithiru Showcase**: a working template app that shows off the components, the navigation, and how easy it is to add a feature.
 
-### ⭐ Recommended: "Tarnished Companion", an Elden Ring compendium
-You already have the API, the entities and two features. Extend them into:
-- **Tabs:** Home · Weapons · Bosses · Favorites
-- **Weapons:** search, filter by category (chips), infinite scroll, and a detail screen with attack/defence/scaling stats
-- **Bosses:** list and detail (`BOSSES_V1` is already in `api-jsonbin`)
-- **Favorites:** save weapons and bosses offline (this is a good reason to add Room)
-- **Build compare:** pick 2 weapons and compare their stats side by side, which is a nice custom UI challenge
+**What works today:**
+- **First launch:** splash → a 4-page *live* onboarding → sign in (or continue as guest) → the tabs. Later launches skip onboarding.
+- **Tabs:** Catalog · Shop · Explore · Profile, as a bottom bar on phones and a rail on tablets. The bar only shows on a tab's root screen.
+- **Catalog:** every `Uri*` component, each with interactive demos.
+- **Explore:** Elden Ring weapons, with search, paging and a detail screen.
+- **Login:** DummyJSON demo account (`emilys` / `emilyspass`). The session is saved on the device.
+- **Theme:** Light / Dark / Match system, picked in onboarding and saved.
+- **Errors:** typed `AppError`, with error, empty, loading and "couldn't load more" states everywhere.
 
-Why this one: it uses lists, details, paging, search, caching, offline mode, bottom navigation and the error states, and the API needs no key.
-
-### Second feature: a game discovery screen using IGDB
-`@IgdbNetwork` and the Twitch token code already exist but aren't used. IGDB requires a Twitch app token, so this feature finally gives that code a job:
-- "Games like Elden Ring" or a trending games list, with cover art and screenshots
-- It shows **auth + token refresh**, which is the most impressive part of a template
-- You'll need a free Twitch developer app (dev.twitch.tv/console) to get a client ID and secret. Keep them in `local.properties`, never in git.
-
-### Other ideas (if Elden Ring gets boring)
-- **Pokédex** (PokéAPI): classic, no key, huge dataset, good for paging
-- **Movie watchlist** (TMDB): free key, images, good for favorites and Room
-- **Expense tracker**: offline-first, no API, so it tests the local/Room side
-
-Tip: compare your structure with Google's **Now in Android** app (github.com/android/nowinandroid). It uses the same ideas (modules, convention plugins, an offline-first repository) and is a good reference when you're unsure.
+**Still placeholders:** Shop and Profile.
 
 ---
 
-## 2. Icons
+## 2. The plan: Urithiru Showcase
 
-### App launcher icon
-1. **Design it** at 108×108dp, keeping the important part inside the center **66dp** safe zone, because launchers crop the edges into circles or squircles. Figma (free) works well.
-2. **Generate it** in Android Studio: right-click `app/src/main/res` → **New → Image Asset**. It creates the adaptive icon (foreground + background) for every density.
-3. **Add a monochrome layer** in the same dialog, so the icon works with Android 13+ **themed icons**.
-4. **Play Store** needs a separate 512×512 PNG. `app/src/main/ic_launcher-playstore.png` is already there; replace it.
-5. No design skills? Try **IconKitchen** (icon.kitchen), a free web generator that exports Android adaptive icons.
+| Tab | Shows off | API | Status |
+|---|---|---|---|
+| **Catalog** (home) | Every component, every state | none | ✅ done |
+| **Shop** | Paging, search, category filters, detail, a cart saved offline | DummyJSON products | ⏳ next |
+| **Explore** | A second, separate API in its own module | Elden Ring | ✅ list + detail |
+| **Profile** | Signed-in user, settings, logout, token refresh | DummyJSON auth | ⏳ next |
 
-### In-app icons
-- **Material Symbols** (fonts.google.com/icons): download the **SVG**, then right-click `core-ui/src/main/res/drawable` → **New → Vector Asset** → *Local file*. That's how your current drawables were made, so keep doing it.
-- Avoid the `material-icons-extended` dependency. It's large and no longer updated; import only the icons you use.
-- Other free sets: **Phosphor**, **Tabler**, **Lucide** (MIT/ISC licences, fine for apps).
-- **Game-themed icons** (swords, shields, skulls): **game-icons.net**. These are CC BY 3.0, so you **must credit the authors**; add an "About / Credits" screen.
-- **Naming:** use `ic_<name>_<style>`, for example `ic_sword_outlined.xml` or `ic_heart_filled.xml`. The current drawables (`close.xml`, `info.xml`) have no prefix, so rename them while the set is still small.
-- Draw them on a **24dp** grid and tint them with `MaterialTheme.colorScheme` instead of hardcoded colors, so they work in dark mode.
+**Why DummyJSON:** it's free, needs no key, and covers what a real app needs: login with access and refresh tokens, paging (`limit` / `skip`), search, categories, and fake writes (POST/PUT/DELETE return real responses but save nothing).
+
+**Why three API modules** (`api-dummyjson`, `api-eldenring`, `api-jsonbin`): to prove that each backend lives in its own module with the same layering.
 
 ---
 
-## 3. Components to add to `core-ui`
+## 3. Next up
 
-You already have: Avatar, Badge, Banner, Button, CheckBox, Dialog, Divider, Dot, EmptyState, ErrorState, Image, ListFooter, ListItem, Loader, MediaPlaceHolder, ProgressBar, RadioButton, SearchBar, Skeleton, Stepper, Toast, TopAppBar.
+### Shop tab (`feature-shop` + new endpoints in `api-dummyjson`)
+1. **Product list:** `GET products?limit=20&skip=0`. Reuse the weapon list's pattern: `collectApi` with a `key`, `UriListFooter`, skeleton rows on the first load.
+2. **Search:** `GET products/search?q=…`, using `UriSearchBar`.
+3. **Category chips:** `GET products/categories`, then `GET products/category/{slug}`. Needs a new **`UriChip`** component in `core-ui`, plus a Catalog entry for it.
+4. **Detail:** `GET products/{id}`, with images, price, rating and an "Add to cart" button.
+5. **Cart (later):** saved offline in **Room**. That's the moment to add Room to the project, and to fix the "repositories expose their cache" issue (see section 6).
 
-**Rule:** a component belongs in `core-ui` if 2+ features use it, or if it's a basic building block. Otherwise keep it in the feature.
-
-### Most useful next (in order)
-1. ✅ **`UriErrorState`**: icon + message + "Retry" button for full-screen failures. This pairs with section 4.
-2. ✅ **`UriEmptyState`**: "No weapons found" with an illustration.
-3. ✅ **`UriSkeleton` / shimmer**: placeholder rows while loading, which feels faster than a spinner.
-4. ✅ **`UriSearchBar`**: done; the weapon list uses it. A general `UriTextField` for forms is still open.
-5. ✅ **`UriImage`**: wraps Coil's `AsyncImage` with your placeholder and error image, so every image loads the same way.
-6. **`UriChip` / `UriChipGroup`**: filters (weapon category, boss region).
-7. **`UriNavigationBar` styling**: for the bottom bar or rail (see section 5).
-8. **`UriTabRow`**: top tabs for sub-sections inside a feature.
-9. **`UriBottomSheet`**: filters, sorting, quick actions.
-10. **`UriPullToRefresh`**: wraps Material 3 `PullToRefreshBox`.
-11. **`UriSnackbar`**: decide how it relates to `UriToast`, and keep just one way to show short messages.
-
-### Design tokens (do this before adding many components)
-Add `UriSpacing` (4, 8, 12, 16, 24, 32), `UriShapes` and `UriElevation`, provided through `CompositionLocal` in `UrithiruTheme`. Then components use `UrithiruTheme.spacing.md` instead of `16.dp`, and changing the look later is a one-file edit.
+### Profile tab (`feature-profile`)
+1. **User card:** from the saved session (`LoadSessionUseCase`). When not signed in, show a "Sign in" button that opens `LoginRoute`.
+2. **Theme setting:** the same Light / Dark / System picker as onboarding page 3, saved through `AppSettings`.
+3. **Logout:** clear the session. `BaseDataStore` needs a `remove(key)` function first.
+4. **Replay onboarding:** navigate to `OnBoardingRoute`.
+5. **Token refresh:** an OkHttp `Authenticator` that calls `POST auth/refresh` on a 401, saves the new tokens and retries once. Add `GET auth/me` (with `Authorization: Bearer …`) to have something that needs the token.
+6. **Login from Profile** must go back to Profile after signing in, not to home. Give `LoginRoute` a parameter for that, e.g. `LoginRoute(returnToPrevious: Boolean = false)`.
 
 ---
 
-## 4. Make error handling more powerful
+## 4. How the app works now (short version)
 
-**Today:** every failure becomes `ErrorResponse(code, message)`, any exception gets the code `6969`, and the UI mostly shows a "Retry" button. Here's a step-by-step upgrade.
+**Navigation**
+- One `NavHost`, in `:app` (`NavHostChamber.kt`). Every feature registers its screens with `@FeatureRoute`, and KSP generates the graphs.
+- `navigator.navigate(SomeRoute(...))` opens a screen.
+- `navigator.navigateToHome()` opens the first tab and clears everything before it. Splash, onboarding and login use it.
+- `navigator.navigateToTopLevel(graph)` switches tabs. Each tab keeps its own history, and Back from another tab returns to Catalog.
 
-### Step 1: typed errors (in `:core`)
-```kotlin
-sealed interface AppError {
-    data object NoInternet : AppError
-    data object Timeout : AppError
-    data object Unauthorized : AppError                 // 401
-    data object NotFound : AppError                     // 404
-    data class Server(val code: Int) : AppError         // 5xx
-    data class Http(val code: Int, val message: String?) : AppError
-    data class Parse(val cause: Throwable) : AppError
-    data class Unknown(val cause: Throwable) : AppError
-}
+**The bottom bar**
+- The tab list is `TopLevelDestination` in `:app`.
+- The bar shows only when **every visible screen is a tab root**, so it comes back only after a back animation has finished. Showing it mid-animation resized the screens while they slid; that was the "weird back animation".
+
+**Animations**
+- Opening a screen slides in from the right, and Back slides it out to the right (300 ms both ways).
+- Moving between two tab roots **crossfades** (200 ms), because a slide misbehaved there.
+
+**Theme**
+- `ThemeMode` is saved by `AppSettings` (in `:core`).
+- `UrithiruProject.defaultThemeMode` applies until the user picks one. Change it to force a mode while developing.
+- Every Material color role is mapped in `UrithiruTheme.kt`. **If something looks purple, a role is missing there.**
+
+**Errors**
+- `BaseDataSource.getResult` turns every failure into an `AppError`.
+- The UI shows `UriErrorState` (full screen), `UriListFooter` (when the next page fails) or `UriEmptyState`.
+- `AppError.isRetryable` decides whether a Retry button appears.
+
+---
+
+## 5. Recipes (do these without AI)
+
+### Add a screen to an existing feature
+1. Add a route in `core-navigation/.../routeparams/feature_x/`:
+   ```kotlin
+   @Serializable data class ThingDetailRoute(val id: String)
+   ```
+2. Write the screen in the feature:
+   ```kotlin
+   @FeatureRoute(routeParams = ThingDetailRoute::class)
+   @Composable fun ThingDetailRoute(navigator: Navigator) { … }
+   ```
+   It must take exactly `(navigator: Navigator)`.
+3. ViewModel: `@HiltViewModel`, extending `BaseViewModel`. Read the argument with `savedStateHandle.toRoute<ThingDetailRoute>().id`.
+4. Open it with `navigator.navigate(ThingDetailRoute("42"))`.
+5. Build. If KSP output looks stale: `./gradlew clean assembleDevDebug`.
+
+### Add a new tab
+1. Create a module by copying `feature-catalog`'s `build.gradle.kts`, `.gitignore`, `*.pro` files and `src/main/AndroidManifest.xml`.
+2. Add `include(":feature-x")` to `settings.gradle.kts`, and `moduleImplementation(projects.featureX)` to `app/build.gradle.kts`.
+3. Add a graph object `FeatureXNavGraph` in `core-navigation/graph/`.
+4. Give the start screen `@FeatureRoute(routeParams = XRoute::class, graph = FeatureXNavGraph::class)`.
+5. Add one line to `TopLevelDestination` in `:app`, with two Material Symbols icons (outlined and filled).
+
+### Add a component to the Catalog
+1. Add a `CatalogEntry("my_thing", "UriMyThing", "One sentence.")` to the right section in `feature-catalog/.../catalog/CatalogEntries.kt`.
+2. Add `"my_thing" -> MyThingDemo()` to `ComponentDemo` in `screen/demo/ComponentDemo.kt`.
+3. Write `MyThingDemo()` in the matching `*Demos.kt` file, using `DemoSection("Title") { … }`.
+4. **Check it in dark mode** (see "Force dark mode" below). That's how the toast and divider bugs were found.
+
+### Add an icon
+1. Go to fonts.google.com/icons, pick the icon, and choose **Outlined** (and **Filled** too if it's for a tab).
+2. Download the **SVG**.
+3. In Android Studio: right-click `core-ui/src/main/res/drawable` → **New → Vector Asset** → **Local file**.
+4. **Naming:** `name.xml` for outlined and `name_filled.xml` for filled (e.g. `person.xml`, `person_filled.xml`).
+5. Tint it with `MaterialTheme.colorScheme`, never a fixed color.
+6. **Never draw icons by hand.** Only official Material Symbols.
+
+### Add an API endpoint
+1. Add the path to the module's `microservice.properties` (e.g. `PRODUCTS_V1=products`). It becomes `BuildConfig.PRODUCTS_V1`.
+2. Then add the DTO (with `mapToEntity()`), the Retrofit function with `@Url`, the data source, the repository, the use case, and bind them in `di/`.
+3. `README.md` has the full example, and `api-dummyjson` is the cleanest one to copy.
+
+### Change the onboarding text
+- It's in your JSONBin bin `6ae0e204ac6210605a56e0bf`; the ID is `ONBOARDING_BIN_ID` in `SplashScreenViewModel`.
+- The bin must stay **public**. Check it in a browser: `https://api.jsonbin.io/v3/b/6ae0e204ac6210605a56e0bf`.
+- The text is only downloaded on first launch, so clear the app data to see a change.
+
+### Force dark mode / see first launch again
 ```
-Make `ApiResult.Error` carry `AppError`, and delete the `6969` code.
-
-### Step 2: map errors in one place (`BaseDataSource.getResult`)
-```kotlin
-catch (e: UnknownHostException)   -> AppError.NoInternet
-catch (e: SocketTimeoutException) -> AppError.Timeout
-catch (e: SerializationException) -> AppError.Parse(e)
-catch (e: IOException)            -> AppError.NoInternet
-catch (e: Exception)              -> AppError.Unknown(e)
-// non-2xx: map by response.code(), and read errorBody() for the server's message
+adb shell cmd uimode night yes      # dark (no = light)
+adb shell pm clear com.septianbeneran.urithiru.dev   # first launch again
 ```
-Catch `CancellationException` separately and rethrow it, or coroutine cancellation will break.
-
-### Step 3: user-friendly messages (in `:core-ui`)
-`fun AppError.toMessage(): Int` returns a string resource (for example "You're offline", "Server is having trouble"). Using resources means you can translate later.
-
-### Step 4: show errors in the right way
-- **First load fails:** full-screen `UriErrorState` with Retry
-- **Pagination or refresh fails:** keep the existing list and show a toast/snackbar ("Couldn't load more")
-- **A user action fails** (for example saving a favorite): a toast
-- **Something blocking** (session expired): `UriDialog`. `BaseScreenUiState` already has `showErrorDialog` and `errorMessage`; wire them into `BaseScreen`.
-
-### Step 5: automatic retry, but only when it makes sense
-Use `retryWhen` in `resultFlow` with exponential backoff (1s, 2s, 4s) **only** for `NoInternet` and `Timeout`. Never retry 4xx errors.
-
-### Step 6: token refresh with an OkHttp `Authenticator`
-On a 401, the authenticator calls `RefreshTokenInterface` (the Twitch implementation already exists), saves the new token, and retries the request once. Features never see the expired-token case. This is the IGDB groundwork from section 1.
-
-### Step 7: offline awareness
-Add a `ConnectivityObserver` in `:core` (`ConnectivityManager.NetworkCallback` exposed as `Flow<Boolean>`), and show a `UriBanner` "You're offline" at the top of the app. Pair it with **cache fallback**: when the network fails, the repository emits the cached list with an `isStale = true` flag instead of an error.
-
-### Step 8: know when things break in the wild
-- **Timber** for logging (debug builds only)
-- **Firebase Crashlytics** or **Sentry** for crashes; also send `AppError.Unknown` as a *non-fatal* report
-- A `CoroutineExceptionHandler` on the `@ApplicationScope` scope, so background save errors don't vanish silently
 
 ---
 
-## 5. Bottom navigation bar / rail (done, see `CLAUDE.md` "Top-level tabs")
+## 6. Known issues and quick wins
 
-- **Where:** in `:app`, wrapping the single `NavHost` in `NavHostChamber`. Features don't know the bar exists.
-- **What:** `NavigationSuiteScaffold` (artifact `androidx.compose.material3:material3-adaptive-navigation-suite`). It's a bottom bar on phones and a rail on tablets and landscape, so you get both for free.
-- **Tabs:** a hand-written `TopLevelDestination` enum in `:app` that points at the feature graph objects (`FeatureOnboardingNavGraph`, `FeatureExploreNavGraph`, …).
-- **Hide/show:** the bar shows only when the current destination is inside a tab graph, so it hides itself on splash and onboarding (`destination.hierarchy.any { it.hasRoute(graph::class) }`).
-- **Switching tabs:** add `Navigator.navigateToTopLevel(graph)` with `popUpTo(start) { saveState = true }`, `launchSingleTop = true` and `restoreState = true`, so each tab keeps its own history.
-- **Watch out:** `BaseScreen` applies `systemBarsPadding()`, which pads twice inside the scaffold. Fix the insets.
-- **A new feature that's a peer of Home** gets one more line in `TopLevelDestination`.
-- **A feature with internal sections** (for example Shop → Browse/Cart/Orders) uses **top tabs** inside the feature. Never stack two bottom bars. Give a feature its own bottom bar only if it's a full "mode switch", and hide the main bar there.
+Small tasks, good for a lunch break:
+- **Hardcoded colors** in `UriStepper`, `UriCheckBox`, `UriRadioButton` and `UriTopAppBar`. Open them in the Catalog in dark mode, and switch them to `MaterialTheme.colorScheme`.
+- **`UriMediaPlaceHolder` is light blue**, which clashes with gray cards. Make it neutral (`surfaceVariant`).
+- **The selected-tab pill is light gray** (Material's `secondaryContainer`). Consider your blue `primaryContainer` instead.
+- **The manifest still asks for** camera, contacts and location, and nothing uses them anymore. Remove them before any Play upload.
+- **The Explore ViewModel** still has an unused "load from local" action (`GetWeaponListLocal`).
+- **`TwitchRepositoryImpl`** has two `TODO()` calls that crash if anything calls them. Implement them, or drop the Twitch module.
+- **The theme picker shows "Match system"** when nothing is saved, even if `defaultThemeMode` is Light. Feature modules can't see the app's default.
+- **Login tokens are unencrypted** in DataStore. That's fine for the demo account; a real app should encrypt them.
+- **A failed image doesn't retry** until it scrolls off screen and back. That needs a connectivity observer (section 8, step 7).
+- **Repositories expose their cache** (`repository.cache`). Fix this when Room arrives.
 
 ---
 
-## 6. Suggested roadmap
+## 7. Components still worth adding to `core-ui`
 
-**Phase 0: hygiene (small, good for an office lunch break)** ✅ done 2026-10-27
-- [x] Add `testImplementation(junit)` + AndroidX test dependencies to the convention plugins (library test stubs don't compile today)
-- [x] Add `LogcatInterceptor` only when `BuildConfig.DEBUG` is true
-- [x] Remove `println("masuk observer")` from `PersonalizeExperienceScreen`
-- [x] Rename `postRereshToken` → `postRefreshToken`
-- [x] Update the README (`graph =` not `navGraph =`, module list, Gradle version)
+**Rule:** a component goes in `core-ui` if 2+ features use it, or if it's a basic building block. Every new one also gets a **Catalog entry**.
+
+Already have: Avatar, Badge, Banner, Button, CheckBox, Dialog, Divider, Dot, EmptyState, ErrorState, Image, ListFooter, ListItem, Loader, MediaPlaceHolder, ProgressBar, RadioButton, SearchBar, Skeleton, Stepper, TextField, Toast, TopAppBar.
+
+Next, in rough order:
+1. **`UriChip` / `UriChipGroup`**: Shop categories.
+2. **`UriMediaCard`**: image + title + badge + chevron, for weapons, products and favorites.
+3. **`UriStatRow`**: label + value (+ bar), for weapon stats and product ratings.
+4. **`UriPullToRefresh`**: wraps Material 3 `PullToRefreshBox`.
+5. **`UriBottomSheet`**: filters and sorting.
+6. **`UriTabRow`**: top tabs inside a feature (never a second bottom bar).
+7. **`UriSnackbar` vs `UriToast`**: pick one way to show short messages.
+
+**Design tokens** (postponed): `UriSpacing`, `UriShapes` and `UriElevation` via `CompositionLocal`, so screens use `UrithiruTheme.spacing.md` instead of `16.dp`.
+
+---
+
+## 8. Error handling: what's done, what's left
+
+✅ **Done:**
+- **1.** Typed `AppError`.
+- **2.** Errors are mapped once, in `BaseDataSource`, and `CancellationException` is rethrown.
+- **3.** `AppError.toMessage()` gives a string resource per error.
+- **4.** The right UI for each case: full-screen `UriErrorState`, a footer when the next page fails, an inline login error.
+
+⏳ **Left:**
+- **5. Automatic retry:** `retryWhen` with backoff (1s, 2s, 4s), **only** for `NoInternet` and `Timeout`. Never retry 4xx errors.
+- **6. Token refresh:** an OkHttp `Authenticator` with DummyJSON `auth/refresh` (see the Profile tab).
+- **7. Offline awareness:** a `ConnectivityObserver` (`Flow<Boolean>`) and an "You're offline" `UriBanner`, plus showing cached data marked as stale instead of an error.
+- **8. Crash reporting:** Timber (debug builds only) plus Crashlytics or Sentry, and a `CoroutineExceptionHandler` on `@ApplicationScope`.
+- **Blocking errors** (e.g. session expired): `BaseScreenUiState` has `showErrorDialog` and `errorMessage`, but nothing uses them. Wire them into `BaseScreen` with `UriDialog`, or delete them.
+
+---
+
+## 9. App launcher icon (not done)
+1. Design it at 108×108dp, keeping the important part inside the center **66dp**, because launchers crop the corners.
+2. In Android Studio: right-click `app/src/main/res` → **New → Image Asset**. Add a **monochrome layer** in the same dialog so it works with Android 13+ themed icons.
+3. Play Store needs a 512×512 PNG; replace `app/src/main/ic_launcher-playstore.png`.
+4. No design skills? **IconKitchen** (icon.kitchen) exports adaptive icons.
+
+---
+
+## 10. Roadmap
+
+**Phase 0: hygiene** ✅ done 2026-10-27
 
 **Phase 1: foundations**
-- [x] Typed `AppError` + `UriErrorState` / `UriEmptyState` / skeleton (sections 3 and 4), done 2026-10-27
-- [x] Fix `collectApi` so a new search cancels the previous request, done 2026-10-27
-- [ ] Design tokens (spacing and shapes). Postponed, along with converting the existing `.dp` values
+- [x] Typed `AppError` + error, empty and skeleton states
+- [x] `collectApi` key, so a new search cancels the old one
+- [x] Full theme and type mapping, dark mode, saved `ThemeMode`
+- [ ] Design tokens (postponed)
 
-**Phase 2: demo app shell**
-- [x] Bottom bar / rail (section 5), done 2026-10-28 with Catalog · Shop · Explore · Profile
-- [ ] Room + Favorites tab
-- [ ] App icon + themed icon (section 2)
+**Phase 2: showcase shell**
+- [x] Modules renamed after their content (`feature-explore`, `api-eldenring`, …)
+- [x] Live onboarding + DummyJSON login + first-launch-only
+- [x] 4-tab bar / rail (Catalog · Shop · Explore · Profile)
+- [x] Catalog tab with interactive demos
+- [ ] Shop tab (section 3)
+- [ ] Profile tab + token refresh + logout (section 3)
+- [ ] App launcher icon (section 9)
 
-**Phase 3: content**
-- [ ] Bosses list and detail
-- [ ] Weapon compare screen
-- [ ] IGDB feature with token refresh
+**Phase 3: depth**
+- [ ] Room + offline cart / favorites
+- [ ] `UriChip`, `UriMediaCard`, `UriStatRow`
+- [ ] Bosses list and detail in Explore (`BOSSES_V1` is ready in `api-eldenring`)
+- [ ] Connectivity observer + offline banner
 
 **Phase 4: ship it**
-- [ ] Release build type with R8 (`isMinifyEnabled`) + keep rules
-- [x] Dark theme check, done 2026-10-27. Force a mode with `UrithiruProject.themeMode`
+- [ ] Remove the unused permissions from the manifest
+- [ ] Release build with R8 (`isMinifyEnabled`) + keep rules for Retrofit and serialization
 - [ ] Unit tests for repositories and ViewModels, plus CI (GitHub Actions)
-- [ ] Upload to Play Console internal testing, and put the link in the README
+- [ ] Tag a `template-v1` release, then Play Console internal testing
 
 ---
 
-## 7. Working from the office without AI
+## 11. Debugging tips learned the hard way
 
-- `git pull` first, and work on a branch per task (`feature/bottom-nav`, `fix/error-handling`).
-- Small commits with clear messages, so it's easy to review later at home.
-- Write down questions and blockers at the bottom of this file under "Open questions" and commit them. They're the to-do list for the next session at home.
-- If `./gradlew` says "permission denied", run `sh gradlew …` or `chmod +x gradlew` (on Windows, use `gradlew.bat`).
+- **The emulator rolls back on restart.** It's started with `-no-snapshot-save`, so a restart can bring back an old build. Reinstall (`./gradlew :app:installDevDebug`) after every restart.
+- **Don't touch the emulator window while a test script runs.** Mouse clicks there go straight into the app.
+- **To see an animation frame by frame:**
+  ```
+  adb shell screenrecord --time-limit 4 /sdcard/clip.mp4
+  adb pull /sdcard/clip.mp4
+  ffmpeg -i clip.mp4 -vf "fps=20,scale=270:-1,tile=8x3" -frames:v 1 sheet.png
+  ```
+  `ffmpeg` is installed through WinGet.
+- **`uiautomator dump` can lag one screen behind** on a slow emulator. Trust screenshots over text dumps.
+- **To see the back stack,** log `navController.currentBackStack.value` in `NavHostChamber`. That's how the "tab pops home away" bug was found.
+
+---
+
+## 12. Working from the office without AI
+
+- `git pull` first, and use one branch per task (`feature/shop-list`, `fix/stepper-colors`).
+- Small commits with clear messages.
+- Write questions and blockers under "Open questions" below and commit them. They're the to-do list for the next session.
+- If `./gradlew` says "permission denied": `sh gradlew …`, or `gradlew.bat` on Windows.
 
 ## Open questions
 - (add yours here)
