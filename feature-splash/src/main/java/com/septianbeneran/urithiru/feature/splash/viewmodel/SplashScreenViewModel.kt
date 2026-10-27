@@ -41,7 +41,14 @@ class SplashScreenViewModel @Inject constructor(
                 binId = "69addb9cae596e708f6de2ed"
             ),
             isCentralLoading = true,
+            onLoading = {
+                _uiState.update { it.copy(onBoardingPageDataState = StateLoading) }
+            },
+            onError = { error ->
+                _uiState.update { it.copy(onBoardingPageDataState = StateFailed(error)) }
+            },
             onSuccess = { data ->
+                _uiState.update { it.copy(onBoardingPageDataState = StateSuccess(data)) }
                 sendNonce(SplashScreenNonce.NavigateToOnBoarding)
             }
         )

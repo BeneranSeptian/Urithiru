@@ -44,6 +44,9 @@ import com.septianbeneran.urithiru.core.navigation.routeparams.feature_a.WeaponD
 import com.septianbeneran.urithiru.core.navigation.routeparams.feature_a.WeaponListRoute
 import com.septianbeneran.urithiru.core.navigation.util.Navigator
 import com.septianbeneran.urithiru.core.ui.base.BaseScreen
+import com.septianbeneran.urithiru.core.ui.component.UriEmptyState
+import com.septianbeneran.urithiru.core.ui.component.UriErrorState
+import com.septianbeneran.urithiru.core.ui.component.UriSkeletonListItem
 import com.septianbeneran.urithiru.core.ui.component.UriTopAppBarProperties.defaults
 import com.septianbeneran.urithiru.core.ui.util.NonceObserver
 import com.septianbeneran.urithiru.feature.a.screen.stateaction.WeaponListNonce
@@ -172,11 +175,15 @@ fun WeaponListSection(
             }
 
             weaponListState is StateFailed && weapons.isEmpty() -> {
-                Button(
-                    onClick = getWeaponList,
-                    modifier = Modifier.align(Alignment.Center)
-                ) {
-                    Text("Retry")
+                UriErrorState(
+                    error = weaponListState.failed,
+                    onRetry = getWeaponList
+                )
+            }
+
+            weaponListState is StateLoading && weapons.isEmpty() -> {
+                Column(modifier = Modifier.padding(vertical = 16.dp)) {
+                    repeat(6) { UriSkeletonListItem() }
                 }
             }
 
@@ -202,7 +209,10 @@ fun WeaponListSection(
 
             else -> {
                 if (weapons.isEmpty() && weaponListState is StateSuccess) {
-                    Text(text = "No weapons found", modifier = Modifier.align(Alignment.Center))
+                    UriEmptyState(
+                        title = "No weapons found",
+                        message = "Try a different name."
+                    )
                 } else {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),

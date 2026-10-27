@@ -8,6 +8,7 @@ import com.septianbeneran.urithiru.core.ui.base.BaseNonce
 
 data class SplashScreenUiState(
     val onBoardingPageDataList: List<OnBoardingPageData> = emptyList(),
+    val onBoardingPageDataState: BaseState<List<OnBoardingPageData>> = StateInitial,
 )
 
 sealed interface SplashScreenAction {

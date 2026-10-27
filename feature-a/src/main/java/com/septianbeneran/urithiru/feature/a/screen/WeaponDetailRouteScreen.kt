@@ -36,6 +36,7 @@ import com.septianbeneran.urithiru.core.navigation.routeparams.feature_a.WeaponD
 import com.septianbeneran.urithiru.core.navigation.util.Navigator
 import com.septianbeneran.urithiru.core.ui.base.BaseScreen
 import com.septianbeneran.urithiru.core.ui.component.UriTopAppBarProperties.defaults
+import com.septianbeneran.urithiru.core.ui.component.UriErrorState
 import com.septianbeneran.urithiru.core.ui.util.shimmerEffect
 import com.septianbeneran.urithiru.feature.a.screen.stateaction.WeaponDetailAction
 import com.septianbeneran.urithiru.feature.a.screen.stateaction.WeaponDetailAction.GetWeaponDetail
@@ -78,16 +79,10 @@ fun WeaponDetailScreen(
         }
 
         is StateFailed -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Button(onClick = {
-                    onAction(GetWeaponDetail(routeParam.orEmpty()))
-                }) {
-                    Text("Retry")
-                }
-            }
+            UriErrorState(
+                error = weaponState.failed,
+                onRetry = { onAction(GetWeaponDetail(routeParam.orEmpty())) }
+            )
         }
 
         else -> {
