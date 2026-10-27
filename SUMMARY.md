@@ -120,7 +120,7 @@ Each step pops the previous screen with `popUpTo(..., inclusive = true)`.
 ---
 
 ## Design System (`core-ui/component`)
-`UriAvatar`, `UriBadge`, `UriBanner`, `UriButton`, `UriCheckBox`, `UriDialog`, `UriDivider`, `UriDot`, `UriListItem`, `UriLoader`, `UriMediaPlaceHolder`, `UriProgressBar`, `UriRadioButton`, `UriStepper`, `UriToast`, `UriTopAppBar`, `CentralLoadingDialog`. The theme lives in `core-ui/theme` (with custom fonts under `res/font`).
+`UriAvatar`, `UriBadge`, `UriBanner`, `UriButton`, `UriCheckBox`, `UriDialog`, `UriDivider`, `UriDot`, `UriEmptyState`, `UriErrorState`, `UriImage`, `UriListFooter`, `UriListItem`, `UriLoader`, `UriMediaPlaceHolder`, `UriProgressBar`, `UriRadioButton`, `UriSearchBar`, `UriSkeleton`, `UriStepper`, `UriToast`, `UriTopAppBar`, `CentralLoadingDialog`. The theme lives in `core-ui/theme` (with custom fonts under `res/font`). `UrithiruTheme.kt` maps every Material 3 color role to the Urithiru palette for light and dark, and `Typography.kt` maps the Material type roles in size order. `ThemeMode` (`System`/`Light`/`Dark`) is set in `UrithiruProject.themeMode`; `MainActivity` applies it to the system bars, the activity's resources (`attachBaseContext`) and, on Android 12+, the launch window (`UiModeManager.setApplicationNightMode`). `MainActivity` wraps the app in a `Surface` with the theme background, and `values-night/themes.xml` gives the window a dark parent.
 
 ---
 
@@ -200,7 +200,8 @@ Each step pops the previous screen with `popUpTo(..., inclusive = true)`.
 ### UI / UX
 - **Move hardcoded strings** (`"Retry"`, etc.) into `strings.xml` so the app can be localized.
 - **Improve accessibility.** The `Uri*` components already have previews; add `contentDescription` on images and check touch-target sizes.
-- **Add a dark theme and dynamic color** to `UrithiruTheme` if not already supported.
+- ~~**Add a dark theme and dynamic color** to `UrithiruTheme` if not already supported.~~
+  ✅ **Dark theme done (2026-10-27).** Every color role is mapped for light and dark, the background is painted, and `ThemeMode` can force a mode. Dynamic color (Material You wallpaper colors) is still open, if wanted.
 - ~~**Remove the debug `println`**~~ ✅ **Done (2026-10-27).** Still open: use a logger such as Timber, gated to debug builds.
 
 ### Quality & tooling

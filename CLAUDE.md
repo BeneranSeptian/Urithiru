@@ -57,7 +57,9 @@ JSON is kotlinx-serialization only, through the shared `Json` from `core/di/Seri
   - `XNonce : BaseNonce`: one-shot events, mostly navigation
 - ViewModels are `@HiltViewModel` and extend `BaseViewModel`. They expose `uiState: StateFlow` and a single `onAction(action)`. Use `collectApi(...)` for network flows, `collectLocalData(...)` for cache flows, and `sendNonce(...)` for events.
 - Screens wrap their content in `BaseScreen(viewModel = …)` and observe events with `NonceObserver(viewModel.nonce) { … }`.
-- Reuse `core-ui` components (`UriButton`, `UriDialog`, `UriToast`, `UriTopAppBar`, …) and `UrithiruTheme` tokens before writing new UI. New shared components go in `core-ui/component`, use the `Uri` prefix, and need a `@Preview`.
+- Reuse `core-ui` components (`UriButton`, `UriDialog`, `UriToast`, `UriTopAppBar`, `UriErrorState`, `UriEmptyState`, `UriSearchBar`, `UriImage`, `UriListFooter`, …) and `UrithiruTheme` tokens before writing new UI. New shared components go in `core-ui/component`, use the `Uri` prefix, and need a `@Preview`.
+- Colors come from `MaterialTheme.colorScheme`; every Material 3 role is mapped to the Urithiru palette in `UrithiruTheme.kt` for light and dark. When a Material component looks purple, a role is missing there; fix it in the theme, not in the screen.
+- Light/dark is chosen by `UrithiruProject.themeMode` (`ThemeMode.System`, `Light` or `Dark`). `MainActivity` applies it to the system bars, the activity's resources and, on Android 12+, the launch window. Don't read `isSystemInDarkTheme()` directly in screens; the theme already reflects the chosen mode.
 
 ## Navigation (KSP: `:navigation-processor`)
 
