@@ -12,4 +12,6 @@
     <string name="list_load_more_failed">Couldn\'t load more</string>
     <string name="search_icon_description">Search</string>
     <string name="search_clear_description">Clear search</string>
+    <string name="text_field_show_password">Show password</string>
+    <string name="text_field_hide_password">Hide password</string>
 </resources>

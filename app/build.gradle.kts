@@ -45,6 +45,7 @@ dependencies {
     moduleImplementation(projects.featureExplore)
     moduleImplementation(projects.featureOnboarding)
     moduleImplementation(projects.featureSplash)
+    moduleImplementation(projects.featureAuth)
 
     ksp(projects.navigationProcessor)
 }
