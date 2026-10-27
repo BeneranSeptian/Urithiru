@@ -15,14 +15,16 @@ A modular Android app template built with Clean Architecture, Jetpack Compose, H
 | `:app` | application | `UrithiruProject` (`@HiltAndroidApp`), `MainActivity`, and `NavHostChamber` (the root `NavHost`, which starts at `FeatureSplashNavGraph` and calls the generated `registerAllFeatureGraphs`) |
 | `:buildlogic` | included build | Convention plugins, `AppConfig`, `ProductFlavor`, dependency bundles |
 | `:core` | library | Base data/repository classes, `ApiResult`/`BaseState`, Retrofit and OkHttp DI, DataStore wrapper, dispatchers, permission handling |
-| `:core-entity` | library | Domain models: `Weapon`, `Attributes`, `Scaling`, `Boss`, `OnBoardingPageData`, `TwitchOAuthToken` |
+| `:core-entity` | library | Domain models: `Weapon`, `Attributes`, `Scaling`, `Boss`, `OnBoardingPageData`, `AuthSession`, `User`, `TwitchOAuthToken` |
 | `:core-navigation` | compose lib | `@FeatureRoute` and `@FeatureGraph` annotations, `@Serializable` graph objects and route params, the `Navigator` wrapper |
 | `:core-ui` | compose lib | `BaseScreen`, `BaseViewModel`, `NonceObserver`, theme (`UrithiruTheme`, colors, typography), and the `Uri*` design-system components |
 | `:api-eldenring` | api lib | Elden Ring **weapons** (list with paging/search, detail, and a DataStore cache); the `BOSSES_V1` endpoint path is ready but unused |
 | `:api-jsonbin` | api lib | **JSONBin** onboarding pages (with a cache) |
 | `:api-twitch` | api lib | Twitch OAuth `client_credentials` token and `RefreshTokenImpl` |
-| `:feature-splash` | feature lib | Splash screen. It fetches onboarding data, then navigates to onboarding |
-| `:feature-onboarding` | feature lib | OnBoarding → PersonalizeExperience → Home/Landing |
+| `:api-dummyjson` | api lib | **DummyJSON** login (`auth/login`); the session (tokens + user) is saved unencrypted in DataStore via `AuthCache`. A real app should encrypt it |
+| `:feature-splash` | feature lib | Splash screen. Goes straight to Landing if onboarding was completed; otherwise fetches the onboarding text from JSONBin and opens onboarding, even if the request fails |
+| `:feature-onboarding` | feature lib | Four live demo pages (components, error handling, theme picker, sign in) and the Home/Landing screen |
+| `:feature-auth` | feature lib | `LoginRoute`: username/password with `UriTextField`, a "Use demo account" shortcut, and friendly errors. Reusable by the planned Profile tab |
 | `:feature-explore` | feature lib | Weapon list (search, infinite scroll) and weapon detail, plus an empty BossList screen stub. Becomes the Explore tab of the planned 4-tab showcase |
 | `:navigation-processor` | JVM (KSP) | Generates route and graph builders from annotations |
 
@@ -112,15 +114,25 @@ di/                      Hilt modules: @Binds for Impl → interface, @Provides 
 **Current routes / app flow**
 ```
 Splash (FeatureSplashNavGraph start)
-  └─► OnBoarding ─► PersonalizeExperience ─► Landing/Home (FeatureOnboardingNavGraph start)
-                                                └─► WeaponList (FeatureExploreNavGraph start) ─► WeaponDetail(id)
+  ├─► Landing/Home, when onboarding was completed before
+  └─► OnBoarding (4 pages) ─┬─► Login (FeatureAuthNavGraph start) ─► Landing/Home
+                            └─► "Continue as guest" ─────────────────► Landing/Home (FeatureOnboardingNavGraph start)
+                                                                          └─► WeaponList (FeatureExploreNavGraph start) ─► WeaponDetail(id)
 ```
-Each step pops the previous screen with `popUpTo(..., inclusive = true)`.
+Splash pops itself. Reaching Landing pops onboarding and login, so Back from Landing leaves the app.
+
+**Onboarding pages** (`feature-onboarding/screen/demo/`): each page is a live demo, not an image.
+1. `ComponentsDemo`: real `Uri*` components animate in one by one.
+2. `ErrorHandlingDemo`: a "Go offline" switch runs a simulated request in the ViewModel and shows the skeleton, `UriErrorState` with Retry, or data.
+3. `ThemeDemo`: Light / Dark / Match system, saved through `AppSettings`.
+4. `SignInDemo`: opens `LoginRoute`, or "Continue as guest". Shows "Continue as <name>" when a session exists.
+
+Titles and descriptions come from JSONBin (server-driven); `OnBoardingDefaults` in the feature is used for any page the bin doesn't provide. Choosing Sign in or Continue sets `hasCompletedOnboarding`, so later launches skip onboarding. Landing's "On Boarding" button replays it.
 
 ---
 
 ## Design System (`core-ui/component`)
-`UriAvatar`, `UriBadge`, `UriBanner`, `UriButton`, `UriCheckBox`, `UriDialog`, `UriDivider`, `UriDot`, `UriEmptyState`, `UriErrorState`, `UriImage`, `UriListFooter`, `UriListItem`, `UriLoader`, `UriMediaPlaceHolder`, `UriProgressBar`, `UriRadioButton`, `UriSearchBar`, `UriSkeleton`, `UriStepper`, `UriToast`, `UriTopAppBar`, `CentralLoadingDialog`. The theme lives in `core-ui/theme` (with custom fonts under `res/font`). `UrithiruTheme.kt` maps every Material 3 color role to the Urithiru palette for light and dark, and `Typography.kt` maps the Material type roles in size order. `ThemeMode` (`System`/`Light`/`Dark`) is set in `UrithiruProject.themeMode`; `MainActivity` applies it to the system bars, the activity's resources (`attachBaseContext`) and, on Android 12+, the launch window (`UiModeManager.setApplicationNightMode`). `MainActivity` wraps the app in a `Surface` with the theme background, and `values-night/themes.xml` gives the window a dark parent.
+`UriAvatar`, `UriBadge`, `UriBanner`, `UriButton`, `UriCheckBox`, `UriDialog`, `UriDivider`, `UriDot`, `UriEmptyState`, `UriErrorState`, `UriImage`, `UriListFooter`, `UriListItem`, `UriLoader`, `UriMediaPlaceHolder`, `UriProgressBar`, `UriRadioButton`, `UriSearchBar`, `UriSkeleton`, `UriStepper`, `UriToast`, `UriTopAppBar`, `CentralLoadingDialog`. The theme lives in `core-ui/theme` (with custom fonts under `res/font`). `UrithiruTheme.kt` maps every Material 3 color role to the Urithiru palette for light and dark, and `Typography.kt` maps the Material type roles in size order. `ThemeMode` (`System`/`Light`/`Dark`, in `:core` `settings/`) is a user setting saved by `AppSettings` (`:core`, DataStore), which also holds `hasCompletedOnboarding`. `UrithiruProject.defaultThemeMode` is used until the user picks one. `UrithiruProject` reads the saved mode once at startup (`runBlocking`, before the first frame) into `currentThemeMode`; `MainActivity` applies it to the system bars, the activity's resources (`attachBaseContext`) and, on Android 12+, the launch window (`UiModeManager.setApplicationNightMode`). When the saved mode changes, `MainActivity` recreates itself, like AppCompat does for night mode. `MainActivity` wraps the app in a `Surface` with the theme background, and `values-night/themes.xml` gives the window a dark parent.
 
 ---
 
@@ -141,7 +153,9 @@ Each step pops the previous screen with `popUpTo(..., inclusive = true)`.
 > On the `improvement` branch, the broken `WeaponRepository` import is fixed and every package is now under `com.septianbeneran.urithiru`. See also `CLAUDE.md` (conventions) and `FOR READING.md` (roadmap and ideas).
 
 - `@IgdbNetwork` Retrofit and `RefreshTokenInterface`/`RefreshTokenImpl` are provided, but nothing uses them yet. No IGDB API module exists so far.
-- The splash screen hardcodes the JSONBin `binId` in `SplashScreenViewModel`.
+- The splash screen hardcodes the JSONBin `binId` in `SplashScreenViewModel` (`ONBOARDING_BIN_ID`).
+- `UriStepper` still uses hardcoded dark text colors, so it may be hard to read in dark mode. (`UriListItem` was fixed.)
+- Login has no token refresh or logout yet; both come with the Profile tab.
 - Paging assumes a page size of 20 (`isEndReached = newWeapons.size < 20`) in `WeaponListViewModel`.
 - Tests are only the default `ExampleUnitTest` and `ExampleInstrumentedTest` stubs. Every module now gets JUnit and AndroidX test from `testDependencies()` in the convention plugins, so they compile and run.
 

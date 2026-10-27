@@ -29,9 +29,11 @@ The project contains the following modules:
 * `:api-eldenring`
 * `:api-jsonbin`
 * `:api-twitch`
+* `:api-dummyjson`
 * `:feature-explore`
 * `:feature-onboarding`
 * `:feature-splash`
+* `:feature-auth`
 * `:navigation-processor`
 
 `buildlogic` is not a module: it's an included build that holds the convention plugins (`base-convention`, `api-convention`, `compose-convention`, `feature-convention`, `app-convention`).
