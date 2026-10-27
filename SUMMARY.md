@@ -140,13 +140,10 @@ Each step pops the previous screen with `popUpTo(..., inclusive = true)`.
 
 > On the `improvement` branch, the broken `WeaponRepository` import is fixed and every package is now under `com.septianbeneran.urithiru`. See also `CLAUDE.md` (conventions) and `FOR READING.md` (roadmap and ideas).
 
-- The README's "New Screen Route" section uses `navGraph =` in `@FeatureRoute`, but the actual parameter is **`graph`**. The README module list also leaves out `:api-twitch` and `:navigation-processor`, and it says Gradle 9.3.1 while the libraries were updated to 9.4.1.
 - `@IgdbNetwork` Retrofit and `RefreshTokenInterface`/`RefreshTokenImpl` are provided, but nothing uses them yet. No IGDB API module exists so far.
 - The splash screen hardcodes the JSONBin `binId` in `SplashScreenViewModel`.
 - Paging assumes a page size of 20 (`isEndReached = newWeapons.size < 20`) in `WeaponListViewModel`.
-- There is a leftover debug `println("masuk observer")` in `PersonalizeExperienceScreen.kt`.
-- `RefreshTokenInterface.postRereshToken` has a typo ("Reresh").
-- Tests are only the default `ExampleUnitTest` and `ExampleInstrumentedTest` stubs. In library modules those stubs don't even compile, because the convention plugins add no JUnit or AndroidX test dependencies (only `:app` has them).
+- Tests are only the default `ExampleUnitTest` and `ExampleInstrumentedTest` stubs. Every module now gets JUnit and AndroidX test from `testDependencies()` in the convention plugins, so they compile and run.
 
 ---
 
@@ -164,7 +161,8 @@ Each step pops the previous screen with `popUpTo(..., inclusive = true)`.
 - **Keep secrets out of source.** Twitch `client_id`/`client_secret` should come from `local.properties` or CI secrets and be injected into `BuildConfig`, not hardcoded. The JSONBin `binId` should move to `microservice.properties`.
 
 ### Security & release readiness
-- **Limit `LogcatInterceptor` to debug builds.** Today it logs every header, including `Authorization`, and full bodies in all flavors, `prod` included. Add it only when `BuildConfig.DEBUG` is true, or redact sensitive headers.
+- ~~**Limit `LogcatInterceptor` to debug builds.** Today it logs every header, including `Authorization`, and full bodies in all flavors, `prod` included. Add it only when `BuildConfig.DEBUG` is true, or redact sensitive headers.~~
+  ✅ **Done (2026-10-27).** `NetworkModule` adds it only when `BuildConfig.DEBUG` is true. Headers are not redacted, so debug logs still show `Authorization`.
 - **Add a `buildTypes { release { isMinifyEnabled = true; isShrinkResources = true } }` block** with R8 keep rules for Retrofit and kotlinx-serialization models. No minify or shrink setup exists yet.
 - **Set `targetSdk` closer to `compileSdk`.** `targetSdk` is 35 while `compileSdk` is 37, and Play's target API requirements will catch up.
 
@@ -200,7 +198,7 @@ Each step pops the previous screen with `popUpTo(..., inclusive = true)`.
 - **Move hardcoded strings** (`"Retry"`, etc.) into `strings.xml` so the app can be localized.
 - **Improve accessibility.** The `Uri*` components already have previews; add `contentDescription` on images and check touch-target sizes.
 - **Add a dark theme and dynamic color** to `UrithiruTheme` if not already supported.
-- **Remove the debug `println`** and use a logger such as Timber, gated to debug builds.
+- ~~**Remove the debug `println`**~~ ✅ **Done (2026-10-27).** Still open: use a logger such as Timber, gated to debug builds.
 
 ### Quality & tooling
 - **Add tests.** The highest-value places to start:
@@ -209,4 +207,5 @@ Each step pops the previous screen with `popUpTo(..., inclusive = true)`.
 - **Add static analysis.** Use Detekt and ktlint (or Spotless), plus Android Lint with `warningsAsErrors` in CI.
 - **Add CI.** A GitHub Actions workflow that builds every flavor and runs tests and lint on each PR.
 - **Add a dependency-update bot.** Renovate or Dependabot can update `libs.versions.toml`.
-- **Bring the README up to date** with the actual modules, `@FeatureRoute(graph = …)`, and the Gradle version, and link to this summary.
+- ~~**Bring the README up to date** with the actual modules, `@FeatureRoute(graph = …)`, and the Gradle version, and link to this summary.~~
+  ✅ **Done (2026-10-27).** Also fixed the base URL and endpoint steps to match `productFlavorProperties` and `microservice.properties`.
