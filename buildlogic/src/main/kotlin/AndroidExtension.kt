@@ -9,11 +9,12 @@ import java.util.Properties
 
 /**
  * Android setup shared by the application and every library module:
- * SDK levels, Java 21, BuildConfig/resValues, and the product flavors.
+ * SDK levels, the test runner, Java 21, BuildConfig/resValues, and the product flavors.
  */
 internal fun CommonExtension.configureAndroid(project: Project) {
     compileSdk = AppConfig.compileSdk
     defaultConfig.minSdk = AppConfig.minSdk
+    defaultConfig.testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
     buildFeatures.buildConfig = true
     buildFeatures.resValues = true
