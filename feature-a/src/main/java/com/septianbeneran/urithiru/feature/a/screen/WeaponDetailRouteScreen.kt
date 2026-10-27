@@ -25,7 +25,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.compose.AsyncImage
 import com.septianbeneran.urithiru.core.base.BaseState.StateFailed
 import com.septianbeneran.urithiru.core.base.BaseState.StateSuccess
 import com.septianbeneran.urithiru.core.entity.a.Weapon
@@ -37,6 +36,7 @@ import com.septianbeneran.urithiru.core.navigation.util.Navigator
 import com.septianbeneran.urithiru.core.ui.base.BaseScreen
 import com.septianbeneran.urithiru.core.ui.component.UriTopAppBarProperties.defaults
 import com.septianbeneran.urithiru.core.ui.component.UriErrorState
+import com.septianbeneran.urithiru.core.ui.component.UriImage
 import com.septianbeneran.urithiru.core.ui.util.shimmerEffect
 import com.septianbeneran.urithiru.feature.a.screen.stateaction.WeaponDetailAction
 import com.septianbeneran.urithiru.feature.a.screen.stateaction.WeaponDetailAction.GetWeaponDetail
@@ -98,12 +98,12 @@ fun WeaponDetailContent(weapon: Weapon) {
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
-        AsyncImage(
-            model = weapon.image,
-            contentDescription = weapon.name,
+        UriImage(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(250.dp),
+            model = weapon.image,
+            contentDescription = weapon.name,
             contentScale = ContentScale.Fit
         )
 
