@@ -12,27 +12,21 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.compose.AsyncImage
 import com.septianbeneran.urithiru.core.base.BaseState.StateFailed
 import com.septianbeneran.urithiru.core.base.BaseState.StateInitial
 import com.septianbeneran.urithiru.core.base.BaseState.StateLoading
@@ -45,6 +39,9 @@ import com.septianbeneran.urithiru.core.navigation.routeparams.feature_a.WeaponL
 import com.septianbeneran.urithiru.core.navigation.util.Navigator
 import com.septianbeneran.urithiru.core.ui.base.BaseScreen
 import com.septianbeneran.urithiru.core.ui.component.UriEmptyState
+import com.septianbeneran.urithiru.core.ui.component.UriImage
+import com.septianbeneran.urithiru.core.ui.component.UriListFooter
+import com.septianbeneran.urithiru.core.ui.component.UriSearchBar
 import com.septianbeneran.urithiru.core.ui.component.UriErrorState
 import com.septianbeneran.urithiru.core.ui.component.UriSkeletonListItem
 import com.septianbeneran.urithiru.core.ui.component.UriTopAppBarProperties.defaults
@@ -102,7 +99,8 @@ fun WeaponListScreen(
         SearchBarSection(
             searchWeaponText = uiState.searchWeaponText,
             onSearchWeaponTextChange = { onAction(OnSearchWeaponTextChange(it)) },
-            onSearchWeapon = { onAction(OnSearchButtonClick(uiState.searchWeaponText)) }
+            onSearchWeapon = { onAction(OnSearchButtonClick(uiState.searchWeaponText)) },
+            onClearSearch = { onAction(GetWeaponList) }
         )
         Spacer(Modifier.height(8.dp))
         WeaponListSection(
@@ -119,29 +117,17 @@ fun WeaponListScreen(
 fun SearchBarSection(
     modifier: Modifier = Modifier,
     searchWeaponText: String, onSearchWeaponTextChange: (String) -> Unit,
-    onSearchWeapon: () -> Unit
+    onSearchWeapon: () -> Unit,
+    onClearSearch: () -> Unit
 ) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        OutlinedTextField(
-            modifier = Modifier.weight(1f),
-            value = searchWeaponText,
-            onValueChange = onSearchWeaponTextChange,
-            placeholder = { Text("Search weapon...") },
-            singleLine = true,
-            shape = RoundedCornerShape(12.dp)
-        )
-        Button(
-            onClick = onSearchWeapon,
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Text("Search")
-        }
-    }
+    UriSearchBar(
+        modifier = modifier,
+        value = searchWeaponText,
+        onValueChange = onSearchWeaponTextChange,
+        onSearch = onSearchWeapon,
+        placeholder = "Search weapon...",
+        onClear = onClearSearch
+    )
 }
 
 @Composable
@@ -220,7 +206,7 @@ fun WeaponListSection(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         itemsIndexed(weapons) { index, weapon ->
-                            if (index >= weapons.size - 1 && !state.isEndReached && weaponListState !is StateLoading) {
+                            if (index >= weapons.size - 1 && !state.isEndReached && weaponListState is StateSuccess) {
                                 onLoadNextPage()
                             }
                             WeaponItem(
@@ -229,15 +215,12 @@ fun WeaponListSection(
                             )
                         }
 
-                        if (weaponListState is StateLoading && weapons.isNotEmpty()) {
-                            item {
-                                CircularProgressIndicator(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(8.dp)
-                                        .wrapContentWidth(Alignment.CenterHorizontally)
-                                )
-                            }
+                        item {
+                            UriListFooter(
+                                isLoading = weaponListState is StateLoading,
+                                error = (weaponListState as? StateFailed)?.failed,
+                                onRetry = onLoadNextPage
+                            )
                         }
                     }
                 }
@@ -259,13 +242,11 @@ fun WeaponItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            AsyncImage(
+            UriImage(
+                modifier = Modifier.size(64.dp),
                 model = weapon.image,
                 contentDescription = weapon.name,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(64.dp)
-                    .clip(RoundedCornerShape(8.dp)),
+                shape = RoundedCornerShape(8.dp)
             )
 
             Column(modifier = Modifier.weight(1f)) {

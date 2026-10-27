@@ -19,16 +19,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.compose.SubcomposeAsyncImage
-import coil3.request.CachePolicy
-import coil3.request.ImageRequest
-import coil3.request.crossfade
 import com.septianbeneran.urithiru.core.entity.b.OnBoardingPageData
 import com.septianbeneran.urithiru.core.navigation.annotation.FeatureRoute
 import com.septianbeneran.urithiru.core.navigation.routeparams.feature_b.OnBoardingRoute
@@ -37,7 +31,7 @@ import com.septianbeneran.urithiru.core.navigation.util.Navigator
 import com.septianbeneran.urithiru.core.ui.base.BaseScreen
 import com.septianbeneran.urithiru.core.ui.component.UriButton
 import com.septianbeneran.urithiru.core.ui.component.UriDot
-import com.septianbeneran.urithiru.core.ui.component.UriMediaPlaceHolder
+import com.septianbeneran.urithiru.core.ui.component.UriImage
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
 import com.septianbeneran.urithiru.core.ui.util.NonceObserver
 import com.septianbeneran.urithiru.feature.b.screen.stateaction.OnBoardingScreenAction
@@ -113,18 +107,11 @@ fun OnBoardingScreen(
                         modifier = Modifier.fillMaxSize().weight(3f),
                         contentAlignment = Alignment.Center
                     ) {
-                        SubcomposeAsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(pages[position].imgUrl)
-                                .crossfade(true)
-                                .memoryCachePolicy(CachePolicy.DISABLED)
-                                .diskCachePolicy(CachePolicy.DISABLED)
-                                .build(),
-                            contentDescription = "Onboarding Media",
+                        UriImage(
                             modifier = Modifier.fillMaxSize(),
-                            loading = { UriMediaPlaceHolder(modifier = Modifier.fillMaxSize()) },
-                            error = { UriMediaPlaceHolder(modifier = Modifier.fillMaxSize()) },
-                            contentScale = ContentScale.Crop
+                            model = pages[position].imgUrl,
+                            contentDescription = "Onboarding Media",
+                            useCache = false
                         )
                     }
 
