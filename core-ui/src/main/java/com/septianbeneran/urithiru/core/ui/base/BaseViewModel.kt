@@ -3,7 +3,7 @@ package com.septianbeneran.urithiru.core.ui.base
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.septianbeneran.urithiru.core.remote.entity.ApiResult
-import com.septianbeneran.urithiru.core.remote.entity.ErrorResponse
+import com.septianbeneran.urithiru.core.remote.entity.AppError
 import com.septianbeneran.urithiru.core.util.permission.PermissionHandler
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.Channel.Factory.BUFFERED
@@ -28,7 +28,7 @@ open class BaseViewModel @Inject constructor(): ViewModel() {
     open fun <T : Any> collectApi(
         flow: Flow<ApiResult<T>>,
         isCentralLoading: Boolean? = null,
-        onError: ((ErrorResponse) -> Unit)? = null,
+        onError: ((AppError) -> Unit)? = null,
         onLoading: (() -> Unit)? = null,
         onSuccess: ((T?) -> Unit)? = null,
     ) {
