@@ -45,7 +45,7 @@ di/                     Hilt modules in SingletonComponent: @Binds Impl → inte
 
 Every `Impl` has an `@Inject constructor` and is wired with `@Binds`, never built by hand in `@Provides`. Data sources, caches and repositories are `@Singleton`; use cases are unscoped.
 
-Network calls return `Flow<ApiResult<T>>` (`Loading` → `Success`/`Error`). UI state uses `BaseState`.
+Network calls return `Flow<ApiResult<T>>` (`Loading` → `Success`/`Error`). Errors are a typed `AppError` (`:core`), mapped once in `BaseDataSource.getResult`; never invent error codes. UI state uses `BaseState`. Show failures with `UriErrorState` (message from `AppError.toMessage()`) and empty results with `UriEmptyState`. Pass a `key` to `collectApi` when a newer call should cancel an older one (search, refresh).
 
 JSON is kotlinx-serialization only, through the shared `Json` from `core/di/SerializationModule`. Never add Gson. Mark DTOs, and any entity saved with `BaseDataStore.saveObject`, as `@Serializable`, and rename fields with `@SerialName`.
 
