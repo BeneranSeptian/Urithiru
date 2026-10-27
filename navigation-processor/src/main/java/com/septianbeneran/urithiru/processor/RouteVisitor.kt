@@ -7,7 +7,7 @@ import com.septianbeneran.urithiru.processor.generator.generateRouteSpec
 import com.septianbeneran.urithiru.processor.model.RouteData
 import com.squareup.kotlinpoet.FileSpec
 
-class RouteVisitor : KSDefaultVisitor<RouteData, FileSpec>() {
+class RouteVisitor : KSDefaultVisitor<RouteData, FileSpec>(enableNewFeatures = true) {
 
     override fun defaultHandler(node: KSNode, data: RouteData): FileSpec {
         val function = (node as KSFunctionDeclaration)

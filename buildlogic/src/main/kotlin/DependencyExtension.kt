@@ -60,6 +60,8 @@ fun Project.featureDependencies() {
     dependencies {
         "implementation"(libs.androidx.hilt.navigation.compose)
         "implementation"(libs.coil.compose)
+        // Coil 3 has no network loader by default; this one registers itself and uses OkHttp
+        "implementation"(libs.coil.network.okhttp)
         // buildlogic is an included build, so it can't use the `projects.*` accessors
         "ksp"(project(":navigation-processor"))
     }

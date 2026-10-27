@@ -2,7 +2,7 @@ object AppConfig {
     const val projectNameSpace = "com.septianbeneran.urithiru"
     const val compileSdk = 37
     const val minSdk = 24
-    const val targetSdk = 35
+    const val targetSdk = 37
     const val versionCode = 1
     const val flavorDimension = "environment"
 }
