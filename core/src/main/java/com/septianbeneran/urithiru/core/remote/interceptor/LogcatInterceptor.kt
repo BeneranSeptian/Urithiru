@@ -6,6 +6,8 @@ import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
 import okio.Buffer
+import org.json.JSONArray
+import org.json.JSONException
 import org.json.JSONObject
 import java.io.EOFException
 import java.nio.charset.StandardCharsets.UTF_8
@@ -13,6 +15,8 @@ import java.nio.charset.StandardCharsets.UTF_8
 class LogcatInterceptor : Interceptor {
 
     private val maxLogLength = 100
+    // Logcat cuts off a single entry at roughly 4 KB
+    private val maxLogcatEntryLength = 4000
     private val border = "-".repeat(maxLogLength + 4)
 
     override fun intercept(chain: Interceptor.Chain): Response {
@@ -50,6 +54,8 @@ class LogcatInterceptor : Interceptor {
         val reqBody = request.body
 
         return if (reqBody == null) "empty request body"
+        // Writing these to a buffer would consume them, so the real request would be sent without a body
+        else if (reqBody.isOneShot() || reqBody.isDuplex()) "one-shot or duplex request body omitted"
         else {
             val buffer = Buffer()
             reqBody.writeTo(buffer)
@@ -62,36 +68,30 @@ class LogcatInterceptor : Interceptor {
         }
     }
 
+    // OkHttp 5 never returns a null body; a response without one gets an empty body instead
     private fun logResponse(response: Response): String {
         val resBody = response.body
+        val source = resBody.source()
+        source.request(Long.MAX_VALUE)
+        val buffer = source.buffer
+        val charset = resBody.contentType()?.charset(UTF_8) ?: UTF_8
 
-        return if (resBody == null) "empty response body"
-        else {
-            val source = resBody.source()
-            source.request(Long.MAX_VALUE)
-            val buffer = source.buffer
-            val contentType = resBody.contentType()
-            val contentLength = resBody.contentLength()
-            val charset = contentType?.charset(UTF_8) ?: UTF_8
-
-            if (buffer.isProbablyUtf8().not()) "binary ${buffer.size}-byte body omitted"
-            else if (contentLength == 0L) "empty response"
-            else buffer.clone().readString(charset).asPrettyJson()
-        }
+        return if (buffer.size == 0L) "empty response body"
+        else if (buffer.isProbablyUtf8().not()) "binary ${buffer.size}-byte body omitted"
+        else buffer.clone().readString(charset).asPrettyJson()
     }
 
     private fun Buffer.isProbablyUtf8(): Boolean {
         return try {
-            var result = true
             val prefix = Buffer()
             val byteCount = size.coerceAtMost(64L)
             copyTo(prefix, 0, byteCount)
             for (i in 0 until 16) {
                 if (prefix.exhausted()) break
                 val codePoint = prefix.readUtf8CodePoint()
-                result = (Character.isISOControl(codePoint) && !Character.isWhitespace(codePoint)).not()
+                if (Character.isISOControl(codePoint) && !Character.isWhitespace(codePoint)) return false
             }
-            result
+            true
         } catch (_: EOFException) {
             false
         }
@@ -108,17 +108,31 @@ class LogcatInterceptor : Interceptor {
     }
 
     private fun String.asPrettyJson(): String {
+        val trimmed = trim()
         return try {
-            JSONObject(this).toString(2)
-        } catch (t: Throwable) {
+            when {
+                trimmed.startsWith("{") -> JSONObject(trimmed).toString(2)
+                trimmed.startsWith("[") -> JSONArray(trimmed).toString(2)
+                else -> this
+            }
+        } catch (_: JSONException) {
             this
         }
     }
 
     private fun log(text: String) {
-        if (text.isNotBlank()) {
-            Log.d("LogcatInterceptor", text)
+        if (text.isBlank()) return
+
+        // Split on line boundaries so long responses aren't cut off by Logcat
+        val chunk = StringBuilder()
+        text.lineSequence().forEach { line ->
+            if (chunk.length + line.length + 1 > maxLogcatEntryLength && chunk.isNotEmpty()) {
+                Log.d("LogcatInterceptor", chunk.toString())
+                chunk.clear()
+            }
+            chunk.appendLine(line)
         }
+        if (chunk.isNotBlank()) Log.d("LogcatInterceptor", chunk.toString())
     }
 
     private fun StringBuilder.appendSection(title: String, lines: List<String>) {
