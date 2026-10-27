@@ -71,7 +71,6 @@ fun PersonalizeExperienceScreen(navigator: Navigator) {
     ) { nonce ->
         when (nonce) {
             NavigateTo -> {
-                println("masuk observer")
                 navigator.navigate(
                     route = LandingRoute,
                     popUpTo = PersonalizeExperienceRouteParams,
