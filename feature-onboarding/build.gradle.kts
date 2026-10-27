@@ -4,6 +4,7 @@ plugins {
 
 dependencies {
     moduleImplementation(projects.apiJsonbin)
+    moduleImplementation(projects.apiDummyjson)
 
     moduleImplementation(projects.core)
     moduleImplementation(projects.coreEntity)
