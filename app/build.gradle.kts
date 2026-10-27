@@ -41,6 +41,7 @@ dependencies {
     moduleImplementation(projects.apiEldenring)
     moduleImplementation(projects.apiJsonbin)
     moduleImplementation(projects.apiTwitch)
+    moduleImplementation(projects.apiDummyjson)
     moduleImplementation(projects.featureExplore)
     moduleImplementation(projects.featureOnboarding)
     moduleImplementation(projects.featureSplash)
