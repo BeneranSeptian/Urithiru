@@ -170,7 +170,7 @@ Add a `ConnectivityObserver` in `:core` (`ConnectivityManager.NetworkCallback` e
 
 **Phase 4: ship it**
 - [ ] Release build type with R8 (`isMinifyEnabled`) + keep rules
-- [ ] Dark theme check
+- [x] Dark theme check, done 2026-10-27. Force a mode with `UrithiruProject.themeMode`
 - [ ] Unit tests for repositories and ViewModels, plus CI (GitHub Actions)
 - [ ] Upload to Play Console internal testing, and put the link in the README
 
