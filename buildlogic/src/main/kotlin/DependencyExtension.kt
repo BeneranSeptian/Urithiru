@@ -17,6 +17,17 @@ fun Project.baseDependencies() {
     }
 }
 
+/** JUnit for `src/test` and AndroidX test for `src/androidTest`. Used by every module, so the generated test stubs compile. */
+fun Project.testDependencies() {
+    val libs = the<LibrariesForLibs>()
+
+    dependencies {
+        "testImplementation"(libs.junit)
+        "androidTestImplementation"(libs.androidx.junit)
+        "androidTestImplementation"(libs.androidx.espresso.core)
+    }
+}
+
 fun Project.apiDependencies() {
     val libs = the<LibrariesForLibs>()
 
