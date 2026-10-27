@@ -4,7 +4,7 @@ Guidance for Claude Code when working in this repository. For the full project o
 
 ## Project
 
-Urithiru is a modular Android app template (Clean Architecture, Jetpack Compose, Hilt, Retrofit, Coroutines/Flow, and KSP-generated navigation). The sample data is Elden Ring (weapons and bosses) from `eldenring.fanapis.com`, plus onboarding content from JSONBin and a Twitch OAuth flow.
+Urithiru is a modular Android app template (Clean Architecture, Jetpack Compose, Hilt, Retrofit, Coroutines/Flow, and KSP-generated navigation). The sample data is Elden Ring (weapons and bosses) from `eldenring.fanapis.com`, onboarding text from JSONBin, login from DummyJSON (`api-dummyjson`, `feature-auth`), and a Twitch OAuth flow. It is becoming "Urithiru Showcase", a working template app with 4 tabs (Catalog, Shop, Explore, Profile); see `FOR READING.md`.
 
 ## Commands
 
@@ -45,7 +45,7 @@ di/                     Hilt modules in SingletonComponent: @Binds Impl → inte
 
 Every `Impl` has an `@Inject constructor` and is wired with `@Binds`, never built by hand in `@Provides`. Data sources, caches and repositories are `@Singleton`; use cases are unscoped.
 
-Network calls return `Flow<ApiResult<T>>` (`Loading` → `Success`/`Error`). Errors are a typed `AppError` (`:core`), mapped once in `BaseDataSource.getResult`; never invent error codes. UI state uses `BaseState`. Show failures with `UriErrorState` (message from `AppError.toMessage()`) and empty results with `UriEmptyState`. Pass a `key` to `collectApi` when a newer call should cancel an older one (search, refresh).
+Network calls return `Flow<ApiResult<T>>` (`Loading` → `Success`/`Error`). Errors are a typed `AppError` (`:core`), mapped once in `BaseDataSource.getResult`; never invent error codes. UI state uses `BaseState`. Use theme colors (`MaterialTheme.colorScheme`), never `Neutral.*`/`Highlight.*` directly, for text and surfaces in components, so they work in dark mode. Show failures with `UriErrorState` (message from `AppError.toMessage()`) and empty results with `UriEmptyState`. Pass a `key` to `collectApi` when a newer call should cancel an older one (search, refresh).
 
 JSON is kotlinx-serialization only, through the shared `Json` from `core/di/SerializationModule`. Never add Gson. Mark DTOs, and any entity saved with `BaseDataStore.saveObject`, as `@Serializable`, and rename fields with `@SerialName`.
 
@@ -57,9 +57,9 @@ JSON is kotlinx-serialization only, through the shared `Json` from `core/di/Seri
   - `XNonce : BaseNonce`: one-shot events, mostly navigation
 - ViewModels are `@HiltViewModel` and extend `BaseViewModel`. They expose `uiState: StateFlow` and a single `onAction(action)`. Use `collectApi(...)` for network flows, `collectLocalData(...)` for cache flows, and `sendNonce(...)` for events.
 - Screens wrap their content in `BaseScreen(viewModel = …)` and observe events with `NonceObserver(viewModel.nonce) { … }`.
-- Reuse `core-ui` components (`UriButton`, `UriDialog`, `UriToast`, `UriTopAppBar`, `UriErrorState`, `UriEmptyState`, `UriSearchBar`, `UriImage`, `UriListFooter`, …) and `UrithiruTheme` tokens before writing new UI. New shared components go in `core-ui/component`, use the `Uri` prefix, and need a `@Preview`.
+- Reuse `core-ui` components (`UriButton`, `UriDialog`, `UriToast`, `UriTopAppBar`, `UriErrorState`, `UriEmptyState`, `UriSearchBar`, `UriTextField`, `UriImage`, `UriListFooter`, …) and `UrithiruTheme` tokens before writing new UI. New shared components go in `core-ui/component`, use the `Uri` prefix, and need a `@Preview`.
 - Colors come from `MaterialTheme.colorScheme`; every Material 3 role is mapped to the Urithiru palette in `UrithiruTheme.kt` for light and dark. When a Material component looks purple, a role is missing there; fix it in the theme, not in the screen.
-- Light/dark is chosen by `UrithiruProject.themeMode` (`ThemeMode.System`, `Light` or `Dark`). `MainActivity` applies it to the system bars, the activity's resources and, on Android 12+, the launch window. Don't read `isSystemInDarkTheme()` directly in screens; the theme already reflects the chosen mode.
+- Light/dark is a user setting: `ThemeMode` (`:core` `settings/`) saved by `AppSettings`. `UrithiruProject.defaultThemeMode` applies until the user picks one. Save a new mode with `AppSettings.saveThemeMode`; `MainActivity` recreates itself and applies it to the system bars, the activity's resources and, on Android 12+, the launch window. Don't read `isSystemInDarkTheme()` directly in screens; the theme already reflects the chosen mode.
 
 ## Navigation (KSP: `:navigation-processor`)
 
