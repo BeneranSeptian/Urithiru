@@ -56,14 +56,12 @@ class WeaponListViewModel @Inject constructor(
 
     private fun getWeaponList(name: String? = null) {
         val currentState = _uiState.value
-        val isFirstPage = currentState.page == 0
 
         collectApi(
             flow = getWeaponListUseCase(
                 name = name ?: currentState.searchWeaponText.takeIf { it.isNotEmpty() },
                 page = currentState.page,
             ),
-            isCentralLoading = isFirstPage,
             onLoading = {
                 _uiState.update { it.copy(weaponListState = StateLoading) }
             },
