@@ -62,6 +62,7 @@ class WeaponListViewModel @Inject constructor(
                 name = name ?: currentState.searchWeaponText.takeIf { it.isNotEmpty() },
                 page = currentState.page,
             ),
+            key = WEAPON_LIST_KEY,
             onLoading = {
                 _uiState.update { it.copy(weaponListState = StateLoading) }
             },
@@ -80,6 +81,10 @@ class WeaponListViewModel @Inject constructor(
                 }
             }
         )
+    }
+
+    private companion object {
+        const val WEAPON_LIST_KEY = "weaponList"
     }
 
     private fun loadWeaponListLocal() {
