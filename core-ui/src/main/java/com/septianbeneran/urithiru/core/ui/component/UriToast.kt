@@ -33,6 +33,7 @@ import com.septianbeneran.urithiru.core.ui.component.UriToastProperties.UriToast
 import com.septianbeneran.urithiru.core.ui.component.UriToastProperties.UriToastType.Warning
 import com.septianbeneran.urithiru.core.ui.theme.Highlight
 import com.septianbeneran.urithiru.core.ui.theme.Neutral.Dark.Dark200
+import com.septianbeneran.urithiru.core.ui.theme.Neutral.Dark.Dark500
 import com.septianbeneran.urithiru.core.ui.theme.Support
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
 
@@ -67,6 +68,7 @@ fun UriToast(
                 Text(
                     text = titleText,
                     style = UrithiruTheme.typography.h5,
+                    color = Dark500,
                     maxLines = 1,
                     overflow = Ellipsis
                 )
@@ -74,6 +76,7 @@ fun UriToast(
                 Text(
                     text = subTitleText,
                     style = UrithiruTheme.typography.bodyS,
+                    color = Dark500,
                     maxLines = 2,
                     overflow = Ellipsis
                 )

@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.septianbeneran.urithiru.core.ui.theme.Neutral
+import androidx.compose.material3.MaterialTheme
 
 @Composable
 fun UriDivider(
@@ -21,7 +21,7 @@ fun UriDivider(
         modifier = modifier
             .fillMaxWidth()
             .height(1.dp)
-            .background(Neutral.Light.Light400)
+            .background(MaterialTheme.colorScheme.outlineVariant)
     )
 }
 
