@@ -23,8 +23,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.septianbeneran.urithiru.core.navigation.annotation.FeatureRoute
 import com.septianbeneran.urithiru.core.navigation.graph.FeatureAuthNavGraph
 import com.septianbeneran.urithiru.core.navigation.routeparams.feature_auth.LoginRoute
-import com.septianbeneran.urithiru.core.navigation.routeparams.feature_onboarding.LandingRoute
-import com.septianbeneran.urithiru.core.navigation.routeparams.feature_onboarding.OnBoardingRoute
 import com.septianbeneran.urithiru.core.navigation.util.Navigator
 import com.septianbeneran.urithiru.core.remote.entity.AppError
 import com.septianbeneran.urithiru.core.ui.base.BaseScreen
@@ -63,12 +61,7 @@ fun LoginRoute(
 
     NonceObserver(viewModel.nonce) { nonce ->
         when (nonce) {
-            LoginNonce.NavigateToHome -> navigator.navigate(
-                route = LandingRoute,
-                popUpTo = OnBoardingRoute,
-                inclusive = true,
-                launchSingleTop = true
-            )
+            LoginNonce.NavigateToHome -> navigator.navigateToHome()
         }
     }
 }

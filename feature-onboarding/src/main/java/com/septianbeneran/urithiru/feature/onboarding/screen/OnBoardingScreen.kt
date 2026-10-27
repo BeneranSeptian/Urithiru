@@ -25,7 +25,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.septianbeneran.urithiru.core.navigation.annotation.FeatureRoute
 import com.septianbeneran.urithiru.core.navigation.routeparams.feature_auth.LoginRoute
-import com.septianbeneran.urithiru.core.navigation.routeparams.feature_onboarding.LandingRoute
+import com.septianbeneran.urithiru.core.navigation.graph.FeatureOnboardingNavGraph
 import com.septianbeneran.urithiru.core.navigation.routeparams.feature_onboarding.OnBoardingRoute
 import com.septianbeneran.urithiru.core.navigation.util.Navigator
 import com.septianbeneran.urithiru.core.ui.base.BaseScreen
@@ -46,6 +46,7 @@ import kotlinx.coroutines.launch
 
 @FeatureRoute(
     routeParams = OnBoardingRoute::class,
+    graph = FeatureOnboardingNavGraph::class
 )
 @Composable
 fun OnBoardingRoute(
@@ -57,12 +58,7 @@ fun OnBoardingRoute(
     NonceObserver(viewModel.nonce) { nonce ->
         when (nonce) {
             OnBoardingScreenNonce.NavigateToLogin -> navigator.navigate(LoginRoute)
-            OnBoardingScreenNonce.NavigateToHome -> navigator.navigate(
-                route = LandingRoute,
-                popUpTo = OnBoardingRoute,
-                inclusive = true,
-                launchSingleTop = true
-            )
+            OnBoardingScreenNonce.NavigateToHome -> navigator.navigateToHome()
         }
     }
 

@@ -28,6 +28,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.compose.material3.adaptive.navigation.suite)
 
     // Compose UI testing (JUnit and AndroidX test come from app-convention)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -46,6 +47,9 @@ dependencies {
     moduleImplementation(projects.featureOnboarding)
     moduleImplementation(projects.featureSplash)
     moduleImplementation(projects.featureAuth)
+    moduleImplementation(projects.featureCatalog)
+    moduleImplementation(projects.featureShop)
+    moduleImplementation(projects.featureProfile)
 
     ksp(projects.navigationProcessor)
 }

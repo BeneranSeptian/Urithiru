@@ -13,7 +13,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.septianbeneran.urithiru.core.navigation.annotation.FeatureRoute
 import com.septianbeneran.urithiru.core.navigation.graph.FeatureSplashNavGraph
-import com.septianbeneran.urithiru.core.navigation.routeparams.feature_onboarding.LandingRoute
 import com.septianbeneran.urithiru.core.navigation.routeparams.feature_onboarding.OnBoardingRoute
 import com.septianbeneran.urithiru.core.navigation.routeparams.feature_splash.SplashRoute
 import com.septianbeneran.urithiru.core.navigation.util.Navigator
@@ -40,11 +39,7 @@ fun SplashScreen(
                 popUpTo = SplashRoute,
                 inclusive = true
             )
-            SplashScreenNonce.NavigateToHome -> navigator.navigate(
-                route = LandingRoute,
-                popUpTo = SplashRoute,
-                inclusive = true
-            )
+            SplashScreenNonce.NavigateToHome -> navigator.navigateToHome()
         }
     }
 

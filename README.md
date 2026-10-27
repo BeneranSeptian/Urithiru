@@ -34,6 +34,9 @@ The project contains the following modules:
 * `:feature-onboarding`
 * `:feature-splash`
 * `:feature-auth`
+* `:feature-catalog`
+* `:feature-shop`
+* `:feature-profile`
 * `:navigation-processor`
 
 `buildlogic` is not a module: it's an included build that holds the convention plugins (`base-convention`, `api-convention`, `compose-convention`, `feature-convention`, `app-convention`).

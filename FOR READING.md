@@ -131,7 +131,7 @@ Add a `ConnectivityObserver` in `:core` (`ConnectivityManager.NetworkCallback` e
 
 ---
 
-## 5. Bottom navigation bar / rail (decided)
+## 5. Bottom navigation bar / rail (done, see `CLAUDE.md` "Top-level tabs")
 
 - **Where:** in `:app`, wrapping the single `NavHost` in `NavHostChamber`. Features don't know the bar exists.
 - **What:** `NavigationSuiteScaffold` (artifact `androidx.compose.material3:material3-adaptive-navigation-suite`). It's a bottom bar on phones and a rail on tablets and landscape, so you get both for free.
@@ -159,7 +159,7 @@ Add a `ConnectivityObserver` in `:core` (`ConnectivityManager.NetworkCallback` e
 - [ ] Design tokens (spacing and shapes). Postponed, along with converting the existing `.dp` values
 
 **Phase 2: demo app shell**
-- [ ] Bottom bar / rail (section 5)
+- [x] Bottom bar / rail (section 5), done 2026-10-28 with Catalog · Shop · Explore · Profile
 - [ ] Room + Favorites tab
 - [ ] App icon + themed icon (section 2)
 
