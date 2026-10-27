@@ -12,7 +12,7 @@ The template is strong, but a template only convinces people once it ships somet
 You already have the API, the entities and two features. Extend them into:
 - **Tabs:** Home · Weapons · Bosses · Favorites
 - **Weapons:** search, filter by category (chips), infinite scroll, and a detail screen with attack/defence/scaling stats
-- **Bosses:** list and detail (`BOSSES_V1` is already in `api-b`)
+- **Bosses:** list and detail (`BOSSES_V1` is already in `api-jsonbin`)
 - **Favorites:** save weapons and bosses offline (this is a good reason to add Room)
 - **Build compare:** pick 2 weapons and compare their stats side by side, which is a nice custom UI challenge
 
@@ -135,7 +135,7 @@ Add a `ConnectivityObserver` in `:core` (`ConnectivityManager.NetworkCallback` e
 
 - **Where:** in `:app`, wrapping the single `NavHost` in `NavHostChamber`. Features don't know the bar exists.
 - **What:** `NavigationSuiteScaffold` (artifact `androidx.compose.material3:material3-adaptive-navigation-suite`). It's a bottom bar on phones and a rail on tablets and landscape, so you get both for free.
-- **Tabs:** a hand-written `TopLevelDestination` enum in `:app` that points at the feature graph objects (`FeatureBNavGraph`, `FeatureANavGraph`, …).
+- **Tabs:** a hand-written `TopLevelDestination` enum in `:app` that points at the feature graph objects (`FeatureOnboardingNavGraph`, `FeatureExploreNavGraph`, …).
 - **Hide/show:** the bar shows only when the current destination is inside a tab graph, so it hides itself on splash and onboarding (`destination.hierarchy.any { it.hasRoute(graph::class) }`).
 - **Switching tabs:** add `Navigator.navigateToTopLevel(graph)` with `popUpTo(start) { saveState = true }`, `launchSingleTop = true` and `restoreState = true`, so each tab keeps its own history.
 - **Watch out:** `BaseScreen` applies `systemBarsPadding()`, which pads twice inside the scaffold. Fix the insets.

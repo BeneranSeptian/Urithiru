@@ -20,7 +20,7 @@ A reading guide that teaches iOS by rebuilding **Urithiru** in your head: every 
 | Kotlin | **Swift** | Very similar feel. Biggest differences: value types, ARC, and default `internal` visibility. |
 | Jetpack Compose | **SwiftUI** | Both are declarative. The concepts map almost 1:1. |
 | Android Studio + Gradle | **Xcode** + **Swift Package Manager (SPM)** | No Gradle. Projects are `.xcodeproj`. Libraries and modules are SPM packages. |
-| Gradle modules (`:core`, `:api-a`, …) | **SPM targets** in a local package | Same idea: compile-time boundaries plus explicit dependencies. |
+| Gradle modules (`:core`, `:api-eldenring`, …) | **SPM targets** in a local package | Same idea: compile-time boundaries plus explicit dependencies. |
 | `buildlogic` convention plugins | Nothing built in | `Package.swift` is Swift code, so you can share helpers. Big teams use **Tuist** or **XcodeGen**. |
 | Product flavors (`dev/uat/beta/prod`) | **Build configurations** + **`.xcconfig` files** + **schemes** | Section 7. |
 | `BuildConfig.ELDEN_RING_BASE_URL` | An `Info.plist` key filled from `.xcconfig` | Read it with `Bundle.main.object(forInfoDictionaryKey:)`. |
@@ -636,7 +636,7 @@ public final class Router {
     public func popToRoot() { path = NavigationPath() }
 }
 
-// FeatureA/FeatureADestinations.swift  (Kotlin: the generated featureANavGraph)
+// FeatureA/FeatureADestinations.swift  (Kotlin: the generated featureExploreNavGraph)
 public extension View {
     func featureADestinations(repository: WeaponRepository) -> some View {
         navigationDestination(for: WeaponDetailRoute.self) { route in

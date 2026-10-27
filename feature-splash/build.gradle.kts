@@ -8,5 +8,5 @@ dependencies {
     moduleImplementation(projects.coreNavigation)
     moduleImplementation(projects.coreUi)
 
-    moduleImplementation(projects.apiB)
+    moduleImplementation(projects.apiJsonbin)
 }

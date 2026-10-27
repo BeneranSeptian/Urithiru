@@ -180,7 +180,7 @@ feature-weapon/
 ├── route/        WeaponRoutes.kt         ← like your Screen: parses input, returns output
 ├── service/      WeaponService.kt        ← like a UseCase: business rules
 ├── repository/   WeaponRepository.kt     ← DB and/or upstream API
-└── upstream/     EldenRingClient.kt      ← like ApiARemoteDataSource (Ktor Client)
+└── upstream/     EldenRingClient.kt      ← like WeaponRemoteDataSource (Ktor Client)
 ```
 
 ⭐ **`shared-model`** is the big win of a Kotlin backend: put `WeaponDto`, `PageResponse<T>` and `ErrorResponse` in a Kotlin Multiplatform module. Server and Android compile against the **same classes**, so a renamed field breaks the build instead of the app. (iOS can use it too through KMP; see the iOS course, section 11.)
@@ -305,7 +305,7 @@ Never send stack traces or SQL errors to clients. They help attackers and confus
 
 ## 8. Calling other APIs: Ktor Client (your Retrofit replacement)
 
-The server calls the Elden Ring API the way `api-a` does today:
+The server calls the Elden Ring API the way `api-eldenring` does today:
 
 ```kotlin
 // server-core: one shared client (like NetworkModule's OkHttpClient)
@@ -318,7 +318,7 @@ val httpClient = HttpClient(CIO) {
     }
 }
 
-// feature-weapon/upstream/EldenRingClient.kt  (≈ ApiARemoteDataSourceImpl)
+// feature-weapon/upstream/EldenRingClient.kt  (≈ WeaponRemoteDataSourceImpl)
 class EldenRingClient(private val client: HttpClient, private val baseUrl: String) {
     suspend fun weapons(name: String?, page: Int, limit: Int): ApiDto<List<WeaponResponse>> =
         client.get("${baseUrl}weapons") {
@@ -329,7 +329,7 @@ class EldenRingClient(private val client: HttpClient, private val baseUrl: Strin
 }
 ```
 
-The `ApiDto` and `WeaponResponse` classes from `api-a` work here unchanged. That's the benefit of staying in Kotlin.
+The `ApiDto` and `WeaponResponse` classes from `api-eldenring` work here unchanged. That's the benefit of staying in Kotlin.
 
 **Cache the upstream API.** The fan API doesn't change often, so don't hit it on every request:
 
