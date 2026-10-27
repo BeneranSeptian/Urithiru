@@ -23,9 +23,12 @@ A modular Android app template built with Clean Architecture, Jetpack Compose, H
 | `:api-twitch` | api lib | Twitch OAuth `client_credentials` token and `RefreshTokenImpl` |
 | `:api-dummyjson` | api lib | **DummyJSON** login (`auth/login`); the session (tokens + user) is saved unencrypted in DataStore via `AuthCache`. A real app should encrypt it |
 | `:feature-splash` | feature lib | Splash screen. Goes straight to Landing if onboarding was completed; otherwise fetches the onboarding text from JSONBin and opens onboarding, even if the request fails |
-| `:feature-onboarding` | feature lib | Four live demo pages (components, error handling, theme picker, sign in) and the Home/Landing screen |
+| `:feature-onboarding` | feature lib | Four live demo pages (components, error handling, theme picker, sign in) |
+| `:feature-catalog` | feature lib | Catalog tab (home). Placeholder for the component catalog |
+| `:feature-shop` | feature lib | Shop tab. Placeholder for DummyJSON products |
+| `:feature-profile` | feature lib | Profile tab. Placeholder for account, theme setting and logout |
 | `:feature-auth` | feature lib | `LoginRoute`: username/password with `UriTextField`, a "Use demo account" shortcut, and friendly errors. Reusable by the planned Profile tab |
-| `:feature-explore` | feature lib | Weapon list (search, infinite scroll) and weapon detail, plus an empty BossList screen stub. Becomes the Explore tab of the planned 4-tab showcase |
+| `:feature-explore` | feature lib | Explore tab: weapon list (loads on open, search, infinite scroll) and weapon detail, plus an empty BossList screen stub |
 | `:navigation-processor` | JVM (KSP) | Generates route and graph builders from annotations |
 
 ### Dependency direction
@@ -114,12 +117,14 @@ di/                      Hilt modules: @Binds for Impl → interface, @Provides 
 **Current routes / app flow**
 ```
 Splash (FeatureSplashNavGraph start)
-  ├─► Landing/Home, when onboarding was completed before
-  └─► OnBoarding (4 pages) ─┬─► Login (FeatureAuthNavGraph start) ─► Landing/Home
-                            └─► "Continue as guest" ─────────────────► Landing/Home (FeatureOnboardingNavGraph start)
-                                                                          └─► WeaponList (FeatureExploreNavGraph start) ─► WeaponDetail(id)
+  ├─► Tabs, when onboarding was completed before
+  └─► OnBoarding (FeatureOnboardingNavGraph start) ─┬─► Login (FeatureAuthNavGraph start) ─► Tabs
+                                                    └─► "Continue as guest" ─────────────────► Tabs
+
+Tabs (NavigationSuiteScaffold, TopLevelDestination in :app):
+  Catalog (home) · Shop · Explore ─► WeaponList ─► WeaponDetail(id) · Profile
 ```
-Splash pops itself. Reaching Landing pops onboarding and login, so Back from Landing leaves the app.
+`Navigator.navigateToHome()` opens the first tab and clears the back stack, so Back from there leaves the app. `Navigator.navigateToTopLevel(graph)` switches tabs; each tab keeps its own history, and Back from another tab returns to Catalog. Catalog, Shop and Profile are placeholders for now.
 
 **Onboarding pages** (`feature-onboarding/screen/demo/`): each page is a live demo, not an image.
 1. `ComponentsDemo`: real `Uri*` components animate in one by one.

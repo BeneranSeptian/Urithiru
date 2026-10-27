@@ -26,6 +26,11 @@ class WeaponListViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(WeaponListScreenUiState())
     val uiState = _uiState.asStateFlow()
+
+    init {
+        onAction(GetWeaponList)
+    }
+
     fun onAction(action: WeaponListScreenAction) {
         when (action) {
             is GetWeaponList -> {

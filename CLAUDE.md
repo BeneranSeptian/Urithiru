@@ -69,15 +69,16 @@ JSON is kotlinx-serialization only, through the shared `Json` from `core/di/Seri
 
 The parameter is `graph`, not `navGraph`.
 
-## Planned design decisions
+## Top-level tabs (bottom bar / navigation rail)
 
-- **Bottom bar / navigation rail:** use `NavigationSuiteScaffold`, placed in `:app` around the single `NavHost` in `NavHostChamber`.
-  - Top-level tabs are a hand-written `TopLevelDestination` list in `:app` that points at feature graph objects.
-  - The bar hides automatically outside tab graphs (splash and onboarding).
-  - Tab switching uses a `Navigator.navigateToTopLevel(graph)` helper with `saveState` and `restoreState`.
-  - Features never know about the bar.
+- `NavigationSuiteScaffold` in `:app` wraps the single `NavHost` in `NavHostChamber`: a bottom bar on phones, a rail on larger screens.
+  - The tabs are the hand-written `TopLevelDestination` enum in `:app` (Catalog, Shop, Explore, Profile), each pointing at a feature graph object. The first entry is home. A new tab is one enum entry plus a feature module whose start screen sets that `graph`.
+  - The bar shows only on a tab's root screen (the start destination of its graph). Detail screens, splash, onboarding and login (`FeatureAuthNavGraph`) are full screen.
+  - Switch tabs with `Navigator.navigateToTopLevel(graph)`. It pops up to the home graph's start destination (not the graph itself, which would pop home away) with `saveState`/`restoreState`, so each tab keeps its own history and Back returns to the first tab.
+  - Leave splash, onboarding or login with `Navigator.navigateToHome()`, which clears the back stack. Features never reference the home tab directly.
+  - Features never know about the bar. `NavHostChamber` consumes the navigation bar inset while the bar shows, so `BaseScreen`'s `systemBarsPadding()` doesn't pad twice.
   - A feature with its own internal sections uses top tabs inside the feature, never a second bottom bar.
-  - `BaseScreen` applies `systemBarsPadding()`, so it needs inset handling when it's inside the scaffold.
+- Icons are official Material Symbols (`core-ui/res/drawable`, `name.xml` outlined and `name_filled.xml` filled), never hand-drawn.
 
 ## Working style
 

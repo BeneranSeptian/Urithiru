@@ -68,7 +68,7 @@ fun WeaponListRoute(
 
     BaseScreen(
         viewModel = viewModel,
-        topAppBarArgs = defaults(title = "Weapon List")
+        topAppBarArgs = defaults(title = "Weapons", backIcon = null)
     ) {
         WeaponListScreen(
             uiState = uiState,
@@ -107,7 +107,6 @@ fun WeaponListScreen(
             getWeaponList = { onAction(GetWeaponList) },
             onClickWeapon = { weaponId -> onNonce(NavigateToWeaponDetail(weaponId)) },
             onLoadNextPage = { onAction(WeaponListScreenAction.LoadNextPage) },
-            getWeaponListLocal = { onAction(WeaponListScreenAction.GetWeaponListLocal) },
             state = uiState
         )
     }
@@ -135,7 +134,6 @@ fun WeaponListSection(
     state: WeaponListScreenUiState,
     onLoadNextPage: () -> Unit,
     getWeaponList: () -> Unit,
-    getWeaponListLocal: () -> Unit,
     onClickWeapon: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -167,29 +165,9 @@ fun WeaponListSection(
                 )
             }
 
-            weaponListState is StateLoading && weapons.isEmpty() -> {
+            (weaponListState is StateLoading || weaponListState is StateInitial) && weapons.isEmpty() -> {
                 Column(modifier = Modifier.padding(vertical = 16.dp)) {
                     repeat(6) { UriSkeletonListItem() }
-                }
-            }
-
-            weaponListState is StateInitial -> {
-                Column(
-                    modifier = Modifier.align(Alignment.Center),
-                ) {
-                    Button(
-                        onClick = getWeaponList,
-                        modifier = Modifier
-                    ) {
-                        Text("Get Weapons From API")
-                    }
-
-                    Button(
-                        onClick = getWeaponListLocal,
-                        modifier = Modifier
-                    ) {
-                        Text("Get Weapons From Local")
-                    }
                 }
             }
 
