@@ -9,6 +9,6 @@ import javax.inject.Inject
 class RefreshTokenImpl @Inject constructor(
     private val repository: TwitchRepository
 ) : RefreshTokenInterface {
-    override fun postRereshToken(clientId: String, clientSecret: String): Flow<ApiResult<Any>> =
+    override fun postRefreshToken(clientId: String, clientSecret: String): Flow<ApiResult<Any>> =
         repository.postTwitchToken(clientId, clientSecret)
 }
