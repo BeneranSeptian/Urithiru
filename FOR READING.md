@@ -154,9 +154,9 @@ Add a `ConnectivityObserver` in `:core` (`ConnectivityManager.NetworkCallback` e
 - [x] Update the README (`graph =` not `navGraph =`, module list, Gradle version)
 
 **Phase 1: foundations**
-- [ ] Typed `AppError` + `UriErrorState` / `UriEmptyState` / skeleton (sections 3 and 4)
-- [ ] Fix `collectApi` so a new search cancels the previous request
-- [ ] Design tokens (spacing and shapes)
+- [x] Typed `AppError` + `UriErrorState` / `UriEmptyState` / skeleton (sections 3 and 4), done 2026-10-27
+- [x] Fix `collectApi` so a new search cancels the previous request, done 2026-10-27
+- [ ] Design tokens (spacing and shapes). Postponed, along with converting the existing `.dp` values
 
 **Phase 2: demo app shell**
 - [ ] Bottom bar / rail (section 5)
