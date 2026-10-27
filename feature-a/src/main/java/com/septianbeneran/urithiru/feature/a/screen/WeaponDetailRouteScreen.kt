@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import com.septianbeneran.urithiru.core.base.BaseState.StateFailed
 import com.septianbeneran.urithiru.core.base.BaseState.StateSuccess
 import com.septianbeneran.urithiru.core.entity.a.Weapon

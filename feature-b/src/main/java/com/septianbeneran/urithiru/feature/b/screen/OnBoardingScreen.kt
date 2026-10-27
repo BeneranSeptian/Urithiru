@@ -25,9 +25,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.SubcomposeAsyncImage
-import coil.request.CachePolicy
-import coil.request.ImageRequest
+import coil3.compose.SubcomposeAsyncImage
+import coil3.request.CachePolicy
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.septianbeneran.urithiru.core.entity.b.OnBoardingPageData
 import com.septianbeneran.urithiru.core.navigation.annotation.FeatureRoute
 import com.septianbeneran.urithiru.core.navigation.routeparams.feature_b.OnBoardingRoute

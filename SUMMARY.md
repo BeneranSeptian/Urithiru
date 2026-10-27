@@ -4,7 +4,7 @@ A modular Android app template built with Clean Architecture, Jetpack Compose, H
 
 - Package root: `com.septianbeneran.urithiru` for every module. A module's namespace is the root plus its module name, with `-` replaced by `.`
 - SDK: compileSdk 37, minSdk 24, targetSdk 35, Java 21
-- Build: Gradle 9.x, AGP 9.4.1, Kotlin 2.4.20, KSP 2.3.7, Compose BOM 2026.09.00, Hilt 2.60.1
+- Build: Gradle 9.8.2, AGP 9.4.1, Kotlin 2.4.21, KSP 2.3.12, Compose BOM 2026.09.00, Hilt 2.60.1, Coil 3.6.3; compileSdk/targetSdk 37
 
 ---
 
@@ -164,7 +164,8 @@ Each step pops the previous screen with `popUpTo(..., inclusive = true)`.
 - ~~**Limit `LogcatInterceptor` to debug builds.** Today it logs every header, including `Authorization`, and full bodies in all flavors, `prod` included. Add it only when `BuildConfig.DEBUG` is true, or redact sensitive headers.~~
   ✅ **Done (2026-10-27).** `NetworkModule` adds it only when `BuildConfig.DEBUG` is true. Headers are not redacted, so debug logs still show `Authorization`.
 - **Add a `buildTypes { release { isMinifyEnabled = true; isShrinkResources = true } }` block** with R8 keep rules for Retrofit and kotlinx-serialization models. No minify or shrink setup exists yet.
-- **Set `targetSdk` closer to `compileSdk`.** `targetSdk` is 35 while `compileSdk` is 37, and Play's target API requirements will catch up.
+- ~~**Set `targetSdk` closer to `compileSdk`.** `targetSdk` is 35 while `compileSdk` is 37, and Play's target API requirements will catch up.~~
+  ✅ **Done (2026-10-27).** `targetSdk` is 37.
 
 ### Architecture & DI
 - ~~**Make the DI style consistent.** Classes have `@Inject constructor` *and* are also built by hand in `@Provides` methods. Use `@Binds` abstract modules instead (`@Binds fun bind(impl: WeaponRepositoryImpl): WeaponRepository`), which removes boilerplate and keeps constructor changes in one place.~~
