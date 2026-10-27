@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class OnBoardingPageResponse (
-    @SerialName("image_url") val imgUrl: String,
+    @SerialName("image_url") val imgUrl: String? = null,
     @SerialName("title") val title: String,
     @SerialName("description") val description: String
 ) {
