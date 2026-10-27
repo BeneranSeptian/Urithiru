@@ -146,12 +146,12 @@ Add a `ConnectivityObserver` in `:core` (`ConnectivityManager.NetworkCallback` e
 
 ## 6. Suggested roadmap
 
-**Phase 0: hygiene (small, good for an office lunch break)**
-- [ ] Add `testImplementation(junit)` + AndroidX test dependencies to the convention plugins (library test stubs don't compile today)
-- [ ] Add `LogcatInterceptor` only when `BuildConfig.DEBUG` is true
-- [ ] Remove `println("masuk observer")` from `PersonalizeExperienceScreen`
-- [ ] Rename `postRereshToken` → `postRefreshToken`
-- [ ] Update the README (`graph =` not `navGraph =`, module list, Gradle version)
+**Phase 0: hygiene (small, good for an office lunch break)** ✅ done 2026-10-27
+- [x] Add `testImplementation(junit)` + AndroidX test dependencies to the convention plugins (library test stubs don't compile today)
+- [x] Add `LogcatInterceptor` only when `BuildConfig.DEBUG` is true
+- [x] Remove `println("masuk observer")` from `PersonalizeExperienceScreen`
+- [x] Rename `postRereshToken` → `postRefreshToken`
+- [x] Update the README (`graph =` not `navGraph =`, module list, Gradle version)
 
 **Phase 1: foundations**
 - [ ] Typed `AppError` + `UriErrorState` / `UriEmptyState` / skeleton (sections 3 and 4)

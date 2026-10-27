@@ -17,7 +17,7 @@ Urithiru is a modular Android app template (Clean Architecture, Jetpack Compose,
 
 - Flavors: `dev` (default), `uat`, `beta`, `prod`. Base URLs come from `productFlavorProperties/<flavor>.properties` and become `BuildConfig` fields.
 - Endpoint paths come from `<api-module>/microservice.properties` and also become `BuildConfig` fields (for example `WEAPONS_V1`).
-- Library-module test stubs don't compile yet, because the convention plugins don't add JUnit or AndroidX test dependencies. Only `:app` has test dependencies.
+- Every module gets JUnit and AndroidX test through `testDependencies()` (`buildlogic/DependencyExtension.kt`). Run unit tests with `./gradlew testDevDebugUnitTest`. Compose UI test dependencies are only in `:app`.
 
 ## Module rules
 
@@ -65,7 +65,7 @@ JSON is kotlinx-serialization only, through the shared `Json` from `core/di/Seri
 2. Annotate the screen composable `@FeatureRoute(routeParams = XRoute::class)`. The composable must take `(navigator: Navigator)`. Exactly one screen per feature module also sets `graph = FeatureXNavGraph::class`; that screen is the start destination.
 3. Build. KSP generates the feature graph and `registerAllFeatureGraphs()`, which `NavHostChamber` in `:app` calls. Never register screens by hand.
 
-The parameter is `graph`, not `navGraph` (the README is out of date on this).
+The parameter is `graph`, not `navGraph`.
 
 ## Planned design decisions
 
