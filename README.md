@@ -6,13 +6,14 @@ Designed to be scalable, maintainable, and easy to extend — even for beginners
 
 ## 🧰 Tech Stack
 * Jetpack Compose for UI creation
-* Retrofit for API call
+* Retrofit + kotlinx-serialization for API calls
 * Hilt for dependency injection
-* Kotlin Coroutines for asynchronous programming
+* Kotlin Coroutines and Flow for asynchronous programming
+* KSP for generated navigation (`:navigation-processor`)
 
 ## 📦 Prerequisites
 
-* Gradle 9.3.1
+* Gradle 9.8.0 (via the wrapper, `./gradlew`)
 * JDK 21
 * Minimum Android SDK 24
 
@@ -20,17 +21,22 @@ Designed to be scalable, maintainable, and easy to extend — even for beginners
 
 The project contains the following modules:
 
-* `:api-a`
-* `:api-b`
 * `:app`
-* `:buildlogic`
 * `:core`
 * `:core-entity`
 * `:core-navigation`
 * `:core-ui`
+* `:api-a`
+* `:api-b`
+* `:api-twitch`
 * `:feature-a`
 * `:feature-b`
 * `:feature-splash`
+* `:navigation-processor`
+
+`buildlogic` is not a module: it's an included build that holds the convention plugins (`base-convention`, `api-convention`, `compose-convention`, `feature-convention`, `app-convention`).
+
+For a full overview, see [`SUMMARY.md`](SUMMARY.md).
 
 ## 🏗 Architecture Flow
 
@@ -102,23 +108,31 @@ The Base URL is managed per environment using property files in the `productFlav
 
 1.  Navigate to `productFlavorProperties/`.
 2.  Open the file corresponding to the environment you want to change (e.g., `dev.properties`, `prod.properties`).
-3.  Update the `BASE_URL` value:
+3.  Update the base URL you need, for example `ELDEN_RING_BASE_URL`:
     ```properties
-    BASE_URL=https://your-new-api-url.com/api/
+    ELDEN_RING_BASE_URL=https://your-new-api-url.com/api/
     ```
-4.  Sync the project with Gradle. The `BuildConfig.BASE_URL` will be updated automatically.
+4.  Sync the project with Gradle. Every key becomes a `BuildConfig` field automatically (e.g. `BuildConfig.ELDEN_RING_BASE_URL`).
 
 ### 2️⃣ Creating a New API Endpoint
 
 To add a new API call, follow these steps (using the `api-a` module as an example):
 
+#### Step 0: Add the Endpoint Path
+Add the path to `api-a/microservice.properties`. Each key becomes a `BuildConfig` field in that module.
+
+```properties
+YOUR_DATA_V1=your/end/point
+```
+
 #### Step A: Define the Data Transfer Object (DTO)
 Create your response model in `api-a/src/main/java/.../data/remote/dto/`.
 
 ```kotlin
+@Serializable
 data class YourResponse(
-    val id: String,
-    val name: String
+    @SerialName("id") val id: String,
+    @SerialName("name") val name: String
 )
 ```
 
@@ -139,13 +153,13 @@ Add the call to your `RemoteDataSource` interface and its implementation.
 
 **Interface:**
 ```kotlin
-suspend fun getYourData(): ApiResult<ApiDto<List<YourResponse>>>
+suspend fun getYourData(): ApiResult<ApiDto<YourResponse>>
 ```
 
 **Implementation:**
 ```kotlin
-override suspend fun getYourData(): ApiResult<ApiDto<WeaponResponse>> =
-    getResult { api.getYourData("your/end/point") }
+override suspend fun getYourData(): ApiResult<ApiDto<YourResponse>> =
+    getResult { api.getYourData(YOUR_DATA_V1) }
 ```
 
 #### Step D: Expose through Repository and Use Case
@@ -176,12 +190,12 @@ object WeaponDetailRoute
 #### Step C: Create and Annotate the Composable
 In your `feature` module, create your standard Jetpack Compose UI function. Tag it with the `@FeatureRoute` annotation, linking the route parameters you just created. 
 
-*Note: If this screen is the starting point for the feature, be sure to declare the `navGraph` parameter as well.*
+*Note: If this screen is the starting point for the feature, be sure to declare the `graph` parameter as well.*
 
 ```kotlin
 @FeatureRoute(
     routeParams = WeaponDetailRoute::class,
-    navGraph = FeatureANavGraph::class // Add this ONLY if it's the start destination
+    graph = FeatureANavGraph::class // Add this ONLY if it's the start destination
 )
 @Composable
 fun WeaponDetailScreen(navigator: Navigator) {
