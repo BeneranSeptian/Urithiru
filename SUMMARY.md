@@ -24,7 +24,7 @@ A modular Android app template built with Clean Architecture, Jetpack Compose, H
 | `:api-dummyjson` | api lib | **DummyJSON** login (`auth/login`); the session (tokens + user) is saved unencrypted in DataStore via `AuthCache`. A real app should encrypt it |
 | `:feature-splash` | feature lib | Splash screen. Goes straight to Landing if onboarding was completed; otherwise fetches the onboarding text from JSONBin and opens onboarding, even if the request fails |
 | `:feature-onboarding` | feature lib | Four live demo pages (components, error handling, theme picker, sign in) |
-| `:feature-catalog` | feature lib | Catalog tab (home). Placeholder for the component catalog |
+| `:feature-catalog` | feature lib | Catalog tab (home): every `Uri*` component grouped by section (`catalog/CatalogEntries.kt`). Each opens `CatalogComponentRoute(id)` with interactive demos (`screen/demo/`). Add a component by adding an entry and a demo function |
 | `:feature-shop` | feature lib | Shop tab. Placeholder for DummyJSON products |
 | `:feature-profile` | feature lib | Profile tab. Placeholder for account, theme setting and logout |
 | `:feature-auth` | feature lib | `LoginRoute`: username/password with `UriTextField`, a "Use demo account" shortcut, and friendly errors. Reusable by the planned Profile tab |
@@ -159,7 +159,7 @@ Titles and descriptions come from JSONBin (server-driven); `OnBoardingDefaults` 
 
 - `@IgdbNetwork` Retrofit and `RefreshTokenInterface`/`RefreshTokenImpl` are provided, but nothing uses them yet. No IGDB API module exists so far.
 - The splash screen hardcodes the JSONBin `binId` in `SplashScreenViewModel` (`ONBOARDING_BIN_ID`).
-- `UriStepper` still uses hardcoded dark text colors, so it may be hard to read in dark mode. (`UriListItem` was fixed.)
+- `UriStepper`, `UriCheckBox`, `UriRadioButton` and `UriTopAppBar` still use hardcoded palette colors instead of theme colors; check them in the Catalog in dark mode. (`UriListItem`, `UriToast` text and `UriDivider` were fixed.)
 - Login has no token refresh or logout yet; both come with the Profile tab.
 - Paging assumes a page size of 20 (`isEndReached = newWeapons.size < 20`) in `WeaponListViewModel`.
 - Tests are only the default `ExampleUnitTest` and `ExampleInstrumentedTest` stubs. Every module now gets JUnit and AndroidX test from `testDependencies()` in the convention plugins, so they compile and run.
