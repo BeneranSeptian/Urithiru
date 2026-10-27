@@ -54,16 +54,16 @@ Tip: compare your structure with Google's **Now in Android** app (github.com/and
 
 ## 3. Components to add to `core-ui`
 
-You already have: Avatar, Badge, Banner, Button, CheckBox, Dialog, Divider, Dot, ListItem, Loader, MediaPlaceHolder, ProgressBar, RadioButton, Stepper, Toast, TopAppBar.
+You already have: Avatar, Badge, Banner, Button, CheckBox, Dialog, Divider, Dot, EmptyState, ErrorState, Image, ListFooter, ListItem, Loader, MediaPlaceHolder, ProgressBar, RadioButton, SearchBar, Skeleton, Stepper, Toast, TopAppBar.
 
 **Rule:** a component belongs in `core-ui` if 2+ features use it, or if it's a basic building block. Otherwise keep it in the feature.
 
 ### Most useful next (in order)
-1. **`UriErrorState`**: icon + message + "Retry" button for full-screen failures. This pairs with section 4.
-2. **`UriEmptyState`**: "No weapons found" with an illustration.
-3. **`UriSkeleton` / shimmer**: placeholder rows while loading, which feels faster than a spinner.
-4. **`UriTextField` / `UriSearchBar`**: `WeaponList` uses a raw `OutlinedTextField` today.
-5. **`UriImage`**: wraps Coil's `AsyncImage` with your placeholder and error image, so every image loads the same way.
+1. ✅ **`UriErrorState`**: icon + message + "Retry" button for full-screen failures. This pairs with section 4.
+2. ✅ **`UriEmptyState`**: "No weapons found" with an illustration.
+3. ✅ **`UriSkeleton` / shimmer**: placeholder rows while loading, which feels faster than a spinner.
+4. ✅ **`UriSearchBar`**: done; the weapon list uses it. A general `UriTextField` for forms is still open.
+5. ✅ **`UriImage`**: wraps Coil's `AsyncImage` with your placeholder and error image, so every image loads the same way.
 6. **`UriChip` / `UriChipGroup`**: filters (weapon category, boss region).
 7. **`UriNavigationBar` styling**: for the bottom bar or rail (see section 5).
 8. **`UriTabRow`**: top tabs for sub-sections inside a feature.
