@@ -26,11 +26,11 @@ The project contains the following modules:
 * `:core-entity`
 * `:core-navigation`
 * `:core-ui`
-* `:api-a`
-* `:api-b`
+* `:api-eldenring`
+* `:api-jsonbin`
 * `:api-twitch`
-* `:feature-a`
-* `:feature-b`
+* `:feature-explore`
+* `:feature-onboarding`
 * `:feature-splash`
 * `:navigation-processor`
 
@@ -83,15 +83,15 @@ flowchart TD
 
     subgraph KSPFeature ["KSP Output: Feature Level"]
         B -->|Generates route| C[weaponDetailRouteGenerated]
-        B -->|Generates graph| D[featureANavGraph]
+        B -->|Generates graph| D[featureExploreNavGraph]
         C -.->|Called inside| D
         D --> E("@FeatureGraph")
     end
 
     subgraph KSPApp ["KSP Output: App Level"]
         E -->|Scanned by KSP| F[registerAllFeatureGraphs]
-        F -.->|Aggregates| G[featureANavGraph]
-        F -.->|Aggregates| H[featureBNavGraph]
+        F -.->|Aggregates| G[featureExploreNavGraph]
+        F -.->|Aggregates| H[featureOnboardingNavGraph]
     end
 
     subgraph AppModule ["App Module"]
@@ -116,17 +116,17 @@ The Base URL is managed per environment using property files in the `productFlav
 
 ### 2️⃣ Creating a New API Endpoint
 
-To add a new API call, follow these steps (using the `api-a` module as an example):
+To add a new API call, follow these steps (using the `api-eldenring` module as an example):
 
 #### Step 0: Add the Endpoint Path
-Add the path to `api-a/microservice.properties`. Each key becomes a `BuildConfig` field in that module.
+Add the path to `api-eldenring/microservice.properties`. Each key becomes a `BuildConfig` field in that module.
 
 ```properties
 YOUR_DATA_V1=your/end/point
 ```
 
 #### Step A: Define the Data Transfer Object (DTO)
-Create your response model in `api-a/src/main/java/.../data/remote/dto/`.
+Create your response model in `api-eldenring/src/main/java/.../data/remote/dto/`.
 
 ```kotlin
 @Serializable
@@ -176,7 +176,7 @@ First, declare the navigation graph for your feature in the `core-navigation:gra
 
 ```kotlin
 @Serializable
-object FeatureANavGraph
+object FeatureExploreNavGraph
 ```
 
 #### Step B: Define the Route Parameters
@@ -195,7 +195,7 @@ In your `feature` module, create your standard Jetpack Compose UI function. Tag 
 ```kotlin
 @FeatureRoute(
     routeParams = WeaponDetailRoute::class,
-    graph = FeatureANavGraph::class // Add this ONLY if it's the start destination
+    graph = FeatureExploreNavGraph::class // Add this ONLY if it's the start destination
 )
 @Composable
 fun WeaponDetailScreen(navigator: Navigator) {
@@ -208,7 +208,7 @@ Run a project build (or rebuild) so KSP can process the annotations.
 
 During the build, KSP will automatically generate:
 1.  The route extension for your specific screen (e.g., `weaponDetailRouteGenerated`).
-2.  The updated feature-level graph builder (e.g., `featureANavGraph`) containing your new route.
+2.  The updated feature-level graph builder (e.g., `featureExploreNavGraph`) containing your new route.
 
 #### Step E: Automatic Registration
 You don't need to manually register the screen in the App module! 

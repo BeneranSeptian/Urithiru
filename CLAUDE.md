@@ -11,7 +11,7 @@ Urithiru is a modular Android app template (Clean Architecture, Jetpack Compose,
 ```bash
 ./gradlew assembleDevDebug                 # build the default (dev) flavor
 ./gradlew :app:installDevDebug             # install on a connected device/emulator
-./gradlew :api-a:compileDevDebugKotlin     # fast compile check for one module
+./gradlew :api-eldenring:compileDevDebugKotlin     # fast compile check for one module
 ./gradlew clean assembleDevDebug           # use after changing @FeatureRoute annotations if KSP output looks stale
 ```
 

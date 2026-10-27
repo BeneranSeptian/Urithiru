@@ -1,7 +1,7 @@
 package com.septianbeneran.urithiru.feature.splash.viewmodel
 
 import androidx.lifecycle.viewModelScope
-import com.septianbeneran.urithiru.api.b.domain.get.GetOnBoardingDataListUseCase
+import com.septianbeneran.urithiru.api.jsonbin.domain.get.GetOnBoardingDataListUseCase
 import com.septianbeneran.urithiru.core.base.BaseState.StateFailed
 import com.septianbeneran.urithiru.core.base.BaseState.StateLoading
 import com.septianbeneran.urithiru.core.base.BaseState.StateSuccess

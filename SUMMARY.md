@@ -18,12 +18,12 @@ A modular Android app template built with Clean Architecture, Jetpack Compose, H
 | `:core-entity` | library | Domain models: `Weapon`, `Attributes`, `Scaling`, `Boss`, `OnBoardingPageData`, `TwitchOAuthToken` |
 | `:core-navigation` | compose lib | `@FeatureRoute` and `@FeatureGraph` annotations, `@Serializable` graph objects and route params, the `Navigator` wrapper |
 | `:core-ui` | compose lib | `BaseScreen`, `BaseViewModel`, `NonceObserver`, theme (`UrithiruTheme`, colors, typography), and the `Uri*` design-system components |
-| `:api-a` | api lib | Elden Ring **weapons** (list with paging/search, detail, and a DataStore cache) |
-| `:api-b` | api lib | **JSONBin** onboarding pages (with a cache) |
+| `:api-eldenring` | api lib | Elden Ring **weapons** (list with paging/search, detail, and a DataStore cache); the `BOSSES_V1` endpoint path is ready but unused |
+| `:api-jsonbin` | api lib | **JSONBin** onboarding pages (with a cache) |
 | `:api-twitch` | api lib | Twitch OAuth `client_credentials` token and `RefreshTokenImpl` |
 | `:feature-splash` | feature lib | Splash screen. It fetches onboarding data, then navigates to onboarding |
-| `:feature-b` | feature lib | OnBoarding → PersonalizeExperience → Home/Landing, plus a BossList screen |
-| `:feature-a` | feature lib | Weapon list (search, infinite scroll) and weapon detail |
+| `:feature-onboarding` | feature lib | OnBoarding → PersonalizeExperience → Home/Landing |
+| `:feature-explore` | feature lib | Weapon list (search, infinite scroll) and weapon detail, plus an empty BossList screen stub. Becomes the Explore tab of the planned 4-tab showcase |
 | `:navigation-processor` | JVM (KSP) | Generates route and graph builders from annotations |
 
 ### Dependency direction
@@ -41,7 +41,7 @@ Feature modules never depend on each other. They navigate using shared route cla
 Convention plugins (`buildlogic/src/main/kotlin`):
 - **`AndroidExtension.kt`**: `configureAndroid(project)` holds the Android setup shared by the app and every library (compileSdk, minSdk, Java 21, BuildConfig/resValues, and the product flavors). Both `base-convention` and `app-convention` call it, so flavor logic lives in one place.
 - **`base-convention`**: Android library, Hilt and KSP, namespace `com.septianbeneran.urithiru.<module.name>`, `configureAndroid`, the kotlinx-serialization compiler plugin, plus `baseDependencies()` (Hilt, kotlinx-serialization-json, DataStore).
-- **`api-convention`**: base convention plus Retrofit and kotlinx-serialization-json. It also loads the module's `microservice.properties` into `BuildConfig` (for example `WEAPONS_V1=weapons/` and `BOSSES_V1=bosses/`).
+- **`api-convention`**: base convention plus Retrofit and kotlinx-serialization-json. It also loads the module's `microservice.properties` into `BuildConfig` (for example `WEAPONS_V1=weapons/` and `BOSSES_V1=bosses/` in `api-eldenring`).
 - **`compose-convention`**: base convention plus Compose (BOM, UI, Material3, tooling), navigation-compose and activity-compose. Used by `core-ui` and `core-navigation`. (`core-ui` also adds Coil itself, for image-loading components.)
 - **`feature-convention`**: compose convention plus Hilt-navigation (`hiltViewModel()`), Coil, and `ksp(project(":navigation-processor"))`. Used by every `feature-*` module.
 - **`app-convention`**: application setup through `configureAndroid` (flavors also get their `applicationIdSuffix`), plus `targetSdk` and `versionCode`.
@@ -72,7 +72,7 @@ Screen ─► ViewModel ─► UseCase ─► Repository ─► RemoteDataSource
 - JSON models must be `@Serializable`: DTOs, the `ApiDto`/`JsonBinDto` envelopes, and any entity stored with `saveObject`. Rename fields with `@SerialName`, not `@SerializedName`.
 - `BaseDataStore` is a Preferences DataStore with primitive save/read and `saveObject`/`readObject` through kotlinx-serialization (the shared `Json`).
 
-**Per-API module layout** (for example `api-a`):
+**Per-API module layout** (for example `api-eldenring`):
 ```
 data/remote/api/         Retrofit interface (@GET with @Url, so the endpoint path comes from BuildConfig)
 data/remote/dto/         Response DTOs with mapToEntity functions (for example mapToWeapon)
@@ -99,12 +99,12 @@ di/                      Hilt modules: @Binds for Impl → interface, @Provides 
 1. Declare a `@Serializable` graph object (`core-navigation/.../graph`) and a route (`.../routeparams/<feature>`). Use an `object`, or a `data class` when the route takes arguments.
 2. Annotate the screen composable:
    ```kotlin
-   @FeatureRoute(routeParams = WeaponListRoute::class, graph = FeatureANavGraph::class) // set graph only on the start destination
+   @FeatureRoute(routeParams = WeaponListRoute::class, graph = FeatureExploreNavGraph::class) // set graph only on the start destination
    @Composable fun WeaponListRoute(navigator: Navigator) { … }
    ```
 3. **`FeatureProcessor`** (runs in feature modules):
    - generates one `NavGraphBuilder` extension per route
-   - generates `fun NavGraphBuilder.featureANavGraph(navigator)` annotated `@FeatureGraph`, in package `com.septianbeneran.urithiru.feature.graph`
+   - generates `fun NavGraphBuilder.featureExploreNavGraph(navigator)` annotated `@FeatureGraph`, in package `com.septianbeneran.urithiru.feature.graph`
    - fails the build if a module has zero or more than one start destination
 4. **`GraphProcessor`** (runs in the app, enabled by `ksp { arg("isAppModule","true") }`) scans the `...feature.graph` package. It generates `registerAllFeatureGraphs(navigator)` in `com.septianbeneran.urithiru.graph`.
 5. `NavHostChamber` calls `registerAllFeatureGraphs`, so new screens need no manual registration.
@@ -112,8 +112,8 @@ di/                      Hilt modules: @Binds for Impl → interface, @Provides 
 **Current routes / app flow**
 ```
 Splash (FeatureSplashNavGraph start)
-  └─► OnBoarding ─► PersonalizeExperience ─► Landing/Home (FeatureBNavGraph start)
-                                                └─► WeaponList (FeatureANavGraph start) ─► WeaponDetail(id)
+  └─► OnBoarding ─► PersonalizeExperience ─► Landing/Home (FeatureOnboardingNavGraph start)
+                                                └─► WeaponList (FeatureExploreNavGraph start) ─► WeaponDetail(id)
 ```
 Each step pops the previous screen with `popUpTo(..., inclusive = true)`.
 
@@ -171,7 +171,7 @@ Each step pops the previous screen with `popUpTo(..., inclusive = true)`.
 
 ### Architecture & DI
 - ~~**Make the DI style consistent.** Classes have `@Inject constructor` *and* are also built by hand in `@Provides` methods. Use `@Binds` abstract modules instead (`@Binds fun bind(impl: WeaponRepositoryImpl): WeaponRepository`), which removes boilerplate and keeps constructor changes in one place.~~
-  ✅ **Done (2026-10-07)** in `api-a`, `api-b` and `api-twitch`. Each `di/` module is an `abstract class` of `@Binds`, with a `companion object` `@Provides` only for the Retrofit-created `Api`.
+  ✅ **Done (2026-10-07)** in `api-eldenring`, `api-jsonbin` and `api-twitch`. Each `di/` module is an `abstract class` of `@Binds`, with a `companion object` `@Provides` only for the Retrofit-created `Api`.
 - ~~**Don't make use cases `@Singleton`.** They are stateless, so unscoped (or `@Reusable`) is enough.~~
   ✅ **Done (2026-10-07).** Use cases are bound unscoped. Data sources, caches and repositories stay `@Singleton`.
 - **Stop exposing `cache` from repositories.** `LoadWeaponListUseCase` reads `repository.cache` directly, which leaks the data layer. Add a `repository.observeWeaponList()` method, or go offline-first so the repository emits the cached value and then the network value.

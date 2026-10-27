@@ -17,8 +17,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.septianbeneran.urithiru.core.base.BaseState.StateFailed
 import com.septianbeneran.urithiru.core.navigation.annotation.FeatureRoute
 import com.septianbeneran.urithiru.core.navigation.graph.FeatureSplashNavGraph
-import com.septianbeneran.urithiru.core.navigation.routeparams.feature_b.LandingRoute
-import com.septianbeneran.urithiru.core.navigation.routeparams.feature_b.OnBoardingRoute
+import com.septianbeneran.urithiru.core.navigation.routeparams.feature_onboarding.LandingRoute
+import com.septianbeneran.urithiru.core.navigation.routeparams.feature_onboarding.OnBoardingRoute
 import com.septianbeneran.urithiru.core.navigation.routeparams.feature_splash.SplashRoute
 import com.septianbeneran.urithiru.core.navigation.util.Navigator
 import com.septianbeneran.urithiru.core.ui.R

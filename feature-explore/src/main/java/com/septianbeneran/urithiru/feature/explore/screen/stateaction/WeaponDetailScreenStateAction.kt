@@ -1,0 +1,15 @@
+package com.septianbeneran.urithiru.feature.explore.screen.stateaction
+
+import com.septianbeneran.urithiru.core.base.BaseState
+import com.septianbeneran.urithiru.core.entity.eldenring.Weapon
+
+data class WeaponDetailScreenUiState(
+    val weaponDetailState: BaseState<Weapon> = BaseState.StateInitial,
+    val weapon: Weapon? = null
+)
+
+sealed interface WeaponDetailAction {
+    data class GetWeaponDetail(val weaponId: String) : WeaponDetailAction
+}
+
+sealed interface WeaponDetailNonce
