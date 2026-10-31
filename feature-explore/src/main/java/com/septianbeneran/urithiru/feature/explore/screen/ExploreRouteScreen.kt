@@ -29,6 +29,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -39,6 +40,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -60,14 +63,19 @@ import com.septianbeneran.urithiru.core.ui.component.UriErrorState
 import com.septianbeneran.urithiru.core.ui.component.UriListFooter
 import com.septianbeneran.urithiru.core.ui.component.UriSearchBar
 import com.septianbeneran.urithiru.core.ui.component.UriSkeleton
+import com.septianbeneran.urithiru.core.ui.component.UriToast
+import com.septianbeneran.urithiru.core.ui.component.UriToastProperties.UriToastType
 import com.septianbeneran.urithiru.core.ui.component.UriTopAppBarProperties.defaults
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
 import com.septianbeneran.urithiru.core.ui.util.NonceObserver
+import com.septianbeneran.urithiru.core.ui.util.toMessage
 import com.septianbeneran.urithiru.feature.explore.screen.feed.CompendiumFeedCard
 import com.septianbeneran.urithiru.feature.explore.screen.feed.FeaturedEntryCard
 import com.septianbeneran.urithiru.feature.explore.screen.feed.pluralLabel
+import com.septianbeneran.urithiru.feature.explore.screen.feed.singularLabel
 import com.septianbeneran.urithiru.feature.explore.screen.feed.tagline
 import com.septianbeneran.urithiru.feature.explore.screen.stateaction.ExploreAction
+import com.septianbeneran.urithiru.feature.explore.screen.stateaction.ExploreAction.DismissRefreshError
 import com.septianbeneran.urithiru.feature.explore.screen.stateaction.ExploreAction.LoadNextPage
 import com.septianbeneran.urithiru.feature.explore.screen.stateaction.ExploreAction.OnClearSearch
 import com.septianbeneran.urithiru.feature.explore.screen.stateaction.ExploreAction.OnEntryClick
@@ -77,6 +85,7 @@ import com.septianbeneran.urithiru.feature.explore.screen.stateaction.ExploreAct
 import com.septianbeneran.urithiru.feature.explore.screen.stateaction.ExploreAction.Refresh
 import com.septianbeneran.urithiru.feature.explore.screen.stateaction.ExploreNonce.NavigateToDetail
 import com.septianbeneran.urithiru.feature.explore.screen.stateaction.ExploreUiState
+import com.septianbeneran.urithiru.feature.explore.screen.stateaction.RegionRow
 import com.septianbeneran.urithiru.feature.explore.viewmodel.ExploreViewModel
 import kotlinx.coroutines.delay
 import kotlin.math.absoluteValue
@@ -175,14 +184,39 @@ fun ExploreScreen(
                 }
             }
 
-            uiState.isGroupedSearch -> SearchResults(
+            else -> RefreshableContent(
                 state = uiState,
                 onAction = onAction
             )
+        }
+    }
+}
 
-            else -> ExploreFeed(
-                state = uiState,
-                onAction = onAction
+@Composable
+private fun RefreshableContent(
+    state: ExploreUiState,
+    onAction: (ExploreAction) -> Unit
+) {
+    PullToRefreshBox(
+        modifier = Modifier.fillMaxSize(),
+        isRefreshing = state.isRefreshing,
+        onRefresh = { onAction(Refresh) }
+    ) {
+        if (state.isGroupedSearch) {
+            SearchResults(state = state, onAction = onAction)
+        } else {
+            ExploreFeed(state = state, onAction = onAction)
+        }
+
+        state.refreshError?.let { error ->
+            UriToast(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(horizontal = ScreenMargin, vertical = 12.dp),
+                type = UriToastType.Error,
+                titleText = "Couldn't refresh",
+                subTitleText = stringResource(error.toMessage()),
+                onClose = { onAction(DismissRefreshError) }
             )
         }
     }
@@ -229,6 +263,20 @@ private fun ExploreFeed(
             }
         }
 
+        state.regionRows.forEach { row ->
+            item(span = StaggeredGridItemSpan.FullLine, key = "region-${row.region}", contentType = "region") {
+                EntryRow(
+                    modifier = Modifier.bleed(ScreenMargin),
+                    title = "Around ${row.region}",
+                    subtitle = row.summary(),
+                    entries = row.entries,
+                    showKind = true,
+                    onSeeAll = null,
+                    onEntryClick = onEntryClick
+                )
+            }
+        }
+
         item(span = StaggeredGridItemSpan.FullLine, contentType = "header") {
             SectionHeader(
                 title = when {
@@ -254,6 +302,18 @@ private fun ExploreFeed(
                 showKind = state.selectedKind == null,
                 onClick = onEntryClick(entry)
             )
+        }
+
+        if (state.failedKinds.isNotEmpty()) {
+            item(span = StaggeredGridItemSpan.FullLine, contentType = "failed") {
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = "Couldn't load ${state.failedKinds.joinToString { it.pluralLabel.lowercase() }} this time. They'll be tried again as you scroll.",
+                    style = UrithiruTheme.typography.bodyS,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
+                )
+            }
         }
 
         item(span = StaggeredGridItemSpan.FullLine, contentType = "footer") {
@@ -318,40 +378,17 @@ private fun SearchResults(
         }
 
         items(result.groups, key = { it.kind.name }, contentType = { "group" }) { group ->
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = ScreenMargin),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        modifier = Modifier.weight(1f),
-                        text = "${group.kind.pluralLabel} · ${group.entries.size}${if (group.hasMore) "+" else ""}",
-                        style = UrithiruTheme.typography.h4,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                    if (group.hasMore) {
-                        TextButton(onClick = { onAction(OnKindSelect(group.kind)) }) {
-                            Text("See all")
-                        }
-                    }
-                }
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = ScreenMargin),
-                    horizontalArrangement = Arrangement.spacedBy(FeedSpacing)
-                ) {
-                    items(group.entries, key = { it.id }) { entry ->
-                        CompendiumFeedCard(
-                            modifier = Modifier.size(width = SearchCardWidth, height = SearchCardHeight),
-                            entry = entry,
-                            showKind = false,
-                            uniform = true,
-                            onClick = onEntryClick(entry)
-                        )
-                    }
-                }
-            }
+            EntryRow(
+                title = "${group.kind.pluralLabel} · ${group.entries.size}${if (group.hasMore) "+" else ""}",
+                entries = group.entries,
+                showKind = false,
+                onSeeAll = if (group.hasMore) {
+                    { onAction(OnKindSelect(group.kind)) }
+                } else {
+                    null
+                },
+                onEntryClick = onEntryClick
+            )
         }
 
         if (result.failedKinds.isNotEmpty()) {
@@ -366,6 +403,68 @@ private fun SearchResults(
         }
     }
 }
+
+@Composable
+private fun EntryRow(
+    modifier: Modifier = Modifier,
+    title: String,
+    subtitle: String? = null,
+    entries: List<CompendiumEntry>,
+    showKind: Boolean,
+    onSeeAll: (() -> Unit)?,
+    onEntryClick: (CompendiumEntry) -> () -> Unit
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = ScreenMargin),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = UrithiruTheme.typography.h4,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                subtitle?.let {
+                    Text(
+                        text = it,
+                        style = UrithiruTheme.typography.bodyS,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            onSeeAll?.let {
+                TextButton(onClick = it) {
+                    Text("See all")
+                }
+            }
+        }
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = ScreenMargin),
+            horizontalArrangement = Arrangement.spacedBy(FeedSpacing)
+        ) {
+            items(entries, key = { "${it.kind}-${it.id}" }) { entry ->
+                CompendiumFeedCard(
+                    modifier = Modifier.size(width = SearchCardWidth, height = SearchCardHeight),
+                    entry = entry,
+                    showKind = showKind,
+                    uniform = true,
+                    onClick = onEntryClick(entry)
+                )
+            }
+        }
+    }
+}
+
+private fun RegionRow.summary(): String =
+    entries.groupingBy { it.kind }.eachCount().entries
+        .sortedBy { it.key.ordinal }
+        .joinToString(" · ") { (kind, count) -> "$count ${if (count == 1) kind.singularLabel.lowercase() else kind.pluralLabel.lowercase()}" }
 
 private fun entryClick(onAction: (ExploreAction) -> Unit): (CompendiumEntry) -> () -> Unit = { entry ->
     { onAction(OnEntryClick(entry)) }

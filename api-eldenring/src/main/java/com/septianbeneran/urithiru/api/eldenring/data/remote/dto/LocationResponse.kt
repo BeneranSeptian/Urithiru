@@ -16,6 +16,6 @@ data class LocationResponse(
         name = name.trim(),
         image = image,
         description = description.cleaned(),
-        region = region.cleaned()
+        region = region.cleanedRegion()
     )
 }

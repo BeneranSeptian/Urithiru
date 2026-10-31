@@ -9,4 +9,6 @@ dependencies {
     moduleImplementation(projects.coreEntity)
     moduleImplementation(projects.coreNavigation)
     moduleImplementation(projects.coreUi)
+
+    testImplementation(libs.kotlinx.coroutines.test)
 }

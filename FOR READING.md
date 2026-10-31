@@ -228,7 +228,11 @@ Next, in rough order:
   - [x] 6. Explore screen: real section chips, mixed feed, card styles per type
   - [x] 7. Search across every section, grouped by type
   - [x] 8. One shared detail screen
-  - [ ] 9. Polish: region rows, pull-to-refresh, cached first page
+  - [ ] 9. Polish
+    - [x] Pull-to-refresh, and failed sections retried on the next load
+    - [x] `ExploreViewModel` unit tests
+    - [ ] Cache the first feed page (repository emits cache, then network). Deferred for now.
+    - [x] Region rows on All ("Around Limgrave"), built from what the feed has loaded
 - [ ] Connectivity observer + offline banner
 
 **Phase 4: ship it**

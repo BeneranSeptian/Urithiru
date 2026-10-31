@@ -21,7 +21,7 @@ class SearchCompendiumUseCaseImpl @Inject constructor(
         emit(ApiResult.Loading())
 
         val trimmed = query.trim()
-        val sections = repo.loadSections(kinds, limit = perKind, name = trimmed, page = 0)
+        val sections = repo.loadSections(kinds.associateWith { 0 }, limit = perKind, name = trimmed)
         val firstError = sections.firstError
         if (sections.loaded.isEmpty() && firstError != null) {
             emit(ApiResult.Error(firstError))

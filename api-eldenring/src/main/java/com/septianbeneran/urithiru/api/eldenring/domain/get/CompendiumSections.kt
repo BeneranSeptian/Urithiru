@@ -17,15 +17,14 @@ internal class SectionResults(
     val firstError: AppError?
 )
 
-/** Requests the same page of every section in [kinds] in parallel and waits for all of them to finish. */
+/** Requests, in parallel, the given page of every section in [pages] and waits for all of them to finish. */
 internal suspend fun CompendiumRepository.loadSections(
-    kinds: Set<CompendiumKind>,
+    pages: Map<CompendiumKind, Int>,
     limit: Int,
-    name: String?,
-    page: Int
+    name: String?
 ): SectionResults {
     val results = coroutineScope {
-        kinds.map { kind ->
+        pages.map { (kind, page) ->
             async { kind to getList(kind, limit = limit, name = name, page = page).first { it !is ApiResult.Loading } }
         }.awaitAll()
     }
@@ -36,7 +35,7 @@ internal suspend fun CompendiumRepository.loadSections(
 
     return SectionResults(
         loaded = loaded,
-        failedKinds = kinds - loaded.keys,
+        failedKinds = pages.keys - loaded.keys,
         firstError = results.firstNotNullOfOrNull { (_, result) -> (result as? ApiResult.Error)?.error }
     )
 }

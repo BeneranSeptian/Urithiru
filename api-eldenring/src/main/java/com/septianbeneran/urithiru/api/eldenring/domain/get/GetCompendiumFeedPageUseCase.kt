@@ -6,14 +6,14 @@ import com.septianbeneran.urithiru.core.remote.entity.ApiResult
 import kotlinx.coroutines.flow.Flow
 
 /**
- * Loads [page] of every section in [kinds] at once and mixes them into one feed page. The mix depends only
- * on [seed] and [page], so the same feed comes back while scrolling; pass a new seed to reshuffle.
- * Succeeds when at least one section loads, and fails only when all of them do. [name] filters every section by name.
+ * Loads, at once, the page given for every section in [pages] and mixes them into one feed page. The mix
+ * depends only on [seed] and [pages], so the same feed comes back while scrolling; pass a new seed to reshuffle.
+ * Succeeds when at least one section loads, and fails only when all of them do. A section in
+ * [CompendiumFeedPage.failedKinds] can be retried by asking for the same page again. [name] filters every section.
  */
 interface GetCompendiumFeedPageUseCase {
     operator fun invoke(
-        page: Int,
-        kinds: Set<CompendiumKind>,
+        pages: Map<CompendiumKind, Int>,
         seed: Long,
         name: String? = null,
         perKind: Int = DEFAULT_PER_KIND

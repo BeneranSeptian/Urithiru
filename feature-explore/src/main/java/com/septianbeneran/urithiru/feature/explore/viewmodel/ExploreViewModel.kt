@@ -8,10 +8,14 @@ import com.septianbeneran.urithiru.core.base.BaseState.StateInitial
 import com.septianbeneran.urithiru.core.base.BaseState.StateLoading
 import com.septianbeneran.urithiru.core.base.BaseState.StateSuccess
 import com.septianbeneran.urithiru.core.entity.eldenring.CompendiumEntry
+import com.septianbeneran.urithiru.core.entity.eldenring.CompendiumFeedPage
 import com.septianbeneran.urithiru.core.entity.eldenring.CompendiumKind
+import com.septianbeneran.urithiru.core.entity.eldenring.CompendiumPage
+import com.septianbeneran.urithiru.core.entity.eldenring.CompendiumSearchResult
 import com.septianbeneran.urithiru.core.remote.entity.AppError
 import com.septianbeneran.urithiru.core.ui.base.BaseViewModel
 import com.septianbeneran.urithiru.feature.explore.screen.stateaction.ExploreAction
+import com.septianbeneran.urithiru.feature.explore.screen.stateaction.ExploreAction.DismissRefreshError
 import com.septianbeneran.urithiru.feature.explore.screen.stateaction.ExploreAction.LoadNextPage
 import com.septianbeneran.urithiru.feature.explore.screen.stateaction.ExploreAction.OnClearSearch
 import com.septianbeneran.urithiru.feature.explore.screen.stateaction.ExploreAction.OnEntryClick
@@ -39,6 +43,7 @@ class ExploreViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
 
     private var seed = Random.nextLong()
+    private var stateBeforeRefresh: ExploreUiState? = null
 
     init {
         restart()
@@ -48,13 +53,16 @@ class ExploreViewModel @Inject constructor(
         when (action) {
             is Refresh -> {
                 seed = Random.nextLong()
-                restart()
+                if (_uiState.value.hasContent) refresh() else restart()
             }
 
             is LoadNextPage -> {
                 val state = _uiState.value
-                if (!state.isGroupedSearch && !state.isEndReached && state.feedState !is StateLoading) loadPage()
+                val canLoadMore = !state.isGroupedSearch && !state.isEndReached && !state.isRefreshing
+                if (canLoadMore && state.feedState !is StateLoading) load(state)
             }
+
+            is DismissRefreshError -> _uiState.update { it.copy(refreshError = null) }
 
             is OnSearchTextChange -> _uiState.update { it.copy(searchText = action.text) }
 
@@ -78,117 +86,119 @@ class ExploreViewModel @Inject constructor(
     }
 
     private fun restart() {
-        _uiState.update {
-            it.copy(
-                featured = emptyList(),
-                entries = emptyList(),
-                searchResult = null,
-                feedState = StateInitial,
-                page = 0,
-                endedKinds = emptySet(),
-                isEndReached = false
-            )
-        }
-        if (_uiState.value.isGroupedSearch) searchAllSections() else loadPage()
+        stateBeforeRefresh = null
+        _uiState.update { it.withPagingReset().copy(feedState = StateInitial, isRefreshing = false, refreshError = null) }
+        load(_uiState.value)
     }
 
-    private fun searchAllSections() {
+    private fun refresh() {
+        stateBeforeRefresh = _uiState.value
+        _uiState.update { it.copy(isRefreshing = true, refreshError = null) }
+        load(_uiState.value.withPagingReset())
+    }
+
+    private fun load(from: ExploreUiState) {
+        val name = from.submittedQuery.takeIf { it.isNotEmpty() }
+        when {
+            from.isGroupedSearch -> searchAllSections(from.submittedQuery)
+            from.selectedKind == null -> loadMixedPage(from, name)
+            else -> loadSectionPage(from, from.selectedKind, name)
+        }
+    }
+
+    private fun searchAllSections(query: String) {
         collectApi(
-            flow = searchCompendiumUseCase(_uiState.value.submittedQuery),
+            flow = searchCompendiumUseCase(query),
             key = FEED_KEY,
             onLoading = ::onPageLoading,
             onError = ::onPageError,
-            onSuccess = { result ->
-                _uiState.update {
-                    it.copy(
-                        searchResult = result,
-                        feedState = StateSuccess(result?.groups.orEmpty().flatMap { group -> group.entries }),
-                        isEndReached = true
-                    )
-                }
-            }
+            onSuccess = { result -> updateFromBase { it.withSearchResult(result) } }
         )
     }
 
-    private fun loadPage() {
-        val state = _uiState.value
-        val name = state.submittedQuery.takeIf { it.isNotEmpty() }
-        when (val kind = state.selectedKind) {
-            null -> loadMixedPage(state, name)
-            else -> loadSectionPage(state, kind, name)
-        }
-    }
-
-    private fun loadMixedPage(state: ExploreUiState, name: String?) {
+    private fun loadMixedPage(from: ExploreUiState, name: String?) {
+        val kinds = CompendiumKind.entries - from.endedKinds
         collectApi(
             flow = getCompendiumFeedPageUseCase(
-                page = state.page,
-                kinds = CompendiumKind.entries.toSet() - state.endedKinds,
+                pages = kinds.associateWith { from.kindPages[it] ?: 0 },
                 seed = seed,
                 name = name
             ),
             key = FEED_KEY,
             onLoading = ::onPageLoading,
             onError = ::onPageError,
-            onSuccess = { feedPage ->
-                appendPage(
-                    newEntries = feedPage?.entries.orEmpty(),
-                    pickFeaturedPerKind = true,
-                    endedKinds = feedPage?.endedKinds.orEmpty(),
-                    isLastPage = { ended -> ended.containsAll(CompendiumKind.entries) }
-                )
-            }
+            onSuccess = { feedPage -> updateFromBase { it.withMixedPage(feedPage, kinds) } }
         )
     }
 
-    private fun loadSectionPage(state: ExploreUiState, kind: CompendiumKind, name: String?) {
+    private fun loadSectionPage(from: ExploreUiState, kind: CompendiumKind, name: String?) {
         collectApi(
-            flow = getCompendiumListUseCase(kind = kind, limit = PAGE_SIZE, name = name, page = state.page),
+            flow = getCompendiumListUseCase(kind = kind, limit = PAGE_SIZE, name = name, page = from.page),
             key = FEED_KEY,
             onLoading = ::onPageLoading,
             onError = ::onPageError,
-            onSuccess = { page ->
-                val newEntries = page?.entries.orEmpty()
-                val loadedCount = state.entries.size + state.featured.size + newEntries.size
-                appendPage(
-                    newEntries = newEntries,
-                    pickFeaturedPerKind = false,
-                    endedKinds = emptySet(),
-                    isLastPage = {
-                        newEntries.size < PAGE_SIZE || page?.total?.let { total -> loadedCount >= total } == true
-                    }
-                )
-            }
+            onSuccess = { page -> updateFromBase { it.withSectionPage(page) } }
         )
     }
 
-    private fun appendPage(
-        newEntries: List<CompendiumEntry>,
-        pickFeaturedPerKind: Boolean,
-        endedKinds: Set<CompendiumKind>,
-        isLastPage: (Set<CompendiumKind>) -> Boolean
-    ) {
-        _uiState.update {
-            val featured = if (it.page == 0 && !it.isSearching) pickFeatured(newEntries, pickFeaturedPerKind) else it.featured
-            val entries = (it.entries + (newEntries - featured.toSet())).distinctBy { entry -> entry.kind to entry.id }
-            val ended = it.endedKinds + endedKinds
-            it.copy(
-                featured = featured,
-                entries = entries,
-                feedState = StateSuccess(entries),
-                page = it.page + 1,
-                endedKinds = ended,
-                isEndReached = isLastPage(ended)
-            )
+    private fun updateFromBase(transform: (ExploreUiState) -> ExploreUiState) {
+        stateBeforeRefresh = null
+        _uiState.update { current ->
+            val base = if (current.isRefreshing) current.withPagingReset() else current
+            transform(base).copy(isRefreshing = false)
         }
     }
 
+    private fun ExploreUiState.withSearchResult(result: CompendiumSearchResult?) = copy(
+        searchResult = result,
+        feedState = StateSuccess(result?.groups.orEmpty().flatMap { group -> group.entries }),
+        isEndReached = true
+    )
+
+    private fun ExploreUiState.withMixedPage(feedPage: CompendiumFeedPage?, requested: List<CompendiumKind>): ExploreUiState {
+        val failed = feedPage?.failedKinds.orEmpty()
+        val ended = endedKinds + feedPage?.endedKinds.orEmpty()
+        return appendEntries(feedPage?.entries.orEmpty(), featuredPerKind = true).copy(
+            kindPages = kindPages + (requested - failed).associateWith { (kindPages[it] ?: 0) + 1 },
+            endedKinds = ended,
+            failedKinds = failed,
+            isEndReached = ended.containsAll(CompendiumKind.entries)
+        )
+    }
+
+    private fun ExploreUiState.withSectionPage(page: CompendiumPage?): ExploreUiState {
+        val newEntries = page?.entries.orEmpty()
+        val loadedCount = entries.size + featured.size + newEntries.size
+        return appendEntries(newEntries, featuredPerKind = false).copy(
+            isEndReached = newEntries.size < PAGE_SIZE || page?.total?.let { total -> loadedCount >= total } == true
+        )
+    }
+
+    private fun ExploreUiState.appendEntries(newEntries: List<CompendiumEntry>, featuredPerKind: Boolean): ExploreUiState {
+        val newFeatured = if (page == 0 && !isSearching) pickFeatured(newEntries, featuredPerKind) else featured
+        val allEntries = (entries + (newEntries - newFeatured.toSet())).distinctBy { entry -> entry.kind to entry.id }
+        return copy(
+            featured = newFeatured,
+            entries = allEntries,
+            feedState = StateSuccess(allEntries),
+            page = page + 1
+        )
+    }
+
     private fun onPageLoading() {
-        _uiState.update { it.copy(feedState = StateLoading) }
+        if (!_uiState.value.isRefreshing) _uiState.update { it.copy(feedState = StateLoading) }
     }
 
     private fun onPageError(error: AppError) {
-        _uiState.update { it.copy(feedState = StateFailed(error)) }
+        val previous = stateBeforeRefresh
+        stateBeforeRefresh = null
+        _uiState.update {
+            if (it.isRefreshing && previous != null) {
+                previous.copy(isRefreshing = false, refreshError = error)
+            } else {
+                it.copy(feedState = StateFailed(error), isRefreshing = false)
+            }
+        }
     }
 
     private fun pickFeatured(entries: List<CompendiumEntry>, onePerKind: Boolean): List<CompendiumEntry> =

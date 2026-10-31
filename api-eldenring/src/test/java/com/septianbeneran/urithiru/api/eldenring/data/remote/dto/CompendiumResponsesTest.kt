@@ -70,6 +70,17 @@ class CompendiumResponsesTest {
     }
 
     @Test
+    fun misspelledRegionsAreCorrectedSoTheyGroupTogether() {
+        val regions = listOf("Altus Pleateau", " Liunia of the Lakes", "Mountaintop of the Giants", "Limgrave").map { region ->
+            json.decodeFromString<LocationResponse>("""{"id":"l","name":"Place","region":"$region"}""").mapToEntry().region
+        }
+        val bossRegion = json.decodeFromString<BossResponse>("""{"id":"b","name":"Boss","region":"Liunia of the Lakes"}""").mapToEntry().region
+
+        assertEquals(listOf("Altus Plateau", "Liurnia of the Lakes", "Mountaintops of the Giants", "Limgrave"), regions)
+        assertEquals("Liurnia of the Lakes", bossRegion)
+    }
+
+    @Test
     fun npcTrimsRoleAndHasNoDescription() {
         val npc = json.decodeFromString<NpcResponse>(
             """{"id":"n","name":"Merchant Kalé","image":"img.png","quote":null,

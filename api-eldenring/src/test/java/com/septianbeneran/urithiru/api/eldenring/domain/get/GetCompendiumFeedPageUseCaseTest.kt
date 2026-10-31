@@ -34,7 +34,7 @@ class GetCompendiumFeedPageUseCaseTest {
     fun emitsLoadingThenOneMixedPageWithEverySection() = runBlocking {
         val useCase = useCase(Bosses to page(bosses), Items to page(items), Locations to page(locations))
 
-        val emissions = useCase(page = 0, kinds = setOf(Bosses, Items, Locations), seed = 1L).toList()
+        val emissions = useCase(pages = setOf(Bosses, Items, Locations).associateWith { 0 }, seed = 1L).toList()
 
         assertTrue(emissions.first() is ApiResult.Loading)
         val feed = emissions.last().successData()
@@ -48,7 +48,7 @@ class GetCompendiumFeedPageUseCaseTest {
         val useCase = useCase(Bosses to page(bosses), Items to page(items), Locations to page(locations))
 
         repeat(20) { seed ->
-            val entries = useCase(page = 0, kinds = setOf(Bosses, Items, Locations), seed = seed.toLong()).last().successData().entries
+            val entries = useCase(pages = setOf(Bosses, Items, Locations).associateWith { 0 }, seed = seed.toLong()).last().successData().entries
 
             entries.zipWithNext().forEach { (first, second) ->
                 assertNotEquals("seed $seed: ${first.id} then ${second.id}", first.kind, second.kind)
@@ -61,9 +61,9 @@ class GetCompendiumFeedPageUseCaseTest {
         val useCase = useCase(Bosses to page(bosses), Items to page(items), Locations to page(locations))
         val kinds = setOf(Bosses, Items, Locations)
 
-        val first = useCase(page = 0, kinds = kinds, seed = 7L).last().successData().entries
-        val again = useCase(page = 0, kinds = kinds.reversed().toSet(), seed = 7L).last().successData().entries
-        val reshuffled = (1L..10L).map { useCase(page = 0, kinds = kinds, seed = it).last().successData().entries }
+        val first = useCase(pages = kinds.associateWith { 0 }, seed = 7L).last().successData().entries
+        val again = useCase(pages = kinds.reversed().toSet().associateWith { 0 }, seed = 7L).last().successData().entries
+        val reshuffled = (1L..10L).map { useCase(pages = kinds.associateWith { 0 }, seed = it).last().successData().entries }
 
         assertEquals(first, again)
         assertTrue(reshuffled.any { it != first })
@@ -73,7 +73,7 @@ class GetCompendiumFeedPageUseCaseTest {
     fun aFailingSectionIsReportedButTheRestStillLoad() = runBlocking {
         val useCase = useCase(Bosses to page(bosses), Items to ApiResult.Error(AppError.Timeout))
 
-        val feed = useCase(page = 0, kinds = setOf(Bosses, Items), seed = 1L).last().successData()
+        val feed = useCase(pages = setOf(Bosses, Items).associateWith { 0 }, seed = 1L).last().successData()
 
         assertEquals(bosses, feed.entries)
         assertEquals(setOf(Items), feed.failedKinds)
@@ -83,7 +83,7 @@ class GetCompendiumFeedPageUseCaseTest {
     fun failsOnlyWhenEverySectionFails() = runBlocking {
         val useCase = useCase(Bosses to ApiResult.Error(AppError.NoInternet), Items to ApiResult.Error(AppError.Timeout))
 
-        val result = useCase(page = 0, kinds = setOf(Bosses, Items), seed = 1L).last()
+        val result = useCase(pages = setOf(Bosses, Items).associateWith { 0 }, seed = 1L).last()
 
         assertTrue(result is ApiResult.Error)
     }
@@ -96,7 +96,7 @@ class GetCompendiumFeedPageUseCaseTest {
             Locations to page(locations, total = 100)
         )
 
-        val feed = useCase(page = 1, kinds = setOf(Bosses, Items, Locations), seed = 1L).last().successData()
+        val feed = useCase(pages = setOf(Bosses, Items, Locations).associateWith { 1 }, seed = 1L).last().successData()
 
         assertEquals(setOf(Bosses, Items), feed.endedKinds)
     }
@@ -105,9 +105,19 @@ class GetCompendiumFeedPageUseCaseTest {
     fun asksEachSectionForTheSamePageSizeAndName() = runBlocking {
         val repo = FakeRepository(mapOf(Bosses to page(bosses), Items to page(items)))
 
-        GetCompendiumFeedPageUseCaseImpl(repo)(page = 3, kinds = setOf(Bosses, Items), seed = 1L, name = "Axe", perKind = 4).last()
+        GetCompendiumFeedPageUseCaseImpl(repo)(pages = setOf(Bosses, Items).associateWith { 3 }, seed = 1L, name = "Axe", perKind = 4).last()
 
         assertEquals(setOf(Request(Bosses, 4, "Axe", 3), Request(Items, 4, "Axe", 3)), repo.requests.toSet())
+    }
+
+    @Test
+    fun eachSectionIsAskedForItsOwnPageAndEndsByItsOwnTotal() = runBlocking {
+        val repo = FakeRepository(mapOf(Bosses to page(bosses, total = 18), Items to page(items, total = 18)))
+
+        val feed = GetCompendiumFeedPageUseCaseImpl(repo)(pages = mapOf(Bosses to 2, Items to 0), seed = 1L).last().successData()
+
+        assertEquals(setOf(Request(Bosses, 6, null, 2), Request(Items, 6, null, 0)), repo.requests.toSet())
+        assertEquals(setOf(Bosses), feed.endedKinds)
     }
 
     @Test

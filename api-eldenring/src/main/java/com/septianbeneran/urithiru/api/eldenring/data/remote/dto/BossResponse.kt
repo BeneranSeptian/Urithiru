@@ -19,7 +19,7 @@ data class BossResponse(
         name = name.trim(),
         image = image,
         description = description.cleaned(),
-        region = region.cleaned(),
+        region = region.cleanedRegion(),
         location = location.cleaned(),
         drops = drops.mapNotNull { it.cleaned() },
         healthPoints = healthPoints.cleaned()

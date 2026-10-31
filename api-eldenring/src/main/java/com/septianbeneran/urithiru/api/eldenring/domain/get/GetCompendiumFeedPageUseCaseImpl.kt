@@ -16,15 +16,14 @@ class GetCompendiumFeedPageUseCaseImpl @Inject constructor(
 ) : GetCompendiumFeedPageUseCase {
 
     override fun invoke(
-        page: Int,
-        kinds: Set<CompendiumKind>,
+        pages: Map<CompendiumKind, Int>,
         seed: Long,
         name: String?,
         perKind: Int
     ): Flow<ApiResult<CompendiumFeedPage>> = flow {
         emit(ApiResult.Loading())
 
-        val sections = repo.loadSections(kinds, limit = perKind, name = name, page = page)
+        val sections = repo.loadSections(pages, limit = perKind, name = name)
         val firstError = sections.firstError
         if (sections.loaded.isEmpty() && firstError != null) {
             emit(ApiResult.Error(firstError))
@@ -37,9 +36,9 @@ class GetCompendiumFeedPageUseCaseImpl @Inject constructor(
                 CompendiumFeedPage(
                     entries = mixFeed(
                         byKind = loaded.mapValues { it.value.entries },
-                        random = Random(seed + page)
+                        random = Random(seed + pages.values.sum())
                     ),
-                    endedKinds = loaded.filter { (_, result) -> result.isLastPage(page, perKind) }.keys,
+                    endedKinds = loaded.filter { (kind, result) -> result.isLastPage(pages.getValue(kind), perKind) }.keys,
                     failedKinds = sections.failedKinds
                 )
             )
