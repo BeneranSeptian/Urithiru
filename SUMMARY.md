@@ -18,7 +18,7 @@ A modular Android app template built with Clean Architecture, Jetpack Compose, H
 | `:core-entity` | library | Domain models: `Weapon`, `Attributes`, `Scaling`, `Boss`, `OnBoardingPageData`, `AuthSession`, `User`, `TwitchOAuthToken` |
 | `:core-navigation` | compose lib | `@FeatureRoute` and `@FeatureGraph` annotations, `@Serializable` graph objects and route params, the `Navigator` wrapper |
 | `:core-ui` | compose lib | `BaseScreen`, `BaseViewModel`, `NonceObserver`, theme (`UrithiruTheme`, colors, typography), and the `Uri*` design-system components |
-| `:api-eldenring` | api lib | Elden Ring **weapons** (list with paging/search, detail, and a DataStore cache); the `BOSSES_V1` endpoint path is ready but unused |
+| `:api-eldenring` | api lib | The Elden Ring **compendium**: `CompendiumApi` → `CompendiumRemoteDataSource` → `CompendiumRepository`, with `GetCompendiumListUseCase`/`GetCompendiumDetailUseCase` taking a `CompendiumKind`, and `GetCompendiumFeedPageUseCase`, which loads one page of several sections at once and mixes them (seeded, so the order is stable; a failing section doesn't fail the page), and `SearchCompendiumUseCase`, which searches every section's first page and returns groups ranked by how closely the names match, plus a top result. Both share `loadSections` in `domain/get/CompendiumSections.kt` (Bosses, Weapons, Armors, Items, Locations, Npcs). Each DTO implements `CompendiumResponse.mapToEntry()`, and each entity implements the sealed `CompendiumEntry` in `:core-entity`. No cache yet. Explore uses it for weapons; the other sections aren't shown in the UI yet |
 | `:api-jsonbin` | api lib | **JSONBin** onboarding pages (with a cache) |
 | `:api-twitch` | api lib | Twitch OAuth `client_credentials` token and `RefreshTokenImpl` |
 | `:api-dummyjson` | api lib | **DummyJSON** login (`auth/login`); the session (tokens + user) is saved unencrypted in DataStore via `AuthCache`. A real app should encrypt it |
@@ -28,7 +28,7 @@ A modular Android app template built with Clean Architecture, Jetpack Compose, H
 | `:feature-shop` | feature lib | Shop tab. Placeholder for DummyJSON products |
 | `:feature-profile` | feature lib | Profile tab: user card and account details from `auth/me`, or a guest card with "Sign in"; `UriThemePicker`; replay onboarding; logout with a confirmation dialog |
 | `:feature-auth` | feature lib | `LoginRoute`: username/password with `UriTextField`, a "Use demo account" shortcut, and friendly errors. `LoginRoute(returnToPrevious = true)` goes back to the screen that opened it (Profile) instead of home |
-| `:feature-explore` | feature lib | Explore tab: weapon list (loads on open, search, infinite scroll) and weapon detail, plus an empty BossList screen stub |
+| `:feature-explore` | feature lib | Explore tab: a mixed compendium feed (`ExploreRoute`/`ExploreViewModel`): section chips (All, Bosses, Weapons, Armor, Items, Locations, NPCs), a Featured carousel, a two-column staggered grid with a card style per type (`screen/feed/CompendiumCards.kt`) and infinite scroll. Searching on All shows a top result and one row per section with "See all", which opens that section's chip with the same query. Every card opens `CompendiumDetailRoute(kind, id)`: a hero image, a sheet with type tags, stat tiles, and sections per type (stat bars, scaling and requirement chips, drops, effect callout, NPC quote) in `screen/detail/` |
 | `:navigation-processor` | JVM (KSP) | Generates route and graph builders from annotations |
 
 ### Dependency direction
@@ -80,7 +80,7 @@ Screen ─► ViewModel ─► UseCase ─► Repository ─► RemoteDataSource
 **Per-API module layout** (for example `api-eldenring`):
 ```
 data/remote/api/         Retrofit interface (@GET with @Url, so the endpoint path comes from BuildConfig)
-data/remote/dto/         Response DTOs with mapToEntity functions (for example mapToWeapon)
+data/remote/dto/         Response DTOs with mapToEntity functions (for example `mapToEntry()` in api-eldenring)
 data/remote/service/     XRemoteDataSource + Impl (extends BaseDataSource)
 data/local/              XCache + Impl (wraps BaseDataStore)
 repository/              XRepository + Impl (extends BaseRepository, exposes `cache`)
@@ -105,8 +105,8 @@ di/                      Hilt modules: @Binds for Impl → interface, @Provides 
 1. Declare a `@Serializable` graph object (`core-navigation/.../graph`) and a route (`.../routeparams/<feature>`). Use an `object`, or a `data class` when the route takes arguments.
 2. Annotate the screen composable:
    ```kotlin
-   @FeatureRoute(routeParams = WeaponListRoute::class, graph = FeatureExploreNavGraph::class) // set graph only on the start destination
-   @Composable fun WeaponListRoute(navigator: Navigator) { … }
+   @FeatureRoute(routeParams = ExploreRoute::class, graph = FeatureExploreNavGraph::class) // set graph only on the start destination
+   @Composable fun ExploreRoute(navigator: Navigator) { … }
    ```
 3. **`FeatureProcessor`** (runs in feature modules):
    - generates one `NavGraphBuilder` extension per route
@@ -123,7 +123,7 @@ Splash (FeatureSplashNavGraph start)
                                                     └─► "Continue as guest" ─────────────────► Tabs
 
 Tabs (NavigationSuiteScaffoldLayout, TopLevelDestination in :app; UriNavigationBar on phones, Material rail on larger screens):
-  Catalog (home) · Shop · Explore ─► WeaponList ─► WeaponDetail(id) · Profile
+  Catalog (home) · Shop · Explore (mixed feed) ─► CompendiumDetail(kind, id) · Profile
 ```
 `Navigator.navigateToHome()` opens the first tab and clears the back stack, so Back from there leaves the app. `Navigator.navigateToTopLevel(graph)` switches tabs; each tab keeps its own history, and Back from another tab returns to Catalog. Shop is a placeholder for now.
 
@@ -162,7 +162,7 @@ Titles and descriptions come from JSONBin (server-driven); `OnBoardingDefaults` 
 - The splash screen hardcodes the JSONBin `binId` in `SplashScreenViewModel` (`ONBOARDING_BIN_ID`).
 - `UriAvatar`, `UriBadge`, `UriBanner`, `UriButton`, `UriDot`, `UriListItem`, `UriLoader`, `UriMediaPlaceHolder`, `UriProgressBar` and `UriToast` still reference palette colors directly. Most are brand accents (blue, success, error) that read fine on both themes, but they haven't all been checked in dark mode. `UriRadioButton`, `UriCheckBox`, `UriStepper`, `UriTopAppBar` and `UriDialog` now use theme colors.
 - **Auth (`api-dummyjson`):** `AuthApi` (login, refresh) uses the plain DummyJSON client. `UserApi` (`auth/me`) uses a client with `AuthInterceptor` (adds `Authorization: Bearer`) and `TokenAuthenticator` (on a 401, `AuthRepository.refreshAccessToken` calls `auth/refresh` behind a `Mutex`, saves the new tokens and the request is retried once; a rejected refresh token clears the session). DummyJSON answers a tampered token with 500, not 401, so only a real expiry triggers a refresh.
-- Paging assumes a page size of 20 (`isEndReached = newWeapons.size < 20`) in `WeaponListViewModel`.
+- Explore's "All" view loads 6 entries per section per page through `GetCompendiumFeedPageUseCase` and stops asking a section once it has ended. A single section loads 20 at a time (`ExploreViewModel.PAGE_SIZE`) and stops on a short page or once `total` entries are loaded. The API's `total` is the size of the whole section, even for a name search.
 - Tests are only the default `ExampleUnitTest` and `ExampleInstrumentedTest` stubs. Every module now gets JUnit and AndroidX test from `testDependencies()` in the convention plugins, so they compile and run.
 
 ---
@@ -173,7 +173,7 @@ Titles and descriptions come from JSONBin (server-driven); `OnBoardingDefaults` 
 
 ### Correctness & robustness
 - ~~**Cancel in-flight requests in `BaseViewModel.collectApi`.** Each call starts a new `viewModelScope.launch` and keeps no handle to it. When a user taps search several times quickly, those requests run at the same time and can append results out of order. Return the `Job` and cancel the previous one for the same key, or switch to a `MutableStateFlow` of queries combined with `flatMapLatest`.~~
-  ✅ **Done (2026-10-27).** `collectApi` takes an optional `key` and returns the `Job`. A new call with the same key cancels the previous one. `WeaponListViewModel` uses it for search, refresh and paging.
+  ✅ **Done (2026-10-27).** `collectApi` takes an optional `key` and returns the `Job`. A new call with the same key cancels the previous one. `ExploreViewModel` uses it for search, section switches and paging.
 - **Remove the `TODO()` calls in `TwitchRepositoryImpl`** (`saveTwitchToken` and `loadTwitchToken`). These functions crash at runtime if anything calls them. Either implement them using `TwitchCache` or take them out of the interface.
 - ~~**Pick one JSON library.** Retrofit uses `GsonConverterFactory`, but the DTOs carry kotlinx `@Serializable` and some also carry Gson `@SerializedName`. The kotlinx converter is a dependency but is never used. Gson ignores Kotlin nullability and default values, so a missing field can silently become `null` inside a non-null type. Standardizing on kotlinx-serialization (for both Retrofit and `BaseDataStore`) would avoid that.~~
   ✅ **Done (2026-10-07).** Retrofit and `BaseDataStore` both use kotlinx-serialization through one shared `Json`. Gson and the unused JakeWharton converter are removed. `base-convention` now applies the serialization compiler plugin; before this, `@Serializable` in `api-*` and `core-entity` generated nothing.
@@ -194,8 +194,9 @@ Titles and descriptions come from JSONBin (server-driven); `OnBoardingDefaults` 
   ✅ **Done (2026-10-07)** in `api-eldenring`, `api-jsonbin` and `api-twitch`. Each `di/` module is an `abstract class` of `@Binds`, with a `companion object` `@Provides` only for the Retrofit-created `Api`.
 - ~~**Don't make use cases `@Singleton`.** They are stateless, so unscoped (or `@Reusable`) is enough.~~
   ✅ **Done (2026-10-07).** Use cases are bound unscoped. Data sources, caches and repositories stay `@Singleton`.
-- **Stop exposing `cache` from repositories.** `LoadWeaponListUseCase` reads `repository.cache` directly, which leaks the data layer. Add a `repository.observeWeaponList()` method, or go offline-first so the repository emits the cached value and then the network value.
-- **Use Room for list caching.** Storing whole lists as JSON strings in Preferences DataStore doesn't scale and can't be queried. Room is a better fit, and Paging 3 could replace the manual paging in `WeaponListViewModel`.
+- ~~**Stop exposing `cache` from repositories.** `LoadWeaponListUseCase` reads `repository.cache` directly, which leaks the data layer.~~
+  ✅ **Done (2026-11-01)** for `api-eldenring`: the unused weapon cache and `LoadWeaponListUseCase` were removed when weapons moved into the compendium. If caching comes back (plan step 9), have the repository emit the cached value and then the network value instead of exposing `cache`.
+- **Use Room for list caching.** Storing whole lists as JSON strings in Preferences DataStore doesn't scale and can't be queried. Room is a better fit, and Paging 3 could replace the manual paging in `ExploreViewModel`.
 - **Clean up `BaseViewModel`.** `baseScreenUiState` is declared as `var` but should be `val`. `permissionHandler` is field-injected through `lateinit`, so try constructor injection or a composable-level handler. `showErrorDialog` and `errorMessage` exist in `BaseScreenUiState` but nothing uses them, so either wire a shared error dialog into `BaseScreen` or remove them.
 - **Move `domain/` out of the `api-*` modules.** Use cases currently live in the API modules, so features depend on data-layer modules. If you want strict Clean Architecture, split them into `domain-*` modules, or rename the API modules to `data-*` so the layering is honest.
 

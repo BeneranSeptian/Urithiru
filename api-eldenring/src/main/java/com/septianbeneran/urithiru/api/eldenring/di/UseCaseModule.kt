@@ -1,11 +1,13 @@
 package com.septianbeneran.urithiru.api.eldenring.di
 
-import com.septianbeneran.urithiru.api.eldenring.domain.get.GetWeaponDetailUseCase
-import com.septianbeneran.urithiru.api.eldenring.domain.get.GetWeaponDetailUseCaseImpl
-import com.septianbeneran.urithiru.api.eldenring.domain.get.GetWeaponListUseCase
-import com.septianbeneran.urithiru.api.eldenring.domain.get.GetWeaponListUseCaseImpl
-import com.septianbeneran.urithiru.api.eldenring.domain.load.LoadWeaponListUseCase
-import com.septianbeneran.urithiru.api.eldenring.domain.load.LoadWeaponListUseCaseImpl
+import com.septianbeneran.urithiru.api.eldenring.domain.get.GetCompendiumDetailUseCase
+import com.septianbeneran.urithiru.api.eldenring.domain.get.GetCompendiumDetailUseCaseImpl
+import com.septianbeneran.urithiru.api.eldenring.domain.get.GetCompendiumFeedPageUseCase
+import com.septianbeneran.urithiru.api.eldenring.domain.get.GetCompendiumFeedPageUseCaseImpl
+import com.septianbeneran.urithiru.api.eldenring.domain.get.GetCompendiumListUseCase
+import com.septianbeneran.urithiru.api.eldenring.domain.get.GetCompendiumListUseCaseImpl
+import com.septianbeneran.urithiru.api.eldenring.domain.get.SearchCompendiumUseCase
+import com.septianbeneran.urithiru.api.eldenring.domain.get.SearchCompendiumUseCaseImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -16,11 +18,14 @@ import dagger.hilt.components.SingletonComponent
 abstract class UseCaseModule {
 
     @Binds
-    abstract fun bindGetWeaponListUseCase(impl: GetWeaponListUseCaseImpl): GetWeaponListUseCase
+    abstract fun bindGetCompendiumListUseCase(impl: GetCompendiumListUseCaseImpl): GetCompendiumListUseCase
 
     @Binds
-    abstract fun bindGetWeaponDetailUseCase(impl: GetWeaponDetailUseCaseImpl): GetWeaponDetailUseCase
+    abstract fun bindGetCompendiumDetailUseCase(impl: GetCompendiumDetailUseCaseImpl): GetCompendiumDetailUseCase
 
     @Binds
-    abstract fun bindLoadWeaponListUseCase(impl: LoadWeaponListUseCaseImpl): LoadWeaponListUseCase
+    abstract fun bindGetCompendiumFeedPageUseCase(impl: GetCompendiumFeedPageUseCaseImpl): GetCompendiumFeedPageUseCase
+
+    @Binds
+    abstract fun bindSearchCompendiumUseCase(impl: SearchCompendiumUseCaseImpl): SearchCompendiumUseCase
 }

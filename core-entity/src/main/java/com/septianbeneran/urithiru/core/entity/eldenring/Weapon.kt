@@ -6,14 +6,17 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Weapon(
-    val id: String,
-    val name: String,
-    val description: String? = null,
-    val image: String? = null,
+    override val id: String,
+    override val name: String,
+    override val description: String? = null,
+    override val image: String? = null,
     val attack: List<Attributes>,
     val defence: List<Attributes>,
     val scalesWith: List<Scaling>,
     val requiredAttributes: List<Attributes>,
     val category: String,
     val weight: Float
-)
+) : CompendiumEntry {
+    override val kind: CompendiumKind
+        get() = CompendiumKind.Weapons
+}

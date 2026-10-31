@@ -14,7 +14,7 @@ The app is becoming **Urithiru Showcase**: a working template app that shows off
 - **First launch:** splash → a 4-page *live* onboarding → sign in (or continue as guest) → the tabs. Later launches skip onboarding.
 - **Tabs:** Catalog · Shop · Explore · Profile, as a bottom bar on phones and a rail on tablets. The bar only shows on a tab's root screen.
 - **Catalog:** every `Uri*` component, each with interactive demos.
-- **Explore:** Elden Ring weapons, with search, paging and a detail screen.
+- **Explore:** a mixed feed of the Elden Ring compendium (bosses, weapons, armor, items, locations, NPCs) with section chips, a Featured carousel, a staggered grid with a card style per type, grouped search (top result plus a row per section) and paging. Every entry opens one shared detail screen.
 - **Login:** DummyJSON demo account (`emilys` / `emilyspass`). The session is saved on the device.
 - **Profile:** the signed-in user and account details from `auth/me` (the access token is refreshed automatically when it expires), or a guest card with "Sign in". Also the theme setting, replay onboarding and logout.
 - **Theme:** Light / Dark / Match system, picked in onboarding and saved.
@@ -145,7 +145,6 @@ adb shell pm clear com.septianbeneran.urithiru.dev   # first launch again
 Small tasks, good for a lunch break:
 - **`UriMediaPlaceHolder` is light blue**, which clashes with gray cards. Make it neutral (`surfaceVariant`).
 - **The manifest still asks for** camera, contacts and location, and nothing uses them anymore. Remove them before any Play upload.
-- **The Explore ViewModel** still has an unused "load from local" action (`GetWeaponListLocal`).
 - **`TwitchRepositoryImpl`** has two `TODO()` calls that crash if anything calls them. Implement them, or drop the Twitch module.
 - **The theme picker shows "Match system"** when nothing is saved, even if `defaultThemeMode` is Light. Feature modules can't see the app's default.
 - **Login tokens are unencrypted** in DataStore. That's fine for the demo account; a real app should encrypt them.
@@ -220,7 +219,16 @@ Next, in rough order:
 **Phase 3: depth**
 - [ ] Room + offline cart / favorites
 - [ ] `UriChip`, `UriMediaCard`, `UriStatRow`
-- [ ] Bosses list and detail in Explore (`BOSSES_V1` is ready in `api-eldenring`)
+- [ ] Explore as a mixed compendium feed (bosses, weapons, armor, items, locations, NPCs)
+  - [x] 1. Housekeeping: `Boss` package fixed, `ApiDto.total`, endpoint paths for every section
+  - [x] 2. Compendium data layer (`CompendiumKind`, sealed `CompendiumEntry`, `CompendiumPage`) with Bosses end to end
+  - [x] 3. Armor, Items, Locations, NPCs
+  - [x] 4. Move Weapons into the compendium classes
+  - [x] 5. Feed use case that mixes sections, with unit tests (`GetCompendiumFeedPageUseCase`)
+  - [x] 6. Explore screen: real section chips, mixed feed, card styles per type
+  - [x] 7. Search across every section, grouped by type
+  - [x] 8. One shared detail screen
+  - [ ] 9. Polish: region rows, pull-to-refresh, cached first page
 - [ ] Connectivity observer + offline banner
 
 **Phase 4: ship it**

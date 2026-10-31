@@ -17,11 +17,11 @@ data class WeaponResponse(
     val requiredAttributes: List<AttributesResponse>,
     val category: String,
     val weight: Float
-) {
-    fun mapToWeapon() = Weapon(
+) : CompendiumResponse {
+    override fun mapToEntry() = Weapon(
         id = id,
-        name = name,
-        description = description,
+        name = name.trim(),
+        description = description.cleaned(),
         image = image,
         attack = attack.map { it.mapToAttributes() },
         defence = defence.map { it.mapToAttributes() },
