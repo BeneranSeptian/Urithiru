@@ -17,7 +17,6 @@ abstract class BaseDataSource {
         if (response.isSuccessful) ApiResult.Success(response.body(), response.headers())
         else ApiResult.Error(response.toAppError())
     } catch (e: CancellationException) {
-        // Swallowing this would break coroutine cancellation
         throw e
     } catch (e: Exception) {
         ApiResult.Error(e.toAppError())

@@ -26,7 +26,6 @@ open class BaseRepository (
             }
         }
     } catch (e: Exception) {
-        // transform() turns a DTO into an entity, so a failure here means the response had unexpected data
         ApiResult.Error(AppError.Parse(e))
     }
 
