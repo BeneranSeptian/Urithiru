@@ -62,6 +62,7 @@ fun LoginRoute(
     NonceObserver(viewModel.nonce) { nonce ->
         when (nonce) {
             LoginNonce.NavigateToHome -> navigator.navigateToHome()
+            LoginNonce.NavigateBack -> navigator.navigateUp()
         }
     }
 }

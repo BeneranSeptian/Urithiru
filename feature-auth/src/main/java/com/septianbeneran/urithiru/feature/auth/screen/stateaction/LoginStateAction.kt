@@ -22,4 +22,5 @@ sealed interface LoginAction {
 
 sealed interface LoginNonce : BaseNonce {
     data object NavigateToHome : LoginNonce
+    data object NavigateBack : LoginNonce
 }

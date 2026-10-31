@@ -57,7 +57,7 @@ fun OnBoardingRoute(
 
     NonceObserver(viewModel.nonce) { nonce ->
         when (nonce) {
-            OnBoardingScreenNonce.NavigateToLogin -> navigator.navigate(LoginRoute)
+            OnBoardingScreenNonce.NavigateToLogin -> navigator.navigate(LoginRoute())
             OnBoardingScreenNonce.NavigateToHome -> navigator.navigateToHome()
         }
     }
