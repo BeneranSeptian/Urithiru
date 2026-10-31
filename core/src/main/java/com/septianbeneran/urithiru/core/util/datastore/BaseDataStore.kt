@@ -62,6 +62,12 @@ class BaseDataStore @Inject constructor(
         saveString(key, jsonString)
     }
 
+    suspend fun remove(key: String) {
+        context.dataStore.edit { preferences ->
+            preferences.asMap().keys.filter { it.name == key }.forEach { preferences.remove(it) }
+        }
+    }
+
     fun readString(key: String): Flow<String?> {
         val prefKey = stringPreferencesKey(key)
         return context.dataStore.data.map { preferences ->

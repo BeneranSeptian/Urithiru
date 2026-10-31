@@ -13,6 +13,10 @@ class AuthCacheImpl @Inject constructor(
 
     override fun loadSession() = baseDataStore.readObject<AuthSession>(AUTH_SESSION_KEY)
 
+    override suspend fun clearSession() {
+        baseDataStore.remove(AUTH_SESSION_KEY)
+    }
+
     private companion object {
         const val AUTH_SESSION_KEY = "AUTH_SESSION"
     }
