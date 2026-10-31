@@ -13,12 +13,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.septianbeneran.urithiru.core.settings.ThemeMode
 import com.septianbeneran.urithiru.core.ui.component.UriCheckBox
 import com.septianbeneran.urithiru.core.ui.component.UriCheckBoxProperties
 import com.septianbeneran.urithiru.core.ui.component.UriRadioButton
 import com.septianbeneran.urithiru.core.ui.component.UriRadioButtonProperties
 import com.septianbeneran.urithiru.core.ui.component.UriSearchBar
 import com.septianbeneran.urithiru.core.ui.component.UriTextField
+import com.septianbeneran.urithiru.core.ui.component.UriThemePicker
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
 
 @Composable
@@ -107,5 +109,19 @@ fun RadioButtonDemo() {
             UriRadioButton(selected = true, size = UriRadioButtonProperties.Size.Large)
             UriRadioButton(selected = false, enabled = false)
         }
+    }
+}
+
+@Composable
+fun ThemePickerDemo() {
+    var selected by rememberSaveable { mutableStateOf(ThemeMode.System) }
+
+    DemoSection("Try it") {
+        UriThemePicker(selected = selected, onSelect = { selected = it })
+        Text(
+            text = "Here it only changes this demo. Profile saves the choice and applies it to the app.",
+            style = UrithiruTheme.typography.bodyS,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }

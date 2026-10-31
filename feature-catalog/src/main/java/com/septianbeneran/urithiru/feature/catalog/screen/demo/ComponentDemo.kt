@@ -22,6 +22,7 @@ fun ComponentDemo(id: String) {
         "search_bar" -> SearchBarDemo()
         "check_box" -> CheckBoxDemo()
         "radio_button" -> RadioButtonDemo()
+        "theme_picker" -> ThemePickerDemo()
         "loader" -> LoaderDemo()
         "progress_bar" -> ProgressBarDemo()
         "skeleton" -> SkeletonDemo()

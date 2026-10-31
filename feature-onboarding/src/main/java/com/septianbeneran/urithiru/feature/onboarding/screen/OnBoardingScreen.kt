@@ -29,6 +29,7 @@ import com.septianbeneran.urithiru.core.navigation.graph.FeatureOnboardingNavGra
 import com.septianbeneran.urithiru.core.navigation.routeparams.feature_onboarding.OnBoardingRoute
 import com.septianbeneran.urithiru.core.navigation.util.Navigator
 import com.septianbeneran.urithiru.core.ui.base.BaseScreen
+import com.septianbeneran.urithiru.core.ui.component.UriThemePicker
 import com.septianbeneran.urithiru.core.ui.component.UriButton
 import com.septianbeneran.urithiru.core.ui.component.UriButtonProperties.Type.Tertiary
 import com.septianbeneran.urithiru.core.ui.component.UriDot
@@ -37,7 +38,6 @@ import com.septianbeneran.urithiru.core.ui.util.NonceObserver
 import com.septianbeneran.urithiru.feature.onboarding.screen.demo.ComponentsDemo
 import com.septianbeneran.urithiru.feature.onboarding.screen.demo.ErrorHandlingDemo
 import com.septianbeneran.urithiru.feature.onboarding.screen.demo.SignInDemo
-import com.septianbeneran.urithiru.feature.onboarding.screen.demo.ThemeDemo
 import com.septianbeneran.urithiru.feature.onboarding.screen.stateaction.OnBoardingScreenAction
 import com.septianbeneran.urithiru.feature.onboarding.screen.stateaction.OnBoardingScreenNonce
 import com.septianbeneran.urithiru.feature.onboarding.screen.stateaction.OnBoardingScreenState
@@ -118,7 +118,7 @@ fun OnBoardingScreen(
                         onOfflineChange = { onAction(OnBoardingScreenAction.OnDemoOfflineChange(it)) },
                         onRetry = { onAction(OnBoardingScreenAction.OnDemoRetryClick) }
                     )
-                    2 -> ThemeDemo(
+                    2 -> UriThemePicker(
                         selected = uiState.themeMode,
                         onSelect = { onAction(OnBoardingScreenAction.OnThemeModeSelect(it)) }
                     )
