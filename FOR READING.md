@@ -65,6 +65,7 @@ Ideas for later:
 
 **The bottom bar**
 - The tab list is `TopLevelDestination` in `:app`.
+- On phones the bar is `UriNavigationBar` (`core-ui`): a floating pill with a sliding indicator and springy icons. Restyle it with `NavigationBarStyle` in `NavHostChamber.kt` (shape, margins, elevation, labels, springs, haptics), or switch to `UriNavigationBarDefaults.Docked` for a classic edge-to-edge bar. Colors come from `UriNavigationBarDefaults.colors()`. Larger screens keep the Material rail.
 - The bar shows only when **every visible screen is a tab root**, so it comes back only after a back animation has finished. Showing it mid-animation resized the screens while they slid; that was the "weird back animation".
 
 **Animations**
@@ -143,7 +144,6 @@ adb shell pm clear com.septianbeneran.urithiru.dev   # first launch again
 
 Small tasks, good for a lunch break:
 - **`UriMediaPlaceHolder` is light blue**, which clashes with gray cards. Make it neutral (`surfaceVariant`).
-- **The selected-tab pill is light gray** (Material's `secondaryContainer`). Consider your blue `primaryContainer` instead.
 - **The manifest still asks for** camera, contacts and location, and nothing uses them anymore. Remove them before any Play upload.
 - **The Explore ViewModel** still has an unused "load from local" action (`GetWeaponListLocal`).
 - **`TwitchRepositoryImpl`** has two `TODO()` calls that crash if anything calls them. Implement them, or drop the Twitch module.

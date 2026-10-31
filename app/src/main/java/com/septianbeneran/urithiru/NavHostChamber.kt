@@ -7,6 +7,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.expandVertically
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
@@ -32,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -43,6 +46,11 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.septianbeneran.urithiru.core.navigation.graph.FeatureSplashNavGraph
 import com.septianbeneran.urithiru.core.navigation.util.Navigator
+import com.septianbeneran.urithiru.core.ui.component.UriNavigationBar
+import com.septianbeneran.urithiru.core.ui.component.UriNavigationBarDefaults
+import com.septianbeneran.urithiru.core.ui.component.UriNavigationBarItem
+import com.septianbeneran.urithiru.core.ui.component.UriNavigationBarStyle
+import com.septianbeneran.urithiru.core.ui.component.UriNavigationLabelMode
 import com.septianbeneran.urithiru.graph.registerAllFeatureGraphs
 
 /**
@@ -70,6 +78,9 @@ fun NavHostChamber() {
 
     val layoutType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(currentWindowAdaptiveInfoV2())
     val isBottomBar = layoutType == NavigationSuiteType.NavigationBar
+    val barItems = remember {
+        TopLevelDestination.entries.map { UriNavigationBarItem(it.label, it.icon, it.selectedIcon) }
+    }
 
     NavigationSuiteScaffoldLayout(
         navigationSuiteType = layoutType,
@@ -79,7 +90,15 @@ fun NavHostChamber() {
                 enter = if (isBottomBar) barEnterTransition() else railEnterTransition(),
                 exit = if (isBottomBar) barExitTransition() else railExitTransition()
             ) {
-                NavigationSuite(layoutType = layoutType) {
+                if (isBottomBar) {
+                    UriNavigationBar(
+                        items = barItems,
+                        selectedIndex = TopLevelDestination.entries.indexOf(currentTab),
+                        onSelect = { navigator.navigateToTopLevel(TopLevelDestination.entries[it].graph) },
+                        style = NavigationBarStyle,
+                        colors = UriNavigationBarDefaults.colors()
+                    )
+                } else NavigationSuite(layoutType = layoutType) {
                     TopLevelDestination.entries.forEach { tab ->
                         val isSelected = tab == currentTab
                         item(
@@ -136,6 +155,23 @@ private fun AppNavHost(
         registerAllFeatureGraphs(navigator)
     }
 }
+
+private val NavigationBarStyle = UriNavigationBarStyle(
+    isFloating = true,
+    shape = RoundedCornerShape(28.dp),
+    horizontalMargin = 16.dp,
+    bottomMargin = 12.dp,
+    shadowElevation = 8.dp,
+    height = 64.dp,
+    showIndicator = true,
+    indicatorShape = RoundedCornerShape(22.dp),
+    indicatorPadding = 6.dp,
+    labelMode = UriNavigationLabelMode.SelectedOnly,
+    selectedIconScale = 1.1f,
+    springDampingRatio = Spring.DampingRatioLowBouncy,
+    springStiffness = Spring.StiffnessMediumLow,
+    hapticFeedback = true
+)
 
 private const val SLIDE_DURATION_MS = 150
 private const val TAB_FADE_DURATION_MS = 100
