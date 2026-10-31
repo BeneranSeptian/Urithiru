@@ -1,6 +1,9 @@
 package com.septianbeneran.urithiru.feature.auth.viewmodel
 
+import androidx.lifecycle.SavedStateHandle
+import androidx.navigation.toRoute
 import com.septianbeneran.urithiru.api.dummyjson.domain.post.PostLoginUseCase
+import com.septianbeneran.urithiru.core.navigation.routeparams.feature_auth.LoginRoute
 import com.septianbeneran.urithiru.core.ui.base.BaseViewModel
 import com.septianbeneran.urithiru.feature.auth.screen.stateaction.LoginAction
 import com.septianbeneran.urithiru.feature.auth.screen.stateaction.LoginAction.OnPasswordChange
@@ -17,8 +20,11 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val postLoginUseCase: PostLoginUseCase
+    private val postLoginUseCase: PostLoginUseCase,
+    savedStateHandle: SavedStateHandle
 ) : BaseViewModel() {
+
+    private val returnToPrevious = savedStateHandle.toRoute<LoginRoute>().returnToPrevious
 
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState = _uiState.asStateFlow()
@@ -45,7 +51,7 @@ class LoginViewModel @Inject constructor(
             onError = { error -> _uiState.update { it.copy(isLoading = false, error = error) } },
             onSuccess = {
                 _uiState.update { it.copy(isLoading = false) }
-                sendNonce(LoginNonce.NavigateToHome)
+                sendNonce(if (returnToPrevious) LoginNonce.NavigateBack else LoginNonce.NavigateToHome)
             }
         )
     }
