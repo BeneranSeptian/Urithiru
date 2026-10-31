@@ -3,10 +3,17 @@ package com.septianbeneran.urithiru
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Companion.Left
 import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Companion.Right
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
@@ -14,15 +21,15 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
-import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuite
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
-import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldValue
-import androidx.compose.material3.adaptive.navigationsuite.rememberNavigationSuiteScaffoldState
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldLayout
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavBackStackEntry
@@ -39,9 +46,10 @@ import com.septianbeneran.urithiru.core.navigation.util.Navigator
 import com.septianbeneran.urithiru.graph.registerAllFeatureGraphs
 
 /**
- * The app's single NavHost, inside a NavigationSuiteScaffold: a bottom bar on phones, a rail on larger
+ * The app's single NavHost, inside a NavigationSuiteScaffoldLayout: a bottom bar on phones, a rail on larger
  * screens. The bar only shows on the root screen of a [TopLevelDestination] graph, so detail screens,
- * splash, onboarding and login are full screen.
+ * splash, onboarding and login are full screen. The bar sits in our own AnimatedVisibility, not the
+ * scaffold's built-in show/hide, because the scaffold's animation can't be customized.
  *
  * The bar's visibility follows every screen that is visible, not just the current one, so it only comes
  * back once a back animation has finished. Showing it mid-animation would resize the screens as they slide.
@@ -60,28 +68,33 @@ fun NavHostChamber() {
     val currentTab = TopLevelDestination.entries.firstOrNull { backStackEntry?.destination.isInside(it) }
     val isBarVisible = visibleEntries.areAllTabRoots()
 
-    val navigationSuiteState = rememberNavigationSuiteScaffoldState(NavigationSuiteScaffoldValue.Hidden)
-    LaunchedEffect(isBarVisible) {
-        if (isBarVisible) navigationSuiteState.show() else navigationSuiteState.hide()
-    }
+    val layoutType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(currentWindowAdaptiveInfoV2())
+    val isBottomBar = layoutType == NavigationSuiteType.NavigationBar
 
-    NavigationSuiteScaffold(
-        layoutType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(currentWindowAdaptiveInfoV2()),
-        state = navigationSuiteState,
-        navigationSuiteItems = {
-            TopLevelDestination.entries.forEach { tab ->
-                val isSelected = tab == currentTab
-                item(
-                    selected = isSelected,
-                    onClick = { navigator.navigateToTopLevel(tab.graph) },
-                    icon = {
-                        Icon(
-                            painter = painterResource(if (isSelected) tab.selectedIcon else tab.icon),
-                            contentDescription = null
+    NavigationSuiteScaffoldLayout(
+        navigationSuiteType = layoutType,
+        navigationSuite = {
+            AnimatedVisibility(
+                visible = isBarVisible,
+                enter = if (isBottomBar) barEnterTransition() else railEnterTransition(),
+                exit = if (isBottomBar) barExitTransition() else railExitTransition()
+            ) {
+                NavigationSuite(layoutType = layoutType) {
+                    TopLevelDestination.entries.forEach { tab ->
+                        val isSelected = tab == currentTab
+                        item(
+                            selected = isSelected,
+                            onClick = { navigator.navigateToTopLevel(tab.graph) },
+                            icon = {
+                                Icon(
+                                    painter = painterResource(if (isSelected) tab.selectedIcon else tab.icon),
+                                    contentDescription = null
+                                )
+                            },
+                            label = { Text(tab.label) }
                         )
-                    },
-                    label = { Text(tab.label) }
-                )
+                    }
+                }
             }
         }
     ) {
@@ -124,10 +137,28 @@ private fun AppNavHost(
     }
 }
 
-private const val SLIDE_DURATION_MS = 300
-private const val TAB_FADE_DURATION_MS = 200
+private const val SLIDE_DURATION_MS = 150
+private const val TAB_FADE_DURATION_MS = 100
 
 private fun <T> slideSpec() = tween<T>(SLIDE_DURATION_MS, easing = FastOutSlowInEasing)
+
+private const val BAR_ENTER_DURATION_MS = 100
+private const val BAR_EXIT_DURATION_MS = 100
+
+/** Change these to restyle how the bar (phones) and the rail (larger screens) appear and disappear. */
+private fun barEnterTransition(): EnterTransition =
+    expandVertically(tween(BAR_ENTER_DURATION_MS, easing = FastOutSlowInEasing), expandFrom = Alignment.Top) +
+        fadeIn(tween(BAR_ENTER_DURATION_MS))
+
+private fun barExitTransition(): ExitTransition =
+    shrinkVertically(tween(BAR_EXIT_DURATION_MS, easing = FastOutSlowInEasing), shrinkTowards = Alignment.Top) +
+        fadeOut(tween(BAR_EXIT_DURATION_MS))
+
+private fun railEnterTransition(): EnterTransition =
+    expandHorizontally(tween(BAR_ENTER_DURATION_MS, easing = FastOutSlowInEasing)) + fadeIn(tween(BAR_ENTER_DURATION_MS))
+
+private fun railExitTransition(): ExitTransition =
+    shrinkHorizontally(tween(BAR_EXIT_DURATION_MS, easing = FastOutSlowInEasing)) + fadeOut(tween(BAR_EXIT_DURATION_MS))
 
 /** Moving between two tab roots crossfades; tabs are siblings, so a forward or back slide doesn't fit. */
 private fun AnimatedContentTransitionScope<NavBackStackEntry>.isTabSwitch(): Boolean =
