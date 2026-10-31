@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -22,8 +23,6 @@ import androidx.compose.ui.unit.dp
 import com.septianbeneran.urithiru.core.ui.R
 import com.septianbeneran.urithiru.core.ui.component.UriStepperProperties.Type.Done
 import com.septianbeneran.urithiru.core.ui.component.UriStepperProperties.Type.Filled
-import com.septianbeneran.urithiru.core.ui.theme.Highlight
-import com.septianbeneran.urithiru.core.ui.theme.Neutral
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
 
 @Composable
@@ -75,54 +74,68 @@ fun UriStepper(
 }
 
 object UriStepperProperties {
-    sealed class Type(
-        val titleTextColor: Color,
-        val stepContainerColor: Color,
-        val stepTextColor: Color
-    ) {
-        object Filled: Type(
-            titleTextColor = Neutral.Dark.Dark500,
-            stepContainerColor = Highlight.Highlight500,
-            stepTextColor = Neutral.Light.Light100
-        )
+    sealed class Type {
+        abstract val titleTextColor: Color
+            @Composable get
+        abstract val stepContainerColor: Color
+            @Composable get
+        abstract val stepTextColor: Color
+            @Composable get
 
-        object Unfilled: Type(
-            titleTextColor = Neutral.Dark.Dark100,
-            stepContainerColor = Neutral.Light.Light300,
-            stepTextColor = Neutral.Dark.Dark100
-        )
+        object Filled : Type() {
+            override val titleTextColor: Color
+                @Composable get() = MaterialTheme.colorScheme.onBackground
+            override val stepContainerColor: Color
+                @Composable get() = MaterialTheme.colorScheme.primary
+            override val stepTextColor: Color
+                @Composable get() = MaterialTheme.colorScheme.onPrimary
+        }
 
-        object Done: Type(
-            titleTextColor = Neutral.Dark.Dark100,
-            stepContainerColor = Highlight.Highlight200,
-            stepTextColor = Highlight.Highlight500
-        )
+        object Unfilled : Type() {
+            override val titleTextColor: Color
+                @Composable get() = MaterialTheme.colorScheme.onSurfaceVariant
+            override val stepContainerColor: Color
+                @Composable get() = MaterialTheme.colorScheme.surfaceVariant
+            override val stepTextColor: Color
+                @Composable get() = MaterialTheme.colorScheme.onSurfaceVariant
+        }
+
+        object Done : Type() {
+            override val titleTextColor: Color
+                @Composable get() = MaterialTheme.colorScheme.onSurfaceVariant
+            override val stepContainerColor: Color
+                @Composable get() = MaterialTheme.colorScheme.primaryContainer
+            override val stepTextColor: Color
+                @Composable get() = MaterialTheme.colorScheme.primary
+        }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 private fun UriStepperPreview() {
-    Box(modifier = Modifier.fillMaxSize()) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            UriStepper(
-                stepText = "1",
-                titleText = "Step"
-            )
+    UrithiruTheme {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                UriStepper(
+                    stepText = "1",
+                    titleText = "Step"
+                )
 
-            UriStepper(
-                type = UriStepperProperties.Type.Unfilled,
-                stepText = "1",
-                titleText = "Step"
-            )
+                UriStepper(
+                    type = UriStepperProperties.Type.Unfilled,
+                    stepText = "1",
+                    titleText = "Step"
+                )
 
-            UriStepper(
-                type = Done,
-                stepText = "1",
-                titleText = "Step"
-            )
+                UriStepper(
+                    type = Done,
+                    stepText = "1",
+                    titleText = "Step"
+                )
+            }
         }
     }
 }

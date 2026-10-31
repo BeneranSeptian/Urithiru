@@ -22,7 +22,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.septianbeneran.urithiru.core.ui.component.UriDialogProperties.Type
 import com.septianbeneran.urithiru.core.ui.component.UriDialogProperties.Type.Alert
 import com.septianbeneran.urithiru.core.ui.component.UriDialogProperties.Type.Confirmation
-import com.septianbeneran.urithiru.core.ui.theme.Neutral
+import androidx.compose.material3.MaterialTheme
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,7 +48,7 @@ fun UriDialog(
         Box(
             modifier = modifier
                 .clip(RoundedCornerShape(16.dp))
-                .background(Neutral.Light.Light100)
+                .background(MaterialTheme.colorScheme.surface)
                 .padding(16.dp)
         ) {
             Column(
@@ -79,12 +79,14 @@ private fun TextSection(
         Text(
             text = textTitle,
             style = UrithiruTheme.typography.h3,
+            color = MaterialTheme.colorScheme.onSurface,
             maxLines = 2
         )
 
         Text(
             text = textDescription,
             style = UrithiruTheme.typography.bodyS,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 3,
             modifier = Modifier.padding(horizontal = 8.dp),
             textAlign = TextAlign.Center
