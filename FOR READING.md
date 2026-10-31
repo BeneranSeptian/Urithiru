@@ -2,7 +2,7 @@
 
 Notes for reading on your phone (before sleeping, while commuting) and for working away from the main laptop without AI. Each section starts with its status. For how the code is built, see `SUMMARY.md`; for the rules Claude follows, see `CLAUDE.md`.
 
-Last updated: 2026-10-28, branch `improvement` (nothing pushed yet).
+Last updated: 2026-10-31, branch `improvement` (nothing pushed yet).
 
 ---
 
@@ -16,10 +16,11 @@ The app is becoming **Urithiru Showcase**: a working template app that shows off
 - **Catalog:** every `Uri*` component, each with interactive demos.
 - **Explore:** Elden Ring weapons, with search, paging and a detail screen.
 - **Login:** DummyJSON demo account (`emilys` / `emilyspass`). The session is saved on the device.
+- **Profile:** the signed-in user and account details from `auth/me` (the access token is refreshed automatically when it expires), or a guest card with "Sign in". Also the theme setting, replay onboarding and logout.
 - **Theme:** Light / Dark / Match system, picked in onboarding and saved.
 - **Errors:** typed `AppError`, with error, empty, loading and "couldn't load more" states everywhere.
 
-**Still placeholders:** Shop and Profile.
+**Still a placeholder:** Shop.
 
 ---
 
@@ -30,7 +31,7 @@ The app is becoming **Urithiru Showcase**: a working template app that shows off
 | **Catalog** (home) | Every component, every state | none | ✅ done |
 | **Shop** | Paging, search, category filters, detail, a cart saved offline | DummyJSON products | ⏳ next |
 | **Explore** | A second, separate API in its own module | Elden Ring | ✅ list + detail |
-| **Profile** | Signed-in user, settings, logout, token refresh | DummyJSON auth | ⏳ next |
+| **Profile** | Signed-in user, settings, logout, token refresh | DummyJSON auth | ✅ done |
 
 **Why DummyJSON:** it's free, needs no key, and covers what a real app needs: login with access and refresh tokens, paging (`limit` / `skip`), search, categories, and fake writes (POST/PUT/DELETE return real responses but save nothing).
 
@@ -47,13 +48,10 @@ The app is becoming **Urithiru Showcase**: a working template app that shows off
 4. **Detail:** `GET products/{id}`, with images, price, rating and an "Add to cart" button.
 5. **Cart (later):** saved offline in **Room**. That's the moment to add Room to the project, and to fix the "repositories expose their cache" issue (see section 6).
 
-### Profile tab (`feature-profile`)
-1. **User card:** from the saved session (`LoadSessionUseCase`). When not signed in, show a "Sign in" button that opens `LoginRoute`.
-2. **Theme setting:** the same Light / Dark / System picker as onboarding page 3, saved through `AppSettings`.
-3. **Logout:** clear the session. `BaseDataStore` needs a `remove(key)` function first.
-4. **Replay onboarding:** navigate to `OnBoardingRoute`.
-5. **Token refresh:** an OkHttp `Authenticator` that calls `POST auth/refresh` on a 401, saves the new tokens and retries once. Add `GET auth/me` (with `Authorization: Bearer …`) to have something that needs the token.
-6. **Login from Profile** must go back to Profile after signing in, not to home. Give `LoginRoute` a parameter for that, e.g. `LoginRoute(returnToPrevious: Boolean = false)`.
+### Profile tab: ✅ done (2026-10-31)
+Ideas for later:
+- **See the token refresh happen:** sign in with a short token. Pass `expiresInMins = 1` in `LoginRequest` (it has to be passed explicitly, because the shared `Json` doesn't encode default values), wait a minute, reopen the app and watch Logcat for `auth/refresh`.
+- **Session expired message:** when the refresh token is rejected, the session is cleared and Profile shows the guest card without saying why. A toast or dialog would be friendlier.
 
 ---
 
@@ -144,7 +142,6 @@ adb shell pm clear com.septianbeneran.urithiru.dev   # first launch again
 ## 6. Known issues and quick wins
 
 Small tasks, good for a lunch break:
-- **Hardcoded colors** in `UriStepper`, `UriCheckBox`, `UriRadioButton` and `UriTopAppBar`. Open them in the Catalog in dark mode, and switch them to `MaterialTheme.colorScheme`.
 - **`UriMediaPlaceHolder` is light blue**, which clashes with gray cards. Make it neutral (`surfaceVariant`).
 - **The selected-tab pill is light gray** (Material's `secondaryContainer`). Consider your blue `primaryContainer` instead.
 - **The manifest still asks for** camera, contacts and location, and nothing uses them anymore. Remove them before any Play upload.
@@ -183,10 +180,10 @@ Next, in rough order:
 - **2.** Errors are mapped once, in `BaseDataSource`, and `CancellationException` is rethrown.
 - **3.** `AppError.toMessage()` gives a string resource per error.
 - **4.** The right UI for each case: full-screen `UriErrorState`, a footer when the next page fails, an inline login error.
+- **6.** Token refresh: `TokenAuthenticator` in `api-dummyjson` refreshes on a 401 and retries once.
 
 ⏳ **Left:**
 - **5. Automatic retry:** `retryWhen` with backoff (1s, 2s, 4s), **only** for `NoInternet` and `Timeout`. Never retry 4xx errors.
-- **6. Token refresh:** an OkHttp `Authenticator` with DummyJSON `auth/refresh` (see the Profile tab).
 - **7. Offline awareness:** a `ConnectivityObserver` (`Flow<Boolean>`) and an "You're offline" `UriBanner`, plus showing cached data marked as stale instead of an error.
 - **8. Crash reporting:** Timber (debug builds only) plus Crashlytics or Sentry, and a `CoroutineExceptionHandler` on `@ApplicationScope`.
 - **Blocking errors** (e.g. session expired): `BaseScreenUiState` has `showErrorDialog` and `errorMessage`, but nothing uses them. Wire them into `BaseScreen` with `UriDialog`, or delete them.
@@ -217,7 +214,7 @@ Next, in rough order:
 - [x] 4-tab bar / rail (Catalog · Shop · Explore · Profile)
 - [x] Catalog tab with interactive demos
 - [ ] Shop tab (section 3)
-- [ ] Profile tab + token refresh + logout (section 3)
+- [x] Profile tab + token refresh + logout
 - [ ] App launcher icon (section 9)
 
 **Phase 3: depth**
