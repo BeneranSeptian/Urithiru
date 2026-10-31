@@ -39,7 +39,7 @@ data/remote/dto/        Response DTOs + mapToEntity() functions → entities liv
 data/remote/service/    XRemoteDataSource + Impl, extending BaseDataSource; wrap calls in getResult { }
 data/local/             XCache + Impl, wrapping BaseDataStore
 repository/             XRepository + Impl, extending BaseRepository; use resultFlow(...).mapToEntity(...)
-domain/get|load|post/   One use case per action: interface + Impl, with operator fun invoke
+domain/get|load|post|clear/   One use case per action: interface + Impl, with operator fun invoke
 di/                     Hilt modules in SingletonComponent: @Binds Impl → interface; @Provides only for the Retrofit Api
 ```
 
@@ -67,11 +67,13 @@ JSON is kotlinx-serialization only, through the shared `Json` from `core/di/Seri
 2. Annotate the screen composable `@FeatureRoute(routeParams = XRoute::class)`. The composable must take `(navigator: Navigator)`. Exactly one screen per feature module also sets `graph = FeatureXNavGraph::class`; that screen is the start destination.
 3. Build. KSP generates the feature graph and `registerAllFeatureGraphs()`, which `NavHostChamber` in `:app` calls. Never register screens by hand.
 
-The parameter is `graph`, not `navGraph`.
+The parameter is `graph`, not `navGraph`. A start destination can be an `object` or a data class whose parameters all have defaults (e.g. `LoginRoute(returnToPrevious = false)`); the generated graph refers to it as `XRoute::class`.
+
+APIs that need the user's token go in a separate Retrofit interface built with the authenticated client (see `UserApi` in `api-dummyjson`: `AuthInterceptor` adds the token, `TokenAuthenticator` refreshes it on a 401 and retries once).
 
 ## Top-level tabs (bottom bar / navigation rail)
 
-- `NavigationSuiteScaffold` in `:app` wraps the single `NavHost` in `NavHostChamber`: a bottom bar on phones, a rail on larger screens.
+- `NavigationSuiteScaffoldLayout` in `:app` wraps the single `NavHost` in `NavHostChamber`: a bottom bar on phones, a rail on larger screens. The bar sits in an `AnimatedVisibility`; its enter/exit animations are the `bar*Transition()` and `rail*Transition()` functions at the bottom of `NavHostChamber.kt`.
   - The tabs are the hand-written `TopLevelDestination` enum in `:app` (Catalog, Shop, Explore, Profile), each pointing at a feature graph object. The first entry is home. A new tab is one enum entry plus a feature module whose start screen sets that `graph`.
   - The bar shows only on a tab's root screen (the start destination of its graph). Detail screens, splash, onboarding and login (`FeatureAuthNavGraph`) are full screen.
   - Switch tabs with `Navigator.navigateToTopLevel(graph)`. It pops up to the home graph's start destination (not the graph itself, which would pop home away) with `saveState`/`restoreState`, so each tab keeps its own history and Back returns to the first tab.

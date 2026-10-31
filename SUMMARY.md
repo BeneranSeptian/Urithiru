@@ -1,6 +1,6 @@
 # Urithiru Project — Summary
 
-A modular Android app template built with Clean Architecture, Jetpack Compose, Hilt, Retrofit and Coroutines/Flow. It ships as **Urithiru Showcase**: a live onboarding (text from **JSONBin**), a **DummyJSON** login, and four tabs (Catalog · Shop · Explore · Profile). Explore uses **Elden Ring** data from `eldenring.fanapis.com`; Shop and Profile are placeholders for now. An unused Twitch/IGDB OAuth token flow is still in `api-twitch`. The plan and roadmap are in `FOR READING.md`.
+A modular Android app template built with Clean Architecture, Jetpack Compose, Hilt, Retrofit and Coroutines/Flow. It ships as **Urithiru Showcase**: a live onboarding (text from **JSONBin**), a **DummyJSON** login, and four tabs (Catalog · Shop · Explore · Profile). Explore uses **Elden Ring** data from `eldenring.fanapis.com`; Profile shows the signed-in user (`auth/me`, with automatic token refresh), the theme setting, replay onboarding and logout. Shop is a placeholder for now. An unused Twitch/IGDB OAuth token flow is still in `api-twitch`. The plan and roadmap are in `FOR READING.md`.
 
 - Package root: `com.septianbeneran.urithiru` for every module. A module's namespace is the root plus its module name, with `-` replaced by `.`
 - SDK: compileSdk 37, minSdk 24, targetSdk 35, Java 21
@@ -26,8 +26,8 @@ A modular Android app template built with Clean Architecture, Jetpack Compose, H
 | `:feature-onboarding` | feature lib | Four live demo pages (components, error handling, theme picker, sign in) |
 | `:feature-catalog` | feature lib | Catalog tab (home): every `Uri*` component grouped by section (`catalog/CatalogEntries.kt`). Each opens `CatalogComponentRoute(id)` with interactive demos (`screen/demo/`). Add a component by adding an entry and a demo function |
 | `:feature-shop` | feature lib | Shop tab. Placeholder for DummyJSON products |
-| `:feature-profile` | feature lib | Profile tab. Placeholder for account, theme setting and logout |
-| `:feature-auth` | feature lib | `LoginRoute`: username/password with `UriTextField`, a "Use demo account" shortcut, and friendly errors. Reusable by the planned Profile tab |
+| `:feature-profile` | feature lib | Profile tab: user card and account details from `auth/me`, or a guest card with "Sign in"; `UriThemePicker`; replay onboarding; logout with a confirmation dialog |
+| `:feature-auth` | feature lib | `LoginRoute`: username/password with `UriTextField`, a "Use demo account" shortcut, and friendly errors. `LoginRoute(returnToPrevious = true)` goes back to the screen that opened it (Profile) instead of home |
 | `:feature-explore` | feature lib | Explore tab: weapon list (loads on open, search, infinite scroll) and weapon detail, plus an empty BossList screen stub |
 | `:navigation-processor` | JVM (KSP) | Generates route and graph builders from annotations |
 
@@ -86,6 +86,7 @@ data/local/              XCache + Impl (wraps BaseDataStore)
 repository/              XRepository + Impl (extends BaseRepository, exposes `cache`)
 domain/get/              Get*UseCase: network-backed Flow<ApiResult<Entity>>
 domain/load/             Load*UseCase: cache-backed Flow<Entity>
+domain/clear/            Clear*UseCase: suspend, removes saved data (e.g. logout)
 di/                      Hilt modules: @Binds for Impl → interface, @Provides only for the Retrofit Api
 ```
 
@@ -121,15 +122,15 @@ Splash (FeatureSplashNavGraph start)
   └─► OnBoarding (FeatureOnboardingNavGraph start) ─┬─► Login (FeatureAuthNavGraph start) ─► Tabs
                                                     └─► "Continue as guest" ─────────────────► Tabs
 
-Tabs (NavigationSuiteScaffold, TopLevelDestination in :app):
+Tabs (NavigationSuiteScaffoldLayout, TopLevelDestination in :app):
   Catalog (home) · Shop · Explore ─► WeaponList ─► WeaponDetail(id) · Profile
 ```
-`Navigator.navigateToHome()` opens the first tab and clears the back stack, so Back from there leaves the app. `Navigator.navigateToTopLevel(graph)` switches tabs; each tab keeps its own history, and Back from another tab returns to Catalog. Catalog, Shop and Profile are placeholders for now.
+`Navigator.navigateToHome()` opens the first tab and clears the back stack, so Back from there leaves the app. `Navigator.navigateToTopLevel(graph)` switches tabs; each tab keeps its own history, and Back from another tab returns to Catalog. Shop is a placeholder for now.
 
 **Onboarding pages** (`feature-onboarding/screen/demo/`): each page is a live demo, not an image.
 1. `ComponentsDemo`: real `Uri*` components animate in one by one.
 2. `ErrorHandlingDemo`: a "Go offline" switch runs a simulated request in the ViewModel and shows the skeleton, `UriErrorState` with Retry, or data.
-3. `ThemeDemo`: Light / Dark / Match system, saved through `AppSettings`.
+3. `UriThemePicker`: Light / Dark / Match system, saved through `AppSettings`.
 4. `SignInDemo`: opens `LoginRoute`, or "Continue as guest". Shows "Continue as <name>" when a session exists.
 
 Titles and descriptions come from JSONBin (server-driven); `OnBoardingDefaults` in the feature is used for any page the bin doesn't provide. Choosing Sign in or Continue sets `hasCompletedOnboarding`, so later launches skip onboarding. Landing's "On Boarding" button replays it.
@@ -137,7 +138,7 @@ Titles and descriptions come from JSONBin (server-driven); `OnBoardingDefaults` 
 ---
 
 ## Design System (`core-ui/component`)
-`UriAvatar`, `UriBadge`, `UriBanner`, `UriButton`, `UriCheckBox`, `UriDialog`, `UriDivider`, `UriDot`, `UriEmptyState`, `UriErrorState`, `UriImage`, `UriListFooter`, `UriListItem`, `UriLoader`, `UriMediaPlaceHolder`, `UriProgressBar`, `UriRadioButton`, `UriSearchBar`, `UriSkeleton`, `UriStepper`, `UriToast`, `UriTopAppBar`, `CentralLoadingDialog`. The theme lives in `core-ui/theme` (with custom fonts under `res/font`). `UrithiruTheme.kt` maps every Material 3 color role to the Urithiru palette for light and dark, and `Typography.kt` maps the Material type roles in size order. `ThemeMode` (`System`/`Light`/`Dark`, in `:core` `settings/`) is a user setting saved by `AppSettings` (`:core`, DataStore), which also holds `hasCompletedOnboarding`. `UrithiruProject.defaultThemeMode` is used until the user picks one. `UrithiruProject` reads the saved mode once at startup (`runBlocking`, before the first frame) into `currentThemeMode`; `MainActivity` applies it to the system bars, the activity's resources (`attachBaseContext`) and, on Android 12+, the launch window (`UiModeManager.setApplicationNightMode`). When the saved mode changes, `MainActivity` recreates itself, like AppCompat does for night mode. `MainActivity` wraps the app in a `Surface` with the theme background, and `values-night/themes.xml` gives the window a dark parent.
+`UriAvatar`, `UriBadge`, `UriBanner`, `UriButton`, `UriCheckBox`, `UriDialog`, `UriDivider`, `UriDot`, `UriEmptyState`, `UriErrorState`, `UriImage`, `UriListFooter`, `UriListItem`, `UriLoader`, `UriMediaPlaceHolder`, `UriProgressBar`, `UriRadioButton`, `UriSearchBar`, `UriSkeleton`, `UriStepper`, `UriThemePicker`, `UriToast`, `UriTopAppBar`, `CentralLoadingDialog`. The theme lives in `core-ui/theme` (with custom fonts under `res/font`). `UrithiruTheme.kt` maps every Material 3 color role to the Urithiru palette for light and dark, and `Typography.kt` maps the Material type roles in size order. `ThemeMode` (`System`/`Light`/`Dark`, in `:core` `settings/`) is a user setting saved by `AppSettings` (`:core`, DataStore), which also holds `hasCompletedOnboarding`. `UrithiruProject.defaultThemeMode` is used until the user picks one. `UrithiruProject` reads the saved mode once at startup (`runBlocking`, before the first frame) into `currentThemeMode`; `MainActivity` applies it to the system bars, the activity's resources (`attachBaseContext`) and, on Android 12+, the launch window (`UiModeManager.setApplicationNightMode`). When the saved mode changes, `MainActivity` recreates itself, like AppCompat does for night mode. `MainActivity` wraps the app in a `Surface` with the theme background, and `values-night/themes.xml` gives the window a dark parent.
 
 ---
 
@@ -159,8 +160,8 @@ Titles and descriptions come from JSONBin (server-driven); `OnBoardingDefaults` 
 
 - `@IgdbNetwork` Retrofit and `RefreshTokenInterface`/`RefreshTokenImpl` are provided, but nothing uses them yet. No IGDB API module exists so far.
 - The splash screen hardcodes the JSONBin `binId` in `SplashScreenViewModel` (`ONBOARDING_BIN_ID`).
-- `UriStepper`, `UriCheckBox`, `UriRadioButton` and `UriTopAppBar` still use hardcoded palette colors instead of theme colors; check them in the Catalog in dark mode. (`UriListItem`, `UriToast` text and `UriDivider` were fixed.)
-- Login has no token refresh or logout yet; both come with the Profile tab.
+- `UriAvatar`, `UriBadge`, `UriBanner`, `UriButton`, `UriDot`, `UriListItem`, `UriLoader`, `UriMediaPlaceHolder`, `UriProgressBar` and `UriToast` still reference palette colors directly. Most are brand accents (blue, success, error) that read fine on both themes, but they haven't all been checked in dark mode. `UriRadioButton`, `UriCheckBox`, `UriStepper`, `UriTopAppBar` and `UriDialog` now use theme colors.
+- **Auth (`api-dummyjson`):** `AuthApi` (login, refresh) uses the plain DummyJSON client. `UserApi` (`auth/me`) uses a client with `AuthInterceptor` (adds `Authorization: Bearer`) and `TokenAuthenticator` (on a 401, `AuthRepository.refreshAccessToken` calls `auth/refresh` behind a `Mutex`, saves the new tokens and the request is retried once; a rejected refresh token clears the session). DummyJSON answers a tampered token with 500, not 401, so only a real expiry triggers a refresh.
 - Paging assumes a page size of 20 (`isEndReached = newWeapons.size < 20`) in `WeaponListViewModel`.
 - Tests are only the default `ExampleUnitTest` and `ExampleInstrumentedTest` stubs. Every module now gets JUnit and AndroidX test from `testDependencies()` in the convention plugins, so they compile and run.
 
