@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,8 +27,6 @@ import com.septianbeneran.urithiru.core.ui.component.UriCheckBoxProperties.Size
 import com.septianbeneran.urithiru.core.ui.component.UriCheckBoxProperties.Size.Large
 import com.septianbeneran.urithiru.core.ui.component.UriCheckBoxProperties.Size.Medium
 import com.septianbeneran.urithiru.core.ui.component.UriCheckBoxProperties.Size.Small
-import com.septianbeneran.urithiru.core.ui.theme.Highlight
-import com.septianbeneran.urithiru.core.ui.theme.Neutral
 
 @Composable
 fun UriCheckBox(
@@ -42,10 +41,10 @@ fun UriCheckBox(
             .clip(RoundedCornerShape(size.roundedCorner))
             .border(
                 width = 1.5f.dp,
-                color = if (checked) Color.Transparent else Neutral.Light.Light500,
+                color = if (checked) Color.Transparent else MaterialTheme.colorScheme.outline,
                 shape = RoundedCornerShape(size.roundedCorner)
             )
-            .background(if (checked) Highlight.Highlight500 else Color.Transparent)
+            .background(if (checked) MaterialTheme.colorScheme.primary else Color.Transparent)
             .clickable(enabled = true, onClick = { onChecked(!checked) }),
         contentAlignment = Alignment.Center
     ) {
@@ -53,7 +52,7 @@ fun UriCheckBox(
             Icon(
                 painter = painterResource(R.drawable.check_rounded),
                 contentDescription = null,
-                tint = Neutral.Light.Light100,
+                tint = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.fillMaxSize()
             )
         }

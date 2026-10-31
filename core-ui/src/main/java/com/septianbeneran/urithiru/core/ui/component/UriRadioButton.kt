@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,9 +22,6 @@ import com.septianbeneran.urithiru.core.ui.component.UriRadioButtonProperties.Si
 import com.septianbeneran.urithiru.core.ui.component.UriRadioButtonProperties.Size.Large
 import com.septianbeneran.urithiru.core.ui.component.UriRadioButtonProperties.Size.Medium
 import com.septianbeneran.urithiru.core.ui.component.UriRadioButtonProperties.Size.Small
-import com.septianbeneran.urithiru.core.ui.theme.Highlight
-import com.septianbeneran.urithiru.core.ui.theme.Neutral
-import com.septianbeneran.urithiru.core.ui.theme.Neutral.Light.Light100
 
 @Composable
 fun UriRadioButton(
@@ -39,19 +37,21 @@ fun UriRadioButton(
             .size(size.circleSize)
             .border(
                 width = 1.5f.dp,
-                color = if (selected) Color.Transparent else Neutral.Light.Light500,
+                color = if (selected) Color.Transparent else MaterialTheme.colorScheme.outline,
                 shape = CircleShape
             )
-            .background(if (selected) Highlight.Highlight500 else Light100)
+            .background(if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface)
             .clickable(enabled = enabled, onClick = { onSelected(!selected) }),
         contentAlignment = Alignment.Center
     ) {
-        Box(
-            modifier = Modifier
-                .size(size.innerCircleSize)
-                .clip(CircleShape)
-                .background(Light100)
-        )
+        if (selected) {
+            Box(
+                modifier = Modifier
+                    .size(size.innerCircleSize)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.onPrimary)
+            )
+        }
     }
 }
 

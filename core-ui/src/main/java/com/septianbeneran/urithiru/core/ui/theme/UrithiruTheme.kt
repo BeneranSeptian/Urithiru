@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import com.septianbeneran.urithiru.core.ui.theme.Highlight.Highlight100
 import com.septianbeneran.urithiru.core.ui.theme.Highlight.Highlight300
 import com.septianbeneran.urithiru.core.ui.theme.Highlight.Highlight500
+import com.septianbeneran.urithiru.core.ui.theme.Highlight.Highlight700
 import com.septianbeneran.urithiru.core.ui.theme.Neutral.Dark.Dark200
 import com.septianbeneran.urithiru.core.ui.theme.Neutral.Dark.Dark300
 import com.septianbeneran.urithiru.core.ui.theme.Neutral.Dark.Dark400
@@ -77,7 +78,7 @@ private val LightColorScheme = lightColorScheme(
 private val DarkColorScheme = darkColorScheme(
     primary = Highlight300,
     onPrimary = Dark500,
-    primaryContainer = Highlight500,
+    primaryContainer = Highlight700,
     onPrimaryContainer = Highlight100,
     inversePrimary = Highlight500,
 
