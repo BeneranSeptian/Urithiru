@@ -28,7 +28,8 @@ object CatalogEntries {
                 CatalogEntry("text_field", "UriTextField", "Labelled form field with error text and a password toggle."),
                 CatalogEntry("search_bar", "UriSearchBar", "Search field with a clear button and keyboard search."),
                 CatalogEntry("check_box", "UriCheckBox", "Checkboxes in three sizes."),
-                CatalogEntry("radio_button", "UriRadioButton", "Single choice from a group.")
+                CatalogEntry("radio_button", "UriRadioButton", "Single choice from a group."),
+                CatalogEntry("theme_picker", "UriThemePicker", "Light, Dark or Match system, as used in onboarding and Profile.")
             )
         ),
         CatalogSection(

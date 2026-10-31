@@ -1,4 +1,4 @@
-package com.septianbeneran.urithiru.feature.onboarding.screen.demo
+package com.septianbeneran.urithiru.core.ui.component
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -18,11 +18,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.septianbeneran.urithiru.core.settings.ThemeMode
-import com.septianbeneran.urithiru.core.ui.component.UriRadioButton
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
 
+/** Light / Dark / Match system choice. Save the picked mode with `AppSettings.saveThemeMode`. */
 @Composable
-fun ThemeDemo(
+fun UriThemePicker(
     modifier: Modifier = Modifier,
     selected: ThemeMode,
     onSelect: (ThemeMode) -> Unit
@@ -84,8 +84,8 @@ private fun ThemeOption(
 
 @Preview(showBackground = true)
 @Composable
-private fun ThemeDemoPrev() {
+private fun UriThemePickerPrev() {
     UrithiruTheme {
-        ThemeDemo(selected = ThemeMode.System, onSelect = {})
+        UriThemePicker(selected = ThemeMode.System, onSelect = {})
     }
 }
