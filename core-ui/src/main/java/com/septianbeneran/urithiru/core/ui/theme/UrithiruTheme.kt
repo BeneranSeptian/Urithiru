@@ -61,7 +61,7 @@ private val LightColorScheme = lightColorScheme(
     surfaceBright = Light100,
     surfaceContainerLowest = Light100,
     surfaceContainerLow = Light200,
-    surfaceContainer = Light200,
+    surfaceContainer = Light300,
     surfaceContainerHigh = Light300,
     surfaceContainerHighest = Light300,
 
