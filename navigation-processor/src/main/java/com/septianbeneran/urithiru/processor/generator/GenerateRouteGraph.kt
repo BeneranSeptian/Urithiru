@@ -38,7 +38,7 @@ fun generateRouteGraph(
         .addAnnotation(featureGraphAnnotation)
         .apply {
             beginControlFlow(
-                "%M<%T>(startDestination = %T)",
+                "%M<%T>(startDestination = %T::class)",
                 navigation,
                 graphClassName,
                 startDestinationRouteParamsName
