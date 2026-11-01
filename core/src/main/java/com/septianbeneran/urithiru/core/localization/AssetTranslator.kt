@@ -29,13 +29,13 @@ class AssetTranslator @Inject constructor(
 
     override val languages: List<String> get() = catalog.languages
 
-    override fun translate(key: String, vararg args: Any, locale: Locale): String {
-        val pattern = catalog.pattern(key, locale) ?: return missing(key)
+    override fun translate(text: String, vararg args: Any, locale: Locale): String {
+        val pattern = catalog.pattern(text, locale) ?: return untranslated(text)
         return if (args.isEmpty()) pattern else format(pattern, args, locale)
     }
 
-    override fun translate(key: String, args: Map<String, Any>, locale: Locale): String {
-        val pattern = catalog.pattern(key, locale) ?: return missing(key)
+    override fun translate(text: String, args: Map<String, Any>, locale: Locale): String {
+        val pattern = catalog.pattern(text, locale) ?: return untranslated(text)
         return if (args.isEmpty()) pattern else format(pattern, args, locale)
     }
 
@@ -60,9 +60,10 @@ class AssetTranslator @Inject constructor(
             .getOrNull()
     }
 
-    private fun missing(key: String): String {
-        Log.w(TAG, "No translation for key: $key")
-        return key
+    /** Plain text passes through quietly; something shaped like a key (no spaces) is logged as a likely typo. */
+    private fun untranslated(text: String): String {
+        if (text.isNotBlank() && text.none { it.isWhitespace() }) Log.w(TAG, "No translation for key: $text")
+        return text
     }
 
     companion object {

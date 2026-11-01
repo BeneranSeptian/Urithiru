@@ -28,11 +28,15 @@ fun localizedString(@StringRes id: Int, vararg args: Any): String {
     return currentTranslator().translate(key, *args, locale = locale)
 }
 
-/** The text for a localization key that didn't come from a string resource, e.g. one sent by a backend. */
+/**
+ * Translates [text] that didn't come from a string resource, such as a backend's error title or description.
+ * If [text] is a key in the translation file it's translated (with [args] filling named placeholders);
+ * anything else, plain text or a misspelled key, is shown exactly as given.
+ */
 @Composable
-fun localizedString(key: String, args: Map<String, Any> = emptyMap()): String {
+fun localizedString(text: String, args: Map<String, Any> = emptyMap()): String {
     val locale = LocalConfiguration.current.locales[0]
-    return currentTranslator().translate(key, args, locale)
+    return currentTranslator().translate(text, args, locale)
 }
 
 /** The language tags the translation file has text for, in file order. */
