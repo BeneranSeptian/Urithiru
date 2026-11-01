@@ -109,7 +109,7 @@ internal fun FeaturedEntryCard(
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            contentColor = MaterialTheme.colorScheme.onSurface
         )
     ) {
         Row(
@@ -138,6 +138,7 @@ internal fun FeaturedEntryCard(
                     Text(
                         text = it,
                         style = UrithiruTheme.typography.bodyS,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
