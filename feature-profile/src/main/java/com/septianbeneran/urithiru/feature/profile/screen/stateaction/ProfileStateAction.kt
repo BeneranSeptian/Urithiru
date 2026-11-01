@@ -11,7 +11,8 @@ data class ProfileUiState(
     val user: User? = null,
     val profileState: BaseState<UserProfile> = BaseState.StateInitial,
     val themeMode: ThemeMode = ThemeMode.System,
-    val showLogoutDialog: Boolean = false
+    val showLogoutDialog: Boolean = false,
+    val isSessionExpired: Boolean = false
 )
 
 sealed interface ProfileAction {
@@ -22,6 +23,7 @@ sealed interface ProfileAction {
     data object OnLogoutClick : ProfileAction
     data object OnLogoutConfirm : ProfileAction
     data object OnLogoutDismiss : ProfileAction
+    data object OnSessionExpiredDismiss : ProfileAction
 }
 
 sealed interface ProfileNonce : BaseNonce {

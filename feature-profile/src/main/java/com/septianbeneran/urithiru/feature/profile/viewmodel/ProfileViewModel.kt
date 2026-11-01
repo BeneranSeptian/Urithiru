@@ -1,8 +1,10 @@
 package com.septianbeneran.urithiru.feature.profile.viewmodel
 
 import androidx.lifecycle.viewModelScope
+import com.septianbeneran.urithiru.api.dummyjson.domain.clear.ClearSessionExpiredUseCase
 import com.septianbeneran.urithiru.api.dummyjson.domain.clear.ClearSessionUseCase
 import com.septianbeneran.urithiru.api.dummyjson.domain.get.GetProfileUseCase
+import com.septianbeneran.urithiru.api.dummyjson.domain.load.LoadSessionExpiredUseCase
 import com.septianbeneran.urithiru.api.dummyjson.domain.load.LoadSessionUseCase
 import com.septianbeneran.urithiru.core.base.BaseState.StateFailed
 import com.septianbeneran.urithiru.core.base.BaseState.StateInitial
@@ -17,6 +19,7 @@ import com.septianbeneran.urithiru.feature.profile.screen.stateaction.ProfileAct
 import com.septianbeneran.urithiru.feature.profile.screen.stateaction.ProfileAction.OnLogoutDismiss
 import com.septianbeneran.urithiru.feature.profile.screen.stateaction.ProfileAction.OnReplayOnboardingClick
 import com.septianbeneran.urithiru.feature.profile.screen.stateaction.ProfileAction.OnRetryProfileClick
+import com.septianbeneran.urithiru.feature.profile.screen.stateaction.ProfileAction.OnSessionExpiredDismiss
 import com.septianbeneran.urithiru.feature.profile.screen.stateaction.ProfileAction.OnSignInClick
 import com.septianbeneran.urithiru.feature.profile.screen.stateaction.ProfileAction.OnThemeModeSelect
 import com.septianbeneran.urithiru.feature.profile.screen.stateaction.ProfileNonce
@@ -35,6 +38,8 @@ class ProfileViewModel @Inject constructor(
     private val loadSessionUseCase: LoadSessionUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val clearSessionUseCase: ClearSessionUseCase,
+    private val loadSessionExpiredUseCase: LoadSessionExpiredUseCase,
+    private val clearSessionExpiredUseCase: ClearSessionExpiredUseCase,
     private val appSettings: AppSettings
 ) : BaseViewModel() {
 
@@ -48,6 +53,9 @@ class ProfileViewModel @Inject constructor(
         collectLocalData(appSettings.effectiveThemeMode) { themeMode ->
             _uiState.update { it.copy(themeMode = themeMode) }
         }
+        collectLocalData(loadSessionExpiredUseCase()) { isExpired ->
+            _uiState.update { it.copy(isSessionExpired = isExpired) }
+        }
     }
 
     fun onAction(action: ProfileAction) {
@@ -58,6 +66,7 @@ class ProfileViewModel @Inject constructor(
             OnReplayOnboardingClick -> sendNonce(ProfileNonce.NavigateToOnboarding)
             OnLogoutClick -> _uiState.update { it.copy(showLogoutDialog = true) }
             OnLogoutDismiss -> _uiState.update { it.copy(showLogoutDialog = false) }
+            OnSessionExpiredDismiss -> viewModelScope.launch { clearSessionExpiredUseCase() }
             OnLogoutConfirm -> {
                 _uiState.update { it.copy(showLogoutDialog = false) }
                 viewModelScope.launch { clearSessionUseCase() }

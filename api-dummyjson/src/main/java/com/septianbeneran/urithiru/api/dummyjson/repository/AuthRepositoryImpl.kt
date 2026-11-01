@@ -27,7 +27,10 @@ class AuthRepositoryImpl @Inject constructor(
         dispatcher = dispatcher
     ).mapToEntity(
         transform = { requireNotNull(it).mapToEntity() },
-        saveResult = { cache.saveSession(it) }
+        saveResult = {
+            cache.saveSession(it)
+            cache.setSessionExpired(false)
+        }
     )
 
     override fun observeSession() = cache.loadSession()
@@ -41,6 +44,10 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun logout() = cache.clearSession()
 
+    override fun observeSessionExpired() = cache.loadSessionExpired()
+
+    override suspend fun dismissSessionExpired() = cache.setSessionExpired(false)
+
     override suspend fun refreshAccessToken(expiredAccessToken: String?): String? = refreshMutex.withLock {
         val session = cache.loadSession().first() ?: return null
         // Another request already refreshed the token while this one waited for the lock
@@ -53,7 +60,10 @@ class AuthRepositoryImpl @Inject constructor(
                 tokens.accessToken
             }
             is ApiResult.Error -> {
-                if (result.error is AppError.Unauthorized || result.error is AppError.Http) cache.clearSession()
+                if (result.error is AppError.Unauthorized || result.error is AppError.Http) {
+                    cache.clearSession()
+                    cache.setSessionExpired(true)
+                }
                 null
             }
             is ApiResult.Loading -> null

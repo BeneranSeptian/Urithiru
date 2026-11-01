@@ -48,6 +48,8 @@ import com.septianbeneran.urithiru.core.ui.component.UriImage
 import com.septianbeneran.urithiru.core.ui.component.UriListItem
 import com.septianbeneran.urithiru.core.ui.component.UriSkeleton
 import com.septianbeneran.urithiru.core.ui.component.UriThemePicker
+import com.septianbeneran.urithiru.core.ui.component.UriToast
+import com.septianbeneran.urithiru.core.ui.component.UriToastProperties.UriToastType
 import com.septianbeneran.urithiru.core.ui.component.UriTopAppBarProperties.defaults
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
 import com.septianbeneran.urithiru.core.ui.util.NonceObserver
@@ -107,6 +109,14 @@ fun ProfileScreen(
                     )
                 }
             } else {
+                if (uiState.isSessionExpired) {
+                    UriToast(
+                        type = UriToastType.Warning,
+                        titleText = "Your session expired",
+                        subTitleText = "Sign in again to see your profile.",
+                        onClose = { onAction(ProfileAction.OnSessionExpiredDismiss) }
+                    )
+                }
                 GuestCard(onSignInClick = { onAction(ProfileAction.OnSignInClick) })
             }
         }
@@ -321,6 +331,17 @@ private fun ProfileScreenGuestPrev() {
     UrithiruTheme {
         ProfileScreen(
             uiState = ProfileUiState(isSessionLoaded = true),
+            onAction = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ProfileScreenSessionExpiredPrev() {
+    UrithiruTheme {
+        ProfileScreen(
+            uiState = ProfileUiState(isSessionLoaded = true, isSessionExpired = true),
             onAction = {}
         )
     }

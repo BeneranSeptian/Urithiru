@@ -8,6 +8,10 @@ import com.septianbeneran.urithiru.api.dummyjson.domain.load.LoadSessionUseCase
 import com.septianbeneran.urithiru.api.dummyjson.domain.load.LoadSessionUseCaseImpl
 import com.septianbeneran.urithiru.api.dummyjson.domain.post.PostLoginUseCase
 import com.septianbeneran.urithiru.api.dummyjson.domain.post.PostLoginUseCaseImpl
+import com.septianbeneran.urithiru.api.dummyjson.domain.clear.ClearSessionExpiredUseCase
+import com.septianbeneran.urithiru.api.dummyjson.domain.clear.ClearSessionExpiredUseCaseImpl
+import com.septianbeneran.urithiru.api.dummyjson.domain.load.LoadSessionExpiredUseCase
+import com.septianbeneran.urithiru.api.dummyjson.domain.load.LoadSessionExpiredUseCaseImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -28,4 +32,10 @@ abstract class UseCaseModule {
 
     @Binds
     abstract fun bindClearSessionUseCase(impl: ClearSessionUseCaseImpl): ClearSessionUseCase
+
+    @Binds
+    abstract fun bindLoadSessionExpiredUseCase(impl: LoadSessionExpiredUseCaseImpl): LoadSessionExpiredUseCase
+
+    @Binds
+    abstract fun bindClearSessionExpiredUseCase(impl: ClearSessionExpiredUseCaseImpl): ClearSessionExpiredUseCase
 }

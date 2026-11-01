@@ -7,4 +7,6 @@ interface AuthCache {
     suspend fun saveSession(session: AuthSession)
     fun loadSession(): Flow<AuthSession?>
     suspend fun clearSession()
+    suspend fun setSessionExpired(isExpired: Boolean)
+    fun loadSessionExpired(): Flow<Boolean>
 }
