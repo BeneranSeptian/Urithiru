@@ -11,10 +11,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.septianbeneran.urithiru.core.ui.R as CoreUiR
 import com.septianbeneran.urithiru.core.ui.component.UriListItem
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
+import com.septianbeneran.urithiru.feature.onboarding.R
 
 @Composable
 fun SignInDemo(
@@ -32,15 +35,15 @@ fun SignInDemo(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = if (signedInName != null) "You're signed in" else "Demo account",
+                text = stringResource(if (signedInName != null) R.string.onboarding_demo_signed_in else R.string.onboarding_demo_account),
                 style = UrithiruTheme.typography.h4,
                 color = MaterialTheme.colorScheme.onSurface
             )
             if (signedInName != null) {
-                UriListItem(title = signedInName, description = "Session saved on this device")
+                UriListItem(title = signedInName, description = stringResource(R.string.onboarding_demo_session_saved))
             } else {
-                UriListItem(title = "emilys", description = "Username")
-                UriListItem(title = "emilyspass", description = "Password")
+                UriListItem(title = "emilys", description = stringResource(CoreUiR.string.common_username))
+                UriListItem(title = "emilyspass", description = stringResource(CoreUiR.string.common_password))
             }
         }
     }

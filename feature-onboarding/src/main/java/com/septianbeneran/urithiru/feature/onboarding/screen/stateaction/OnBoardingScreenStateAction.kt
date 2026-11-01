@@ -1,11 +1,13 @@
 package com.septianbeneran.urithiru.feature.onboarding.screen.stateaction
 
+import androidx.annotation.StringRes
 import com.septianbeneran.urithiru.core.entity.onboarding.OnBoardingPageData
 import com.septianbeneran.urithiru.core.settings.ThemeMode
 import com.septianbeneran.urithiru.core.ui.base.BaseNonce
+import com.septianbeneran.urithiru.feature.onboarding.R
 
 data class OnBoardingScreenState(
-    val pages: List<OnBoardingPageData> = OnBoardingDefaults.pages,
+    val remotePages: List<OnBoardingPageData> = emptyList(),
     val isDemoOffline: Boolean = false,
     val demoRequestState: DemoRequestState = DemoRequestState.Success,
     val themeMode: ThemeMode = ThemeMode.System,
@@ -31,23 +33,16 @@ sealed interface OnBoardingScreenNonce : BaseNonce {
     data object NavigateToHome : OnBoardingScreenNonce
 }
 
+data class OnBoardingPageText(
+    @param:StringRes val title: Int,
+    @param:StringRes val description: Int
+)
+
 object OnBoardingDefaults {
     val pages = listOf(
-        OnBoardingPageData(
-            title = "Built from real components",
-            description = "Every screen in this app uses the same Uri* components. What you see here is live, not a screenshot."
-        ),
-        OnBoardingPageData(
-            title = "Errors, handled for you",
-            description = "Go offline and watch the loading, error and retry states that every screen gets for free."
-        ),
-        OnBoardingPageData(
-            title = "Make it yours",
-            description = "Pick a theme. It's saved on your device, and the whole app switches right away."
-        ),
-        OnBoardingPageData(
-            title = "Sign in or explore",
-            description = "Try the login flow with a DummyJSON demo account, or go straight into the app."
-        )
+        OnBoardingPageText(R.string.onboarding_components_title, R.string.onboarding_components_description),
+        OnBoardingPageText(R.string.onboarding_errors_title, R.string.onboarding_errors_description),
+        OnBoardingPageText(R.string.onboarding_theme_title, R.string.onboarding_theme_description),
+        OnBoardingPageText(R.string.onboarding_sign_in_title, R.string.onboarding_sign_in_description)
     )
 }

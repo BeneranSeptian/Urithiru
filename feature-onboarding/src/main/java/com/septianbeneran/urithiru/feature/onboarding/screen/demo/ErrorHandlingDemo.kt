@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.septianbeneran.urithiru.core.remote.entity.AppError
@@ -23,6 +24,7 @@ import com.septianbeneran.urithiru.core.ui.component.UriErrorState
 import com.septianbeneran.urithiru.core.ui.component.UriListItem
 import com.septianbeneran.urithiru.core.ui.component.UriSkeletonListItem
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
+import com.septianbeneran.urithiru.feature.onboarding.R
 import com.septianbeneran.urithiru.feature.onboarding.screen.stateaction.DemoRequestState
 
 @Composable
@@ -46,7 +48,7 @@ fun ErrorHandlingDemo(
             ) {
                 Text(
                     modifier = Modifier.weight(1f),
-                    text = "Go offline",
+                    text = stringResource(R.string.onboarding_demo_go_offline),
                     style = UrithiruTheme.typography.h4,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -67,9 +69,9 @@ fun ErrorHandlingDemo(
                         onRetry = onRetry
                     )
                     DemoRequestState.Success -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        UriListItem(title = "Hand Axe", description = "Loaded from the API")
-                        UriListItem(title = "Battle Axe", description = "Loaded from the API")
-                        UriListItem(title = "Iron Cleaver", description = "Loaded from the API")
+                        UriListItem(title = "Hand Axe", description = stringResource(R.string.onboarding_demo_loaded_from_api))
+                        UriListItem(title = "Battle Axe", description = stringResource(R.string.onboarding_demo_loaded_from_api))
+                        UriListItem(title = "Iron Cleaver", description = stringResource(R.string.onboarding_demo_loaded_from_api))
                     }
                 }
             }

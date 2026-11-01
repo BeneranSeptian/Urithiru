@@ -15,8 +15,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.septianbeneran.urithiru.core.ui.R as CoreUiR
 import com.septianbeneran.urithiru.core.ui.component.UriBadge
 import com.septianbeneran.urithiru.core.ui.component.UriBadgeProperties
 import com.septianbeneran.urithiru.core.ui.component.UriButton
@@ -25,6 +27,7 @@ import com.septianbeneran.urithiru.core.ui.component.UriRadioButton
 import com.septianbeneran.urithiru.core.ui.component.UriSkeletonListItem
 import com.septianbeneran.urithiru.core.ui.component.UriToast
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
+import com.septianbeneran.urithiru.feature.onboarding.R
 import kotlinx.coroutines.delay
 
 @Composable
@@ -44,8 +47,8 @@ fun ComponentsDemo(modifier: Modifier = Modifier) {
     ) {
         DemoItem(visible = visibleCount > 0) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                UriButton(text = "Primary", onClick = {})
-                UriButton(type = Secondary, text = "Secondary", onClick = {})
+                UriButton(text = stringResource(CoreUiR.string.common_primary), onClick = {})
+                UriButton(type = Secondary, text = stringResource(CoreUiR.string.common_secondary), onClick = {})
             }
         }
         DemoItem(visible = visibleCount > 1) {
@@ -64,8 +67,8 @@ fun ComponentsDemo(modifier: Modifier = Modifier) {
         }
         DemoItem(visible = visibleCount > 3) {
             UriToast(
-                titleText = "Saved",
-                subTitleText = "Toasts, banners and dialogs are included too.",
+                titleText = stringResource(CoreUiR.string.common_saved),
+                subTitleText = stringResource(R.string.onboarding_demo_toast_message),
                 onClose = {}
             )
         }

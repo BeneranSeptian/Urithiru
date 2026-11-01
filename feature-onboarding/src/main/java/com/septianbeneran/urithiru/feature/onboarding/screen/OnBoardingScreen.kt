@@ -19,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -28,6 +29,7 @@ import com.septianbeneran.urithiru.core.navigation.routeparams.feature_auth.Logi
 import com.septianbeneran.urithiru.core.navigation.graph.FeatureOnboardingNavGraph
 import com.septianbeneran.urithiru.core.navigation.routeparams.feature_onboarding.OnBoardingRoute
 import com.septianbeneran.urithiru.core.navigation.util.Navigator
+import com.septianbeneran.urithiru.core.ui.R as CoreUiR
 import com.septianbeneran.urithiru.core.ui.base.BaseScreen
 import com.septianbeneran.urithiru.core.ui.component.UriThemePicker
 import com.septianbeneran.urithiru.core.ui.component.UriButton
@@ -35,9 +37,11 @@ import com.septianbeneran.urithiru.core.ui.component.UriButtonProperties.Type.Te
 import com.septianbeneran.urithiru.core.ui.component.UriDot
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
 import com.septianbeneran.urithiru.core.ui.util.NonceObserver
+import com.septianbeneran.urithiru.feature.onboarding.R
 import com.septianbeneran.urithiru.feature.onboarding.screen.demo.ComponentsDemo
 import com.septianbeneran.urithiru.feature.onboarding.screen.demo.ErrorHandlingDemo
 import com.septianbeneran.urithiru.feature.onboarding.screen.demo.SignInDemo
+import com.septianbeneran.urithiru.feature.onboarding.screen.stateaction.OnBoardingDefaults
 import com.septianbeneran.urithiru.feature.onboarding.screen.stateaction.OnBoardingScreenAction
 import com.septianbeneran.urithiru.feature.onboarding.screen.stateaction.OnBoardingScreenNonce
 import com.septianbeneran.urithiru.feature.onboarding.screen.stateaction.OnBoardingScreenState
@@ -75,9 +79,9 @@ fun OnBoardingScreen(
     uiState: OnBoardingScreenState,
     onAction: (OnBoardingScreenAction) -> Unit
 ) {
-    val pagerState = rememberPagerState(pageCount = { uiState.pages.size })
+    val pagerState = rememberPagerState(pageCount = { OnBoardingDefaults.pages.size })
     val coroutineScope = rememberCoroutineScope()
-    val isLastPage = pagerState.currentPage == uiState.pages.lastIndex
+    val isLastPage = pagerState.currentPage == OnBoardingDefaults.pages.lastIndex
 
     BackHandler(enabled = pagerState.currentPage > 0) {
         coroutineScope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) }
@@ -94,8 +98,8 @@ fun OnBoardingScreen(
             if (!isLastPage) {
                 UriButton(
                     type = Tertiary,
-                    text = "Skip",
-                    onClick = { coroutineScope.launch { pagerState.animateScrollToPage(uiState.pages.lastIndex) } }
+                    text = stringResource(R.string.onboarding_skip),
+                    onClick = { coroutineScope.launch { pagerState.animateScrollToPage(OnBoardingDefaults.pages.lastIndex) } }
                 )
             }
         }
@@ -107,8 +111,10 @@ fun OnBoardingScreen(
             state = pagerState
         ) { page ->
             OnBoardingPage(
-                title = uiState.pages[page].title,
-                description = uiState.pages[page].description
+                title = uiState.remotePages.getOrNull(page)?.title
+                    ?: stringResource(OnBoardingDefaults.pages[page].title),
+                description = uiState.remotePages.getOrNull(page)?.description
+                    ?: stringResource(OnBoardingDefaults.pages[page].description)
             ) {
                 when (page) {
                     0 -> ComponentsDemo()
@@ -136,7 +142,8 @@ fun OnBoardingScreen(
         if (isLastPage) {
             UriButton(
                 modifier = Modifier.fillMaxWidth(),
-                text = uiState.signedInName?.let { "Continue as $it" } ?: "Sign in with demo account",
+                text = uiState.signedInName?.let { stringResource(R.string.onboarding_continue_as, it) }
+                    ?: stringResource(R.string.onboarding_sign_in_demo),
                 onClick = {
                     onAction(
                         if (uiState.signedInName != null) OnBoardingScreenAction.OnContinueClick
@@ -148,14 +155,14 @@ fun OnBoardingScreen(
                 UriButton(
                     modifier = Modifier.fillMaxWidth(),
                     type = Tertiary,
-                    text = "Continue as guest",
+                    text = stringResource(R.string.onboarding_continue_as_guest),
                     onClick = { onAction(OnBoardingScreenAction.OnContinueClick) }
                 )
             }
         } else {
             UriButton(
                 modifier = Modifier.fillMaxWidth(),
-                text = "Next",
+                text = stringResource(CoreUiR.string.common_next),
                 onClick = { coroutineScope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) } }
             )
         }

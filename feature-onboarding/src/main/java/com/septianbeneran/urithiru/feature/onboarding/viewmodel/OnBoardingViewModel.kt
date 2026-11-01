@@ -6,7 +6,6 @@ import com.septianbeneran.urithiru.api.jsonbin.domain.load.LoadOnBoardingPageDat
 import com.septianbeneran.urithiru.core.settings.AppSettings
 import com.septianbeneran.urithiru.core.ui.base.BaseViewModel
 import com.septianbeneran.urithiru.feature.onboarding.screen.stateaction.DemoRequestState
-import com.septianbeneran.urithiru.feature.onboarding.screen.stateaction.OnBoardingDefaults
 import com.septianbeneran.urithiru.feature.onboarding.screen.stateaction.OnBoardingScreenAction
 import com.septianbeneran.urithiru.feature.onboarding.screen.stateaction.OnBoardingScreenAction.OnContinueClick
 import com.septianbeneran.urithiru.feature.onboarding.screen.stateaction.OnBoardingScreenAction.OnDemoOfflineChange
@@ -40,11 +39,7 @@ class OnBoardingViewModel @Inject constructor(
     init {
         collectLocalData(loadOnBoardingPageDataListUseCase()) { remotePages ->
             _uiState.update { state ->
-                state.copy(
-                    pages = OnBoardingDefaults.pages.mapIndexed { index, fallback ->
-                        remotePages.getOrNull(index) ?: fallback
-                    }
-                )
+                state.copy(remotePages = remotePages)
             }
         }
         collectLocalData(appSettings.effectiveThemeMode) { themeMode ->
