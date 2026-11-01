@@ -122,8 +122,8 @@ Ideas for later:
 6. **Never draw icons by hand.** Only official Material Symbols.
 
 ### Add an API endpoint
-1. Add the path to the module's `microservice.properties` (e.g. `PRODUCTS_V1=products`). It becomes `BuildConfig.PRODUCTS_V1`.
-2. Then add the DTO (with `mapToEntity()`), the Retrofit function with `@Url`, the data source, the repository, the use case, and bind them in `di/`.
+1. Add the DTO (with `mapToEntity()`), the Retrofit function with `@Url`, the data source, the repository, the use case, and bind them in `di/`.
+2. Write the endpoint path in the data source's call, relative to the base URL (e.g. `api.getProducts("products", …)`).
 3. `README.md` has the full example, and `api-dummyjson` is the cleanest one to copy.
 
 ### Change the onboarding text

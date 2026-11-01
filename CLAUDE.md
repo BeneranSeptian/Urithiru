@@ -16,7 +16,7 @@ Urithiru is a modular Android app template (Clean Architecture, Jetpack Compose,
 ```
 
 - Flavors: `dev` (default), `uat`, `beta`, `prod`. Base URLs come from `productFlavorProperties/<flavor>.properties` and become `BuildConfig` fields.
-- Endpoint paths come from `<api-module>/microservice.properties` and also become `BuildConfig` fields (for example `WEAPONS_V1`).
+- Endpoint paths are written as literal strings where the data source calls the API (`XRemoteDataSourceImpl`), e.g. `api.getBossList("bosses", …)` or `api.getBossDetail("bosses/$id")`. Paths are relative (no leading `/`); base URLs end in `/`. `<api-module>/microservice.properties` still turns any key into a `BuildConfig` field, but endpoint paths don't go there.
 - Every module gets JUnit and AndroidX test through `testDependencies()` (`buildlogic/DependencyExtension.kt`). Run unit tests with `./gradlew testDevDebugUnitTest`. Compose UI test dependencies are only in `:app`.
 
 ## Module rules
@@ -34,7 +34,7 @@ Urithiru is a modular Android app template (Clean Architecture, Jetpack Compose,
 ## Layering per API module (`api-*`)
 
 ```
-data/remote/api/        Retrofit interface; use @GET/@POST with @Url, with the path from BuildConfig
+data/remote/api/        Retrofit interface; use @GET/@POST with @Url (the path is passed in by the data source)
 data/remote/dto/        Response DTOs + mapToEntity() functions → entities live in :core-entity
 data/remote/service/    XRemoteDataSource + Impl, extending BaseDataSource; wrap calls in getResult { }
 data/local/             XCache + Impl, wrapping BaseDataStore

@@ -196,10 +196,7 @@ di/                     Hilt modules
 
 ### 1. Base URL and endpoint path
 - **Base URL:** one per backend and flavor, in `productFlavorProperties/<flavor>.properties` (e.g. `DUMMY_JSON_BASE_URL=https://dummyjson.com/`). It becomes a `BuildConfig` field. A new backend also needs its own `Retrofit` with a qualifier (e.g. `@DummyJsonNetwork`) in `core/di/NetworkModule.kt`.
-- **Endpoint path:** add it to the module's `microservice.properties`. Each key becomes a `BuildConfig` field of that module.
-  ```properties
-  PRODUCTS_V1=products
-  ```
+- **Endpoint path:** write it as a string where the data source calls the API (step 5), relative to the base URL with no leading `/`, e.g. `"products"` or `"products/$id"`.
 
 ### 2. The entity (`:core-entity`)
 ```kotlin
@@ -235,7 +232,7 @@ data class ProductResponse(
 `String?.cleaned()` (`:core`) trims text and turns blanks into null, if the API sends untidy strings.
 
 ### 4. The Retrofit interface (`data/remote/api/`)
-Use `@Url`, so the path comes from `BuildConfig` instead of being hardcoded.
+Use `@Url`; the data source passes the path in.
 ```kotlin
 interface ProductApi {
     @GET
@@ -259,7 +256,7 @@ class ProductRemoteDataSourceImpl @Inject constructor(
     private val api: ProductApi
 ) : ProductRemoteDataSource, BaseDataSource() {
     override suspend fun getProducts(limit: Int, skip: Int) =
-        getResult { api.getProducts(PRODUCTS_V1, limit, skip) }
+        getResult { api.getProducts("products", limit, skip) }
 }
 ```
 
@@ -331,10 +328,10 @@ collectApi(
 
 ### Adding a section to the Elden Ring compendium
 `api-eldenring` uses one shared stack for every section, so a new section (e.g. talismans) is smaller:
-1. Add `TALISMANS_V1=talismans/` to `microservice.properties`, and `Talismans` to `CompendiumKind`.
+1. Add `Talismans` to `CompendiumKind`.
 2. Add a `Talisman` entity that implements the sealed `CompendiumEntry`.
 3. Add a `TalismanResponse` DTO that implements `CompendiumResponse.mapToEntry()`.
-4. Add `getTalismanList` / `getTalismanDetail` to `CompendiumApi`, and a branch for each in `CompendiumRemoteDataSourceImpl`.
+4. Add `getTalismanList` / `getTalismanDetail` to `CompendiumApi`, and a branch for each in `CompendiumRemoteDataSourceImpl` with the paths `"talismans"` and `"talismans/$id"`.
 
 Build: every `when` over `CompendiumKind` or `CompendiumEntry` that doesn't handle the new type fails to compile, which points you to each screen that needs a card style or a label.
 </details>

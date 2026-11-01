@@ -46,7 +46,7 @@ Feature modules never depend on each other. They navigate using shared route cla
 Convention plugins (`buildlogic/src/main/kotlin`):
 - **`AndroidExtension.kt`**: `configureAndroid(project)` holds the Android setup shared by the app and every library (compileSdk, minSdk, Java 21, BuildConfig/resValues, and the product flavors). Both `base-convention` and `app-convention` call it, so flavor logic lives in one place.
 - **`base-convention`**: Android library, Hilt and KSP, namespace `com.septianbeneran.urithiru.<module.name>`, `configureAndroid`, the kotlinx-serialization compiler plugin, plus `baseDependencies()` (Hilt, kotlinx-serialization-json, DataStore).
-- **`api-convention`**: base convention plus Retrofit and kotlinx-serialization-json. It also loads the module's `microservice.properties` into `BuildConfig` (for example `WEAPONS_V1=weapons/` and `BOSSES_V1=bosses/` in `api-eldenring`).
+- **`api-convention`**: base convention plus Retrofit and kotlinx-serialization-json. It also loads any keys in the module's `microservice.properties` into `BuildConfig`. Endpoint paths don't go there: each `XRemoteDataSourceImpl` passes them to the `@Url` methods as literal strings (e.g. `"bosses"`, `"bosses/$id"`).
 - **`compose-convention`**: base convention plus Compose (BOM, UI, Material3, tooling), navigation-compose and activity-compose. Used by `core-ui` and `core-navigation`. (`core-ui` also adds Coil itself, for image-loading components.)
 - **`feature-convention`**: compose convention plus Hilt-navigation (`hiltViewModel()`), Coil, and `ksp(project(":navigation-processor"))`. Used by every `feature-*` module.
 - **`app-convention`**: application setup through `configureAndroid` (flavors also get their `applicationIdSuffix`), plus `targetSdk` and `versionCode`.
@@ -79,7 +79,7 @@ Screen ─► ViewModel ─► UseCase ─► Repository ─► RemoteDataSource
 
 **Per-API module layout** (for example `api-eldenring`):
 ```
-data/remote/api/         Retrofit interface (@GET with @Url, so the endpoint path comes from BuildConfig)
+data/remote/api/         Retrofit interface (@GET with @Url; the data source passes the endpoint path)
 data/remote/dto/         Response DTOs with mapToEntity functions (for example `mapToEntry()` in api-eldenring)
 data/remote/service/     XRemoteDataSource + Impl (extends BaseDataSource)
 data/local/              XCache + Impl (wraps BaseDataStore)
@@ -144,7 +144,7 @@ Titles and descriptions come from JSONBin (server-driven); `OnBoardingDefaults` 
 
 ## How-To Cheatsheet
 
-**Add an API endpoint:** add a DTO, then the Retrofit method (`@Url` path). Then add the DataSource method (`getResult { … }`), the Repository method (`resultFlow(...).mapToEntity(...)`), and a UseCase interface with its Impl. Wire them in the module's `di/` and add any new path constant to `microservice.properties`.
+**Add an API endpoint:** add a DTO, then the Retrofit method (`@Url` path). Then add the DataSource method (`getResult { … }`, passing the endpoint path as a string), the Repository method (`resultFlow(...).mapToEntity(...)`), and a UseCase interface with its Impl. Wire them in the module's `di/`.
 
 **Add a new backend:** add `*_BASE_URL` to every `productFlavorProperties/*.properties`, add a qualifier annotation in `core/annotation`, and add a `Retrofit` provider in `NetworkModule`. Then create a new `api-*` module using `api-convention`, and register it in `settings.gradle.kts` and `app/build.gradle.kts`.
 
