@@ -1,0 +1,24 @@
+<resources>
+    <string name="profile_account_details">Account details</string>
+    <string name="profile_session_expired_title">Your session expired</string>
+    <string name="profile_session_expired_message">Sign in again to see your profile.</string>
+    <string name="profile_appearance">Appearance</string>
+    <string name="profile_more">More</string>
+    <string name="profile_replay_onboarding">Replay onboarding</string>
+    <string name="profile_replay_onboarding_description">See the first-launch tour again</string>
+    <string name="profile_log_out">Log out</string>
+    <string name="profile_log_out_title">Log out?</string>
+    <string name="profile_log_out_message">You\'ll need to sign in again to see your account details.</string>
+    <string name="profile_full_name">%1$s %2$s</string>
+    <string name="profile_username">\@%1$s</string>
+    <string name="profile_guest_title">You\'re browsing as a guest</string>
+    <string name="profile_guest_message">Sign in with the DummyJSON demo account to see your account details and the token refresh.</string>
+    <string name="profile_details_source">Loaded from auth/me with your access token. When it expires, it\'s refreshed and the request is retried.</string>
+    <string name="profile_phone">Phone</string>
+    <string name="profile_birth_date">Birth date</string>
+    <string name="profile_age">Age</string>
+    <string name="profile_gender">Gender</string>
+    <string name="profile_work">Work</string>
+    <string name="profile_work_value">%1$s at %2$s</string>
+    <string name="profile_location">Location</string>
+</resources>
