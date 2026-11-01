@@ -49,6 +49,11 @@ Network calls return `Flow<ApiResult<T>>` (`Loading` → `Success`/`Error`). Err
 
 JSON is kotlinx-serialization only, through the shared `Json` from `core/di/SerializationModule`. Never add Gson. Mark DTOs, and any entity saved with `BaseDataStore.saveObject`, as `@Serializable`, and rename fields with `@SerialName`.
 
+## Extension functions
+
+- Generic extensions live in one file per receiver type, named `<Type>Extensions.kt`: on Kotlin/Java/Android types in `:core` `util/extension/` (e.g. `StringExtensions.kt`, `FloatExtensions.kt`), on Compose/UI types in `:core-ui` `util/extension/` (e.g. `ModifierExtensions.kt`, `ThemeModeExtensions.kt`). Add to the existing file for that type before creating a new one.
+- Extensions on a feature's or app's own types (entities, UI state, screens) stay in that module, next to where they're used. Private helpers that need their class's state stay inside the class.
+
 ## Presentation conventions (feature modules)
 
 - Each screen has `screen/stateaction/XStateAction.kt` with:
@@ -59,7 +64,7 @@ JSON is kotlinx-serialization only, through the shared `Json` from `core/di/Seri
 - Screens wrap their content in `BaseScreen(viewModel = …)` and observe events with `NonceObserver(viewModel.nonce) { … }`.
 - Reuse `core-ui` components (`UriButton`, `UriDialog`, `UriToast`, `UriTopAppBar`, `UriErrorState`, `UriEmptyState`, `UriSearchBar`, `UriTextField`, `UriImage`, `UriListFooter`, …) and `UrithiruTheme` tokens before writing new UI. New shared components go in `core-ui/component`, use the `Uri` prefix, and need a `@Preview`.
 - Colors come from `MaterialTheme.colorScheme`; every Material 3 role is mapped to the Urithiru palette in `UrithiruTheme.kt` for light and dark. When a Material component looks purple, a role is missing there; fix it in the theme, not in the screen.
-- Light/dark is a user setting: `ThemeMode` (`:core` `settings/`) saved by `AppSettings`. `UrithiruProject.defaultThemeMode` applies until the user picks one. Save a new mode with `AppSettings.saveThemeMode`; `MainActivity` recreates itself and applies it to the system bars, the activity's resources and, on Android 12+, the launch window. Don't read `isSystemInDarkTheme()` directly in screens; the theme already reflects the chosen mode.
+- Light/dark is a user setting: `ThemeMode` (`:core` `settings/`) saved by `AppSettings`. `UrithiruProject.defaultThemeMode` applies until the user picks one; `:app` provides it to `AppSettings` as `@DefaultThemeMode`. Read the mode in use with `AppSettings.effectiveThemeMode` (never `themeMode ?: ThemeMode.System`). Save a new mode with `AppSettings.saveThemeMode`; `MainActivity` recreates itself and applies it to the system bars, the activity's resources and, on Android 12+, the launch window. Don't read `isSystemInDarkTheme()` directly in screens; the theme already reflects the chosen mode.
 
 ## Navigation (KSP: `:navigation-processor`)
 

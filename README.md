@@ -1,18 +1,60 @@
-# ⚔️ Urithiru Project
+# ⚔️ Urithiru
 **One project to rule them all.**
 
-A modular Android application template built with Clean Architecture principles.  
-Designed to be scalable, maintainable, and easy to extend — even for beginners.
+A modular Android app template built with Clean Architecture, Jetpack Compose, Hilt, Retrofit and Coroutines/Flow, with screens wired into navigation by a KSP code generator.
+It's meant to be easy to extend and easy to learn from: every API, screen and component follows the same small set of rules.
 
-It ships as **Urithiru Showcase**, a working app that shows the template off:
-a live onboarding, a DummyJSON login, and four tabs (**Catalog · Shop · Explore · Profile**).
-The Catalog tab demos every `Uri*` component in every state.
+It ships as **Urithiru Showcase**, a working app that shows the template off: a live onboarding, a DummyJSON login, and four tabs: **Catalog · Shop · Explore · Profile**.
+
+<p align="center">
+  <img src="docs/screenshots/explore-light.png" width="250" alt="Explore feed in light mode" />
+  &nbsp;
+  <img src="docs/screenshots/detail-boss-light.png" width="250" alt="Boss detail screen" />
+  &nbsp;
+  <img src="docs/screenshots/explore-dark.png" width="250" alt="Explore feed in dark mode" />
+</p>
+
+## ✨ What's inside
+
+**🧭 Explore: an Elden Ring compendium**
+- A mixed feed of bosses, weapons, armor, items, locations and NPCs from [`eldenring.fanapis.com`](https://eldenring.fanapis.com), with a card style per type.
+- A Featured carousel, "Around <region>" rows, section chips and a two-column staggered grid with infinite scroll.
+- Search across every section at once, grouped by type with a top result, plus "See all" per section.
+- One shared detail screen: hero image, stat tiles, attack and guard bars, scaling and requirement chips, drops, effects and NPC quotes.
+- Pull-to-refresh, failed sections retried as you scroll, and loading skeletons that match the real layout.
+
+**🔐 Login and Profile** (DummyJSON)
+- Sign in with access and refresh tokens. An expired token is refreshed and the request retried once, and the user is told if their session expired.
+- Profile loads `auth/me` with the saved token, and has the theme picker, "Replay onboarding" and logout.
+
+**🎨 A design system you can browse**
+- The Catalog tab demos every `Uri*` component in every state, in light and dark.
+- A floating, configurable bottom bar (`UriNavigationBar`) on phones and a navigation rail on larger screens.
+- Light, Dark or Match system, saved on the device and applied to the whole app, including the launch window.
+
+**👋 A live onboarding**
+- Text comes from JSONBin (server-driven), and every page is a working demo: real components, a simulated network error with retry, the theme picker and sign-in.
+
+**🧪 Tests**
+- Unit tests for the DTO mapping, the feed mixer, compendium search, `ExploreViewModel` and the token refresh.
+
+## 📸 Screenshots
+
+| Explore | Regions | Search |
+|:---:|:---:|:---:|
+| <img src="docs/screenshots/explore-light.png" width="240" /> | <img src="docs/screenshots/explore-regions-light.png" width="240" /> | <img src="docs/screenshots/search-light.png" width="240" /> |
+| **Mixed feed (dark)** | **Bosses section** | **Boss detail** |
+| <img src="docs/screenshots/explore-feed-dark.png" width="240" /> | <img src="docs/screenshots/explore-bosses-dark.png" width="240" /> | <img src="docs/screenshots/detail-boss-light.png" width="240" /> |
+| **Weapon detail** | **Weapon stats** | **Onboarding** |
+| <img src="docs/screenshots/detail-weapon-dark.png" width="240" /> | <img src="docs/screenshots/detail-weapon-stats-dark.png" width="240" /> | <img src="docs/screenshots/onboarding-dark.png" width="240" /> |
+| **Theme picker** | **Component catalog** | **Profile** |
+| <img src="docs/screenshots/onboarding-theme-dark.png" width="240" /> | <img src="docs/screenshots/catalog-light.png" width="240" /> | <img src="docs/screenshots/profile-light.png" width="240" /> |
 
 ## ▶️ Try it
 1. Build and install the dev flavor: `./gradlew :app:installDevDebug`
 2. On first launch you get a 4-page onboarding. Page 3 lets you pick Light, Dark or Match system.
 3. Sign in with the DummyJSON demo account (**`emilys`** / **`emilyspass`**), or continue as a guest.
-4. Later launches skip onboarding. To see it again: `adb shell pm clear com.septianbeneran.urithiru.dev`
+4. Later launches skip onboarding. Replay it from Profile, or start completely fresh with `adb shell pm clear com.septianbeneran.urithiru.dev`.
 
 ## 🗺 App structure
 ```
@@ -20,55 +62,57 @@ Splash ─┬─► Onboarding (first launch only) ─┬─► Login ─► Tab
         │                                   └─► Continue as guest ─► Tabs
         └─► Tabs (onboarding already done)
 
-Tabs (bottom bar on phones, rail on tablets):
-  Catalog (home) · Shop · Explore · Profile
+Tabs (floating bottom bar on phones, rail on tablets):
+  Catalog (home) ─► Component demo
+  Shop (placeholder)
+  Explore (mixed feed, search) ─► Compendium detail (any type)
+  Profile ─► Login · Replay onboarding
 ```
 - The tabs are listed in `TopLevelDestination` in `:app`. The bar only shows on a tab's root screen.
 - `navigator.navigateToTopLevel(graph)` switches tabs; each tab keeps its own history.
 - `navigator.navigateToHome()` opens the first tab and clears the back stack.
 
-## 🧰 Tech Stack
-* Jetpack Compose for UI creation
-* Retrofit + kotlinx-serialization for API calls
-* Hilt for dependency injection
-* Kotlin Coroutines and Flow for asynchronous programming
-* KSP for generated navigation (`:navigation-processor`)
+## 🧰 Tech stack
+- **UI:** Jetpack Compose, Material 3, Material 3 adaptive navigation suite, Coil 3 for images
+- **Architecture:** Clean Architecture (data, domain and presentation per module), MVVM with a single `onAction` per screen
+- **DI:** Hilt
+- **Networking:** Retrofit + OkHttp + kotlinx-serialization (one shared `Json`), typed `AppError`
+- **Async:** Kotlin Coroutines and Flow
+- **Storage:** Preferences DataStore
+- **Navigation:** type-safe Navigation Compose, with routes generated by KSP (`:navigation-processor`)
+- **Tests:** JUnit 4 and `kotlinx-coroutines-test`
 
 ## 📦 Prerequisites
+- JDK 21
+- Gradle 9.8.2 (through the wrapper, `./gradlew`)
+- Android SDK 37 to compile; the app runs on Android 7.0 (API 24) and up
 
-* Gradle 9.8.0 (via the wrapper, `./gradlew`)
-* JDK 21
-* Minimum Android SDK 24
+## 🧱 Modules
 
-## 🧱 Project Modules
+| Module | What it holds |
+|---|---|
+| `:app` | `MainActivity`, the `NavHost` (`NavHostChamber`), the tabs and app-wide Hilt bindings |
+| `:core` | Base data source and repository, `ApiResult`/`AppError`/`BaseState`, Retrofit and OkHttp setup, DataStore, settings, generic extensions |
+| `:core-entity` | Domain models (`CompendiumEntry` and its types, `AuthSession`, `User`, …) |
+| `:core-navigation` | Route and graph classes shared by features, `Navigator`, the `@FeatureRoute` annotation |
+| `:core-ui` | `BaseScreen`, `BaseViewModel`, the theme, the `Uri*` components and Compose extensions |
+| `:api-eldenring` | The Elden Ring compendium: bosses, weapons, armor, items, locations, NPCs |
+| `:api-dummyjson` | Login, token refresh, `auth/me` and the saved session |
+| `:api-jsonbin` | Server-driven onboarding text |
+| `:api-twitch` | A Twitch OAuth `client_credentials` token flow (kept as an example) |
+| `:feature-splash` · `:feature-onboarding` · `:feature-auth` | First-launch flow and login |
+| `:feature-catalog` · `:feature-shop` · `:feature-explore` · `:feature-profile` | The four tabs |
+| `:navigation-processor` | The KSP processor that generates the feature graphs |
 
-The project contains the following modules:
+`buildlogic` is not a module: it's an included build with the convention plugins (`base-convention`, `api-convention`, `compose-convention`, `feature-convention`, `app-convention`).
 
-* `:app`
-* `:core`
-* `:core-entity`
-* `:core-navigation`
-* `:core-ui`
-* `:api-eldenring`
-* `:api-jsonbin`
-* `:api-twitch`
-* `:api-dummyjson`
-* `:feature-explore`
-* `:feature-onboarding`
-* `:feature-splash`
-* `:feature-auth`
-* `:feature-catalog`
-* `:feature-shop`
-* `:feature-profile`
-* `:navigation-processor`
+Dependencies only point down: `app → feature-* → api-* → core, core-entity`. Features never depend on each other; they navigate through the routes in `:core-navigation`.
 
-`buildlogic` is not a module: it's an included build that holds the convention plugins (`base-convention`, `api-convention`, `compose-convention`, `feature-convention`, `app-convention`).
+More detail: [`SUMMARY.md`](SUMMARY.md) (full overview), [`FOR READING.md`](FOR%20READING.md) (roadmap and recipes) and [`CLAUDE.md`](CLAUDE.md) (conventions).
 
-For a full overview, see [`SUMMARY.md`](SUMMARY.md).
+## 🏗 Architecture
 
-## 🏗 Architecture Flow
-
-### 💾 Data Flow
+### 💾 Data flow
 ```mermaid
 flowchart LR
 
@@ -102,15 +146,17 @@ flowchart LR
     VM --> UI
 ```
 
-### 🏭 Screen Route Generator
+Every network call returns `Flow<ApiResult<T>>` (`Loading`, then `Success` or `Error`). Errors are mapped once, in `BaseDataSource.getResult`, to a typed `AppError`, and `AppError.toMessage()` turns them into a translatable message.
+
+### 🏭 Screen route generator
 ```mermaid
 flowchart TD
     subgraph FeatureModule ["Feature Module"]
-        A["Create Composable Screen (WeaponDetailRoute)"] --> B("@FeatureRoute")
+        A["Create Composable Screen (ExploreRoute)"] --> B("@FeatureRoute")
     end
 
     subgraph KSPFeature ["KSP Output: Feature Level"]
-        B -->|Generates route| C[weaponDetailRouteGenerated]
+        B -->|Generates route| C[exploreRouteGenerated]
         B -->|Generates graph| D[featureExploreNavGraph]
         C -.->|Called inside| D
         D --> E("@FeatureGraph")
@@ -127,126 +173,284 @@ flowchart TD
     end
 ```
 
-<details>
-<summary><h2>⚙️ Creating New Endpoint For API Call</h2></summary>
-
-### 1️⃣ Changing the Base URL
-
-The Base URL is managed per environment using property files in the `productFlavorProperties` folder.
-
-1.  Navigate to `productFlavorProperties/`.
-2.  Open the file corresponding to the environment you want to change (e.g., `dev.properties`, `prod.properties`).
-3.  Update the base URL you need, for example `ELDEN_RING_BASE_URL`:
-    ```properties
-    ELDEN_RING_BASE_URL=https://your-new-api-url.com/api/
-    ```
-4.  Sync the project with Gradle. Every key becomes a `BuildConfig` field automatically (e.g. `BuildConfig.ELDEN_RING_BASE_URL`).
-
-### 2️⃣ Creating a New API Endpoint
-
-To add a new API call, follow these steps (using the `api-eldenring` module as an example):
-
-#### Step 0: Add the Endpoint Path
-Add the path to `api-eldenring/microservice.properties`. Each key becomes a `BuildConfig` field in that module.
-
-```properties
-YOUR_DATA_V1=your/end/point
+## 🧪 Running the tests
+```bash
+./gradlew testDevDebugUnitTest                        # every module
+./gradlew :feature-explore:testDevDebugUnitTest       # one module
 ```
 
-#### Step A: Define the Data Transfer Object (DTO)
-Create your response model in `api-eldenring/src/main/java/.../data/remote/dto/`.
+<details>
+<summary><h2>⚙️ Adding a new API endpoint</h2></summary>
 
+The example adds DummyJSON's product list (`GET products`) to `api-dummyjson`. Every API module has the same layers:
+
+```
+data/remote/api/        Retrofit interface
+data/remote/dto/        Response DTOs + mapToEntity()
+data/remote/service/    RemoteDataSource + Impl (extends BaseDataSource)
+repository/             Repository + Impl (extends BaseRepository)
+domain/get|load|post|clear/   One use case per action: interface + Impl
+di/                     Hilt modules
+```
+
+### 1. Base URL and endpoint path
+- **Base URL:** one per backend and flavor, in `productFlavorProperties/<flavor>.properties` (e.g. `DUMMY_JSON_BASE_URL=https://dummyjson.com/`). It becomes a `BuildConfig` field. A new backend also needs its own `Retrofit` with a qualifier (e.g. `@DummyJsonNetwork`) in `core/di/NetworkModule.kt`.
+- **Endpoint path:** add it to the module's `microservice.properties`. Each key becomes a `BuildConfig` field of that module.
+  ```properties
+  PRODUCTS_V1=products
+  ```
+
+### 2. The entity (`:core-entity`)
 ```kotlin
-@Serializable
-data class YourResponse(
-    @SerialName("id") val id: String,
-    @SerialName("name") val name: String
+data class Product(
+    val id: Int,
+    val title: String,
+    val price: Double,
+    val thumbnail: String?
 )
 ```
 
-#### Step B: Add the API Interface
-Create new API interface (e.g., `YourApi.kt`) and add the endpoint function.
-
+### 3. The DTO (`data/remote/dto/`)
+kotlinx-serialization only (never Gson): mark it `@Serializable`, rename fields with `@SerialName`, and map it to the entity.
 ```kotlin
-interface YourApi {
+@Serializable
+data class ProductListResponse(
+    @SerialName("products") val products: List<ProductResponse>,
+    @SerialName("total") val total: Int
+) {
+    fun mapToEntity() = products.map { it.mapToEntity() }
+}
+
+@Serializable
+data class ProductResponse(
+    @SerialName("id") val id: Int,
+    @SerialName("title") val title: String,
+    @SerialName("price") val price: Double,
+    @SerialName("thumbnail") val thumbnail: String? = null
+) {
+    fun mapToEntity() = Product(id = id, title = title.trim(), price = price, thumbnail = thumbnail)
+}
+```
+`String?.cleaned()` (`:core`) trims text and turns blanks into null, if the API sends untidy strings.
+
+### 4. The Retrofit interface (`data/remote/api/`)
+Use `@Url`, so the path comes from `BuildConfig` instead of being hardcoded.
+```kotlin
+interface ProductApi {
     @GET
-    suspend fun getYourData(
-        @Url url: String
-    ): Response<ApiDto<YourResponse>>
+    suspend fun getProducts(
+        @Url url: String,
+        @Query("limit") limit: Int,
+        @Query("skip") skip: Int
+    ): Response<ProductListResponse>
+}
+```
+APIs that need the user's token go in a separate interface built with the authenticated client (see `UserApi`: `AuthInterceptor` adds the token, `TokenAuthenticator` refreshes it on a 401).
+
+### 5. The data source (`data/remote/service/`)
+Wrap every call in `getResult { }`, which turns failures into an `AppError`. Never invent error codes yourself.
+```kotlin
+interface ProductRemoteDataSource {
+    suspend fun getProducts(limit: Int, skip: Int): ApiResult<ProductListResponse>
+}
+
+class ProductRemoteDataSourceImpl @Inject constructor(
+    private val api: ProductApi
+) : ProductRemoteDataSource, BaseDataSource() {
+    override suspend fun getProducts(limit: Int, skip: Int) =
+        getResult { api.getProducts(PRODUCTS_V1, limit, skip) }
 }
 ```
 
-#### Step C: Update the Remote Data Source
-Add the call to your `RemoteDataSource` interface and its implementation.
-
-**Interface:**
+### 6. The repository (`repository/`)
 ```kotlin
-suspend fun getYourData(): ApiResult<ApiDto<YourResponse>>
+interface ProductRepository {
+    fun getProducts(limit: Int, skip: Int): Flow<ApiResult<List<Product>>>
+}
+
+class ProductRepositoryImpl @Inject constructor(
+    private val remote: ProductRemoteDataSource,
+    private val dispatcher: CoroutineDispatcherProvider,
+    @ApplicationScope applicationScope: CoroutineScope
+) : BaseRepository(applicationScope), ProductRepository {
+    override fun getProducts(limit: Int, skip: Int) = resultFlow(
+        networkCall = { remote.getProducts(limit, skip) },
+        dispatcher = dispatcher
+    ).mapToEntity(
+        transform = { requireNotNull(it).mapToEntity() }
+    )
+}
 ```
 
-**Implementation:**
+### 7. The use case (`domain/get/`)
+One use case per action, as an interface plus an `Impl` with `operator fun invoke`.
 ```kotlin
-override suspend fun getYourData(): ApiResult<ApiDto<YourResponse>> =
-    getResult { api.getYourData(YOUR_DATA_V1) }
+interface GetProductsUseCase {
+    operator fun invoke(limit: Int, skip: Int): Flow<ApiResult<List<Product>>>
+}
+
+class GetProductsUseCaseImpl @Inject constructor(
+    private val repository: ProductRepository
+) : GetProductsUseCase {
+    override fun invoke(limit: Int, skip: Int) = repository.getProducts(limit, skip)
+}
 ```
 
-#### Step D: Expose through Repository and Use Case
-Finally, expose the data through the Repository and create a Use Case to be consumed by the ViewModel in the `feature` module.
-</details>
-
-<details>
-<summary><h2>📱 Creating a New Screen Route</h2></summary>
-
-To add a new screen and automatically wire it into the navigation graph, follow these steps:
-
-#### Step A: Define the Feature Navigation Graph
-First, declare the navigation graph for your feature in the `core-navigation:graph` module. This must be marked with `@Serializable`.
-
+### 8. Hilt (`di/`)
+Bind every `Impl` with `@Binds`. Only the Retrofit API is built with `@Provides`. Data sources and repositories are `@Singleton`; use cases are unscoped.
 ```kotlin
-@Serializable
-object FeatureExploreNavGraph
+// DummyJsonModule
+@Binds @Singleton
+abstract fun bindProductRemoteDataSource(impl: ProductRemoteDataSourceImpl): ProductRemoteDataSource
+
+@Binds @Singleton
+abstract fun bindProductRepository(impl: ProductRepositoryImpl): ProductRepository
+
+companion object {
+    @Provides @Singleton
+    fun provideProductApi(@DummyJsonNetwork retrofit: Retrofit): ProductApi =
+        retrofit.create(ProductApi::class.java)
+}
+
+// UseCaseModule
+@Binds
+abstract fun bindGetProductsUseCase(impl: GetProductsUseCaseImpl): GetProductsUseCase
 ```
 
-#### Step B: Define the Route Parameters
-Next, define the specific route for your screen in the `core-navigation:routeparams` module. This also requires the `@Serializable` annotation. Use an `object` for a route without arguments, or a `data class` if you need to pass data.
-
+### 9. Use it from a ViewModel
 ```kotlin
-@Serializable
-object WeaponDetailRoute
-```
-
-#### Step C: Create and Annotate the Composable
-In your `feature` module, create your standard Jetpack Compose UI function. Tag it with the `@FeatureRoute` annotation, linking the route parameters you just created. 
-
-*Note: If this screen is the starting point for the feature, be sure to declare the `graph` parameter as well.*
-
-```kotlin
-@FeatureRoute(
-    routeParams = WeaponDetailRoute::class,
-    graph = FeatureExploreNavGraph::class // Add this ONLY if it's the start destination
+collectApi(
+    flow = getProductsUseCase(limit = 20, skip = 0),
+    key = "products", // a newer call with the same key cancels the older one (search, refresh, paging)
+    onLoading = { _uiState.update { it.copy(productsState = StateLoading) } },
+    onError = { error -> _uiState.update { it.copy(productsState = StateFailed(error)) } },
+    onSuccess = { products -> _uiState.update { it.copy(productsState = StateSuccess(products.orEmpty())) } }
 )
-@Composable
-fun WeaponDetailScreen(navigator: Navigator) {
-    // Your UI implementation here
-}
 ```
 
-#### Step D: Build the Project
-Run a project build (or rebuild) so KSP can process the annotations. 
+### Adding a section to the Elden Ring compendium
+`api-eldenring` uses one shared stack for every section, so a new section (e.g. talismans) is smaller:
+1. Add `TALISMANS_V1=talismans/` to `microservice.properties`, and `Talismans` to `CompendiumKind`.
+2. Add a `Talisman` entity that implements the sealed `CompendiumEntry`.
+3. Add a `TalismanResponse` DTO that implements `CompendiumResponse.mapToEntry()`.
+4. Add `getTalismanList` / `getTalismanDetail` to `CompendiumApi`, and a branch for each in `CompendiumRemoteDataSourceImpl`.
 
-During the build, KSP will automatically generate:
-1.  The route extension for your specific screen (e.g., `weaponDetailRouteGenerated`).
-2.  The updated feature-level graph builder (e.g., `featureExploreNavGraph`) containing your new route.
-
-#### Step E: Automatic Registration
-You don't need to manually register the screen in the App module! 
-
-The KSP processor automatically tags the generated feature graph with `@FeatureGraph`. The App module will scan for this and automatically include your new screen in the main `NavHost` via the generated `registerAllFeatureGraphs` function.
-
+Build: every `when` over `CompendiumKind` or `CompendiumEntry` that doesn't handle the new type fails to compile, which points you to each screen that needs a card style or a label.
 </details>
 
 <details>
-<summary><h2>🧭 Adding a New Tab</h2></summary>
+<summary><h2>📱 Adding a new screen</h2></summary>
+
+The example adds a detail screen with arguments, like Explore's `CompendiumDetailRoute`.
+
+### 1. The route (`:core-navigation`)
+Add a `@Serializable` route in `core-navigation/.../routeparams/<feature_x>/`. Use an `object` for a screen without arguments, or a `data class` for one with arguments.
+```kotlin
+@Serializable
+data class ProductDetailRoute(val id: Int)
+```
+A new feature also needs a graph object in `core-navigation/.../graph/` (`@Serializable object FeatureShopNavGraph`).
+
+### 2. State, actions and one-shot events (`screen/stateaction/ProductDetailStateAction.kt`)
+```kotlin
+data class ProductDetailUiState(
+    val productState: BaseState<Product> = BaseState.StateInitial
+)
+
+sealed interface ProductDetailAction {
+    data object Retry : ProductDetailAction
+}
+
+sealed interface ProductDetailNonce : BaseNonce
+```
+`XAction` is what the user does; `XNonce` is a one-shot event for the screen, usually navigation.
+
+### 3. The ViewModel (`viewmodel/`)
+```kotlin
+@HiltViewModel
+class ProductDetailViewModel @Inject constructor(
+    private val getProductUseCase: GetProductUseCase,
+    savedStateHandle: SavedStateHandle
+) : BaseViewModel() {
+
+    private val _uiState = MutableStateFlow(ProductDetailUiState())
+    val uiState = _uiState.asStateFlow()
+
+    private val route = savedStateHandle.toRoute<ProductDetailRoute>()
+
+    init {
+        load()
+    }
+
+    fun onAction(action: ProductDetailAction) {
+        when (action) {
+            ProductDetailAction.Retry -> load()
+        }
+    }
+
+    private fun load() {
+        collectApi(
+            flow = getProductUseCase(route.id),
+            onLoading = { _uiState.update { it.copy(productState = StateLoading) } },
+            onError = { error -> _uiState.update { it.copy(productState = StateFailed(error)) } },
+            onSuccess = { product -> _uiState.update { it.copy(productState = StateSuccess(product)) } }
+        )
+    }
+}
+```
+Use `collectApi(...)` for network flows, `collectLocalData(...)` for saved data, and `sendNonce(...)` for events.
+
+### 4. The screen
+Annotate the composable with `@FeatureRoute`. It must take `(navigator: Navigator)`. Wrap the content in `BaseScreen` and show failures with `UriErrorState`.
+```kotlin
+@FeatureRoute(routeParams = ProductDetailRoute::class)
+@Composable
+fun ProductDetailRoute(navigator: Navigator) {
+    val viewModel: ProductDetailViewModel = hiltViewModel()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    BaseScreen(
+        viewModel = viewModel,
+        topAppBarArgs = defaults(title = "Product")
+    ) {
+        when (val state = uiState.productState) {
+            is StateSuccess -> state.value?.let { ProductDetailContent(it) }
+            is StateFailed -> UriErrorState(
+                error = state.failed,
+                onRetry = { viewModel.onAction(ProductDetailAction.Retry) }
+            )
+            else -> ProductDetailSkeleton()
+        }
+    }
+
+    NonceObserver(nonce = viewModel.nonce) { nonce ->
+        // handle ProductDetailNonce events, e.g. navigation
+    }
+}
+```
+- **Start screen of a feature:** set `graph` too, e.g. `@FeatureRoute(routeParams = ProductListRoute::class, graph = FeatureShopNavGraph::class)`. Exactly one screen per feature does this.
+- **UI rules:** reuse `core-ui` components and `UrithiruTheme` tokens, take colors from `MaterialTheme.colorScheme` (never the raw palette), and show empty results with `UriEmptyState`.
+
+### 5. Open it from another screen
+The other screen's ViewModel sends a nonce, and its screen navigates:
+```kotlin
+// ViewModel
+sendNonce(ProductListNonce.NavigateToDetail(product.id))
+
+// Screen
+NonceObserver(nonce = viewModel.nonce) { nonce ->
+    when (nonce) {
+        is ProductListNonce.NavigateToDetail -> navigator.navigate(ProductDetailRoute(nonce.id))
+    }
+}
+```
+
+### 6. Build
+KSP generates the route (`productDetailRouteGenerated`), adds it to the feature graph, and `registerAllFeatureGraphs()` puts it in the `NavHost`. Never register screens by hand. If the generated code looks stale after changing `@FeatureRoute`, run `./gradlew clean assembleDevDebug`.
+</details>
+
+<details>
+<summary><h2>🧭 Adding a new tab</h2></summary>
 
 A tab is a feature module whose start screen is listed in `TopLevelDestination`. Features never know about the bar.
 
@@ -292,11 +496,11 @@ enum class TopLevelDestination(...) {
 }
 ```
 
-Build. The bar shows the new tab, switching to it keeps its own history, and Back returns to the first tab.
+Build. The bar shows the new tab, switching to it keeps its own history, and Back returns to the first tab. To restyle the bar itself, change `NavigationBarStyle` in `NavHostChamber.kt`.
 </details>
 
 <details>
-<summary><h2>🧩 Adding a Component to the Catalog</h2></summary>
+<summary><h2>🧩 Adding a component to the Catalog</h2></summary>
 
 Every shared component in `core-ui/component` should appear in the Catalog tab, so it can be tried in both themes.
 
@@ -316,5 +520,7 @@ Every shared component in `core-ui/component` should appear in the Catalog tab, 
        DemoSection("Disabled") { UriMyThing(enabled = false) }
    }
    ```
-4. Open it in dark mode too (`adb shell cmd uimode night yes`). Components must use `MaterialTheme.colorScheme`, not fixed palette colors.
+4. Open it in dark mode too (pick Dark in Profile). Components must use `MaterialTheme.colorScheme`, not fixed palette colors.
+
+Shared extension functions go in one file per type: `core/util/extension/` for Kotlin and Android types (`StringExtensions.kt`, …) and `core-ui/util/extension/` for Compose types (`ModifierExtensions.kt`, …).
 </details>

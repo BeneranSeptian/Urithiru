@@ -51,7 +51,6 @@ The app is becoming **Urithiru Showcase**: a working template app that shows off
 ### Profile tab: ✅ done (2026-10-31)
 Ideas for later:
 - **See the token refresh happen:** sign in with a short token. Pass `expiresInMins = 1` in `LoginRequest` (it has to be passed explicitly, because the shared `Json` doesn't encode default values), wait a minute, reopen the app and watch Logcat for `auth/refresh`.
-- **Session expired message:** when the refresh token is rejected, the session is cleared and Profile shows the guest card without saying why. A toast or dialog would be friendlier.
 
 ---
 
@@ -74,7 +73,7 @@ Ideas for later:
 
 **Theme**
 - `ThemeMode` is saved by `AppSettings` (in `:core`).
-- `UrithiruProject.defaultThemeMode` applies until the user picks one. Change it to force a mode while developing.
+- `UrithiruProject.defaultThemeMode` applies until the user picks one. Change it to force a mode while developing. `:app` hands it to `AppSettings` (`@DefaultThemeMode`), so screens read `AppSettings.effectiveThemeMode` and the picker always shows the mode actually in use.
 - Every Material color role is mapped in `UrithiruTheme.kt`. **If something looks purple, a role is missing there.**
 
 **Errors**
@@ -145,8 +144,6 @@ adb shell pm clear com.septianbeneran.urithiru.dev   # first launch again
 Small tasks, good for a lunch break:
 - **`UriMediaPlaceHolder` is light blue**, which clashes with gray cards. Make it neutral (`surfaceVariant`).
 - **The manifest still asks for** camera, contacts and location, and nothing uses them anymore. Remove them before any Play upload.
-- **`TwitchRepositoryImpl`** has two `TODO()` calls that crash if anything calls them. Implement them, or drop the Twitch module.
-- **The theme picker shows "Match system"** when nothing is saved, even if `defaultThemeMode` is Light. Feature modules can't see the app's default.
 - **Login tokens are unencrypted** in DataStore. That's fine for the demo account; a real app should encrypt them.
 - **A failed image doesn't retry** until it scrolls off screen and back. That needs a connectivity observer (section 8, step 7).
 - **Repositories expose their cache** (`repository.cache`). Fix this when Room arrives.
