@@ -10,10 +10,13 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
+import com.septianbeneran.urithiru.core.localization.Translator
 import com.septianbeneran.urithiru.core.settings.AppSettings
+import com.septianbeneran.urithiru.core.ui.localization.LocalTranslator
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
 import com.septianbeneran.urithiru.core.ui.util.extension.applyToSystem
 import com.septianbeneran.urithiru.core.ui.util.extension.isDarkTheme
@@ -28,6 +31,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var appSettings: AppSettings
+
+    @Inject
+    lateinit var translator: Translator
 
     override fun attachBaseContext(newBase: Context) {
         super.attachBaseContext(newBase.withThemeMode(UrithiruProject.currentThemeMode))
@@ -49,12 +55,14 @@ class MainActivity : ComponentActivity() {
                 onDispose {}
             }
 
-            UrithiruTheme(darkTheme = darkTheme) {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    NavHostChamber()
+            CompositionLocalProvider(LocalTranslator provides translator) {
+                UrithiruTheme(darkTheme = darkTheme) {
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
+                        NavHostChamber()
+                    }
                 }
             }
         }
