@@ -24,16 +24,23 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Urithiru Project"
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
+rootProject.name = "Urithiru"
 include(":app")
 include(":core")
-include(":api-a")
+include(":api-eldenring")
 include(":core-entity")
 include(":core-navigation")
-include(":feature-a")
-include(":feature-b")
-include(":api-b")
+include(":feature-explore")
+include(":feature-onboarding")
+include(":api-jsonbin")
 include(":core-ui")
 include(":feature-splash")
 include(":navigation-processor")
 include(":api-twitch")
+include(":api-dummyjson")
+include(":feature-auth")
+include(":feature-catalog")
+include(":feature-shop")
+include(":feature-profile")

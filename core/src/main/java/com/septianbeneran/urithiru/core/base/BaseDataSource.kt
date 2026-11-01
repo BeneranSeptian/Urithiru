@@ -1,7 +1,8 @@
 package com.septianbeneran.urithiru.core.base
 
 import com.septianbeneran.urithiru.core.remote.entity.ApiResult
-import com.septianbeneran.urithiru.core.remote.entity.ErrorResponse
+import com.septianbeneran.urithiru.core.util.extension.toAppError
+import kotlinx.coroutines.CancellationException
 import retrofit2.Response
 
 abstract class BaseDataSource {
@@ -10,20 +11,10 @@ abstract class BaseDataSource {
     ): ApiResult<T> = try {
         val response = call()
         if (response.isSuccessful) ApiResult.Success(response.body(), response.headers())
-        else errorHandler(response.code(), response.message())
+        else ApiResult.Error(response.toAppError())
+    } catch (e: CancellationException) {
+        throw e
     } catch (e: Exception) {
-        errorHandler(6969, e.message ?: e.toString())
-    }
-
-    private fun <T> errorHandler(
-        httpCode: Int,
-        errorMessage: String
-    ): ApiResult.Error<T> {
-        return ApiResult.Error(
-            error = ErrorResponse(
-                code = httpCode,
-                message = errorMessage
-            )
-        )
+        ApiResult.Error(e.toAppError())
     }
 }

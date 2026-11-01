@@ -4,8 +4,10 @@ plugins {
 }
 
 dependencies {
-    moduleImplementation("core")
+    moduleImplementation(projects.core)
 
-    moduleImplementation("core-entity")
-    moduleImplementation("core-navigation")
+    moduleImplementation(projects.coreEntity)
+    moduleImplementation(projects.coreNavigation)
+
+    implementation(libs.coil.compose)
 }

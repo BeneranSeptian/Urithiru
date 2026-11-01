@@ -15,6 +15,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.septianbeneran.urithiru.core.ui.R
+import com.septianbeneran.urithiru.core.ui.localization.localizedString
 import com.septianbeneran.urithiru.core.util.permission.PermissionHandler
 import com.septianbeneran.urithiru.core.util.permission.PermissionState.GoToSetting
 
@@ -54,7 +56,7 @@ fun permissionStateHandler(
                     onDismissRequest = { permissionHandler.onPermissionDenied(permissionSet) }
                 ) {
                     Column() {
-                        Text("$permissionSet is needed")
+                        Text(localizedString(R.string.permission_needed, permissionSet.toString()))
                         Button(
                             onClick = {
                                 permissionHandler.onGoToSetting()
@@ -64,7 +66,7 @@ fun permissionStateHandler(
                                 )
                                 settingLauncher.launch(intent)
                             }) {
-                            Text("Go to Setting")
+                            Text(localizedString(R.string.permission_go_to_settings))
                         }
                     }
                 }

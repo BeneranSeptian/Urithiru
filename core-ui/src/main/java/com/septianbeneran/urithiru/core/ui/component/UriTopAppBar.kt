@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -22,7 +23,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.septianbeneran.urithiru.core.ui.R
 import com.septianbeneran.urithiru.core.ui.component.UriTopAppBarProperties.defaults
-import com.septianbeneran.urithiru.core.ui.theme.Highlight
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -88,9 +88,9 @@ fun AppBarBackButton(
             painter = painterResource(it),
             contentDescription = null,
             modifier = modifier
-                .size(20.dp)
+                .size(24.dp)
                 .clickable(onClick = onClick),
-            tint = Highlight.Highlight500
+            tint = MaterialTheme.colorScheme.primary
         )
     }
 }
@@ -100,7 +100,7 @@ object UriTopAppBarProperties {
     @Composable
     fun defaults(
         title: String = "",
-        backIcon: Int? = R.drawable.arrow_left,
+        backIcon: Int? = R.drawable.arrow_back,
         onTrailingComposableClick: () -> Unit = {},
         leadingComposable: (@Composable (onClick: () -> Unit) -> Unit)? = null,
         trailingComposable: (@Composable (onClick: () -> Unit) -> Unit)? = null
@@ -137,7 +137,7 @@ private fun UriTopAppBarPreview() {
                             Text(
                                 text = "Edit",
                                 style = UrithiruTheme.typography.actionM,
-                                color = Highlight.Highlight500
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
                     ),
@@ -158,7 +158,7 @@ private fun UriTopAppBarPreview() {
                             Icon(
                                 painter = painterResource(id = R.drawable.heart_outlined),
                                 contentDescription = null,
-                                tint = Highlight.Highlight500
+                                tint = MaterialTheme.colorScheme.primary
                             )
                         }
                     ),
@@ -171,14 +171,14 @@ private fun UriTopAppBarPreview() {
                             Text(
                                 text = "Cancel",
                                 style = UrithiruTheme.typography.actionM,
-                                color = Highlight.Highlight500
+                                color = MaterialTheme.colorScheme.primary
                             )
                         },
                         trailingComposable = {
                             Text(
                                 text = "Edit",
                                 style = UrithiruTheme.typography.actionM,
-                                color = Highlight.Highlight500
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
                     ),
@@ -191,7 +191,7 @@ private fun UriTopAppBarPreview() {
                             Text(
                                 text = "Cancel",
                                 style = UrithiruTheme.typography.actionM,
-                                color = Highlight.Highlight500
+                                color = MaterialTheme.colorScheme.primary
                             )
                         },
                         trailingComposable = {

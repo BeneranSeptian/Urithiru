@@ -3,6 +3,8 @@ package com.septianbeneran.urithiru.core.ui.theme
 import androidx.compose.ui.graphics.Color
 
 object Highlight {
+    /** Highlight500 blended into Dark400: a muted blue for selected or highlighted areas in the dark theme. */
+    val Highlight700 = Color(0xFF234068)
     val Highlight500 = Color(0xFF006FFD)
     val Highlight400 = Color(0xFF2897FF)
     val Highlight300 = Color(0xFF6FBAFF)

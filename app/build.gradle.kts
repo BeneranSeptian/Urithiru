@@ -10,8 +10,6 @@ android {
     defaultConfig {
         applicationId = "com.septianbeneran.urithiru"
         versionName = "1.0"
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildFeatures {
@@ -30,25 +28,28 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.compose.material3.adaptive.navigation.suite)
 
-    // Testing
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    // Compose UI testing (JUnit and AndroidX test come from app-convention)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
-    implementation(project(":core"))
-    implementation(project(":core-entity"))
-    implementation(project(":core-navigation"))
-    implementation(project(":core-ui"))
-    implementation(project(":api-a"))
-    implementation(project(":api-b"))
-    implementation(project(":api-twitch"))
-    implementation(project(":feature-a"))
-    implementation(project(":feature-b"))
-    implementation(project(":feature-splash"))
+    moduleImplementation(projects.core)
+    moduleImplementation(projects.coreEntity)
+    moduleImplementation(projects.coreNavigation)
+    moduleImplementation(projects.coreUi)
+    moduleImplementation(projects.apiEldenring)
+    moduleImplementation(projects.apiJsonbin)
+    moduleImplementation(projects.apiTwitch)
+    moduleImplementation(projects.apiDummyjson)
+    moduleImplementation(projects.featureExplore)
+    moduleImplementation(projects.featureOnboarding)
+    moduleImplementation(projects.featureSplash)
+    moduleImplementation(projects.featureAuth)
+    moduleImplementation(projects.featureCatalog)
+    moduleImplementation(projects.featureShop)
+    moduleImplementation(projects.featureProfile)
 
-    ksp(project(":navigation-processor"))
+    ksp(projects.navigationProcessor)
 }

@@ -3,6 +3,6 @@ plugins {
 }
 
 dependencies {
-    moduleImplementation("core")
-    moduleImplementation("core-entity")
+    moduleImplementation(projects.core)
+    moduleImplementation(projects.coreEntity)
 }

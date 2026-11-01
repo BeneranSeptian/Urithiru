@@ -1,28 +1,23 @@
 package com.septianbeneran.urithiru.core.util.datastore
 
 import android.content.Context
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import com.septianbeneran.urithiru.core.util.extension.dataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import javax.inject.Inject
-
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "base_data_store")
+import kotlinx.serialization.json.Json
 
 class BaseDataStore @Inject constructor(
-    @param:ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context,
+    @PublishedApi internal val json: Json
 ) {
-    val gson = Gson()
     suspend fun saveString(key: String, value: String) {
         val prefKey = stringPreferencesKey(key)
         context.dataStore.edit { preferences ->
@@ -59,8 +54,14 @@ class BaseDataStore @Inject constructor(
     }
 
     suspend inline fun <reified T> saveObject(key: String, value: T) {
-        val jsonString = gson.toJson(value)
+        val jsonString = json.encodeToString(value)
         saveString(key, jsonString)
+    }
+
+    suspend fun remove(key: String) {
+        context.dataStore.edit { preferences ->
+            preferences.asMap().keys.filter { it.name == key }.forEach { preferences.remove(it) }
+        }
     }
 
     fun readString(key: String): Flow<String?> {
@@ -99,13 +100,12 @@ class BaseDataStore @Inject constructor(
     }
 
     inline fun <reified T> readObject(key: String): Flow<T?> {
-        val type = object : TypeToken<T>() {}.type
         return readString(key).map { jsonString ->
             if (jsonString == null) {
                 null
             } else {
                 try {
-                    gson.fromJson<T>(jsonString, type)
+                    json.decodeFromString<T>(jsonString)
                 } catch (e: Exception) {
                     e.printStackTrace()
                     null

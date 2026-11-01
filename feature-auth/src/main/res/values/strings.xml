@@ -1,0 +1,7 @@
+<resources>
+    <string name="auth_welcome_back">authWelcomeBack</string>
+    <string name="auth_intro">authIntro</string>
+    <string name="auth_signing_in">authSigningIn</string>
+    <string name="auth_use_demo_account">authUseDemoAccount</string>
+    <string name="auth_invalid_credentials">authInvalidCredentials</string>
+</resources>
