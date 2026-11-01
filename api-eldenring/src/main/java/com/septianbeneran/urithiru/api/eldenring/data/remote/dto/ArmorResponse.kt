@@ -2,6 +2,7 @@ package com.septianbeneran.urithiru.api.eldenring.data.remote.dto
 
 import com.septianbeneran.urithiru.api.eldenring.data.remote.dto.common.StatValueResponse
 import com.septianbeneran.urithiru.core.entity.eldenring.Armor
+import com.septianbeneran.urithiru.core.util.extension.cleaned
 import kotlinx.serialization.Serializable
 
 @Serializable

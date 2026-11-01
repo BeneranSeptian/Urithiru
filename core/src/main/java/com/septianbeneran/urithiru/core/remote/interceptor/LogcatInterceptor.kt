@@ -1,15 +1,14 @@
 package com.septianbeneran.urithiru.core.remote.interceptor
 
 import android.util.Log
+import com.septianbeneran.urithiru.core.util.extension.asPrettyJson
+import com.septianbeneran.urithiru.core.util.extension.ellipsizeCenter
+import com.septianbeneran.urithiru.core.util.extension.isProbablyUtf8
 import okhttp3.Headers
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
 import okio.Buffer
-import org.json.JSONArray
-import org.json.JSONException
-import org.json.JSONObject
-import java.io.EOFException
 import java.nio.charset.StandardCharsets.UTF_8
 
 class LogcatInterceptor : Interceptor {
@@ -46,7 +45,7 @@ class LogcatInterceptor : Interceptor {
     }
 
     private fun logHeaders(headers: Headers): List<String> {
-        return headers.filter { it.second.isNotEmpty() }.map { "${it.first}: ${it.second.ellipsizeCenter()}" }
+        return headers.filter { it.second.isNotEmpty() }.map { "${it.first}: ${it.second.ellipsizeCenter(maxLogLength)}" }
     }
 
     private fun logRequest(request: Request): String {
@@ -80,45 +79,6 @@ class LogcatInterceptor : Interceptor {
         else buffer.clone().readString(charset).asPrettyJson()
     }
 
-    private fun Buffer.isProbablyUtf8(): Boolean {
-        return try {
-            val prefix = Buffer()
-            val byteCount = size.coerceAtMost(64L)
-            copyTo(prefix, 0, byteCount)
-            for (i in 0 until 16) {
-                if (prefix.exhausted()) break
-                val codePoint = prefix.readUtf8CodePoint()
-                if (Character.isISOControl(codePoint) && !Character.isWhitespace(codePoint)) return false
-            }
-            true
-        } catch (_: EOFException) {
-            false
-        }
-    }
-
-    private fun String.ellipsizeCenter(): String {
-        if (this.length <= maxLogLength) return this
-
-        val halfLength = (maxLogLength - 5) / 2
-        val start = this.substring(0, halfLength)
-        val end = this.substring(this.length - halfLength)
-
-        return "$start ... $end"
-    }
-
-    private fun String.asPrettyJson(): String {
-        val trimmed = trim()
-        return try {
-            when {
-                trimmed.startsWith("{") -> JSONObject(trimmed).toString(2)
-                trimmed.startsWith("[") -> JSONArray(trimmed).toString(2)
-                else -> this
-            }
-        } catch (_: JSONException) {
-            this
-        }
-    }
-
     private fun log(text: String) {
         if (text.isBlank()) return
 
@@ -135,9 +95,9 @@ class LogcatInterceptor : Interceptor {
 
     private fun StringBuilder.appendSection(title: String, lines: List<String>) {
         appendLine(border)
-        appendLine("| ${title.ellipsizeCenter().padEnd(maxLogLength)} |")
+        appendLine("| ${title.ellipsizeCenter(maxLogLength).padEnd(maxLogLength)} |")
         appendLine(border)
-        lines.forEach { line -> appendLine("| ${line.ellipsizeCenter().padEnd(maxLogLength)} |") }
+        lines.forEach { line -> appendLine("| ${line.ellipsizeCenter(maxLogLength).padEnd(maxLogLength)} |") }
     }
 
     private fun logPretty(
@@ -149,7 +109,7 @@ class LogcatInterceptor : Interceptor {
     ) {
         log(buildString {
             appendLine(border)
-            appendLine("| ${endPoint.ellipsizeCenter().padEnd(maxLogLength)} |")
+            appendLine("| ${endPoint.ellipsizeCenter(maxLogLength).padEnd(maxLogLength)} |")
             appendSection("HEADERS", headers)
             appendSection("REQUEST", requestBody.lines())
             appendSection("RESPONSE $responseResult", responseBody.lines())

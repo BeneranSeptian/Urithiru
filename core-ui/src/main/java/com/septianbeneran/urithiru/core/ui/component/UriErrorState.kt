@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import com.septianbeneran.urithiru.core.remote.entity.AppError
 import com.septianbeneran.urithiru.core.ui.R
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
-import com.septianbeneran.urithiru.core.ui.util.toMessage
+import com.septianbeneran.urithiru.core.ui.util.extension.toMessage
 
 /**
  * Full-screen failure: icon, title, a message for [error], and a retry button.

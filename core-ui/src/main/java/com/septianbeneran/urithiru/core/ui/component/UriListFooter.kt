@@ -19,7 +19,7 @@ import com.septianbeneran.urithiru.core.remote.entity.AppError
 import com.septianbeneran.urithiru.core.ui.R
 import com.septianbeneran.urithiru.core.ui.component.UriButtonProperties.Type.Secondary
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
-import com.septianbeneran.urithiru.core.ui.util.toMessage
+import com.septianbeneran.urithiru.core.ui.util.extension.toMessage
 
 /**
  * Last item of a paginated list: a loader while the next page loads, or a message with Retry if it failed.

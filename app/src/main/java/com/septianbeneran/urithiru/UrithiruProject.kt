@@ -3,7 +3,7 @@ package com.septianbeneran.urithiru
 import android.app.Application
 import com.septianbeneran.urithiru.core.settings.AppSettings
 import com.septianbeneran.urithiru.core.settings.ThemeMode
-import com.septianbeneran.urithiru.core.ui.theme.applyToSystem
+import com.septianbeneran.urithiru.core.ui.util.extension.applyToSystem
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 import kotlinx.coroutines.flow.first

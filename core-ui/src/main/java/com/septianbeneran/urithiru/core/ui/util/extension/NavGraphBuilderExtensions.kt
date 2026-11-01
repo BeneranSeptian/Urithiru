@@ -1,4 +1,4 @@
-package com.septianbeneran.urithiru.core.ui.util
+package com.septianbeneran.urithiru.core.ui.util.extension
 
 import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Companion.Left
 import androidx.compose.animation.EnterTransition
@@ -11,6 +11,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import com.septianbeneran.urithiru.core.ui.util.ScreenTransition
 import com.septianbeneran.urithiru.core.ui.util.ScreenTransition.Default
 import com.septianbeneran.urithiru.core.ui.util.ScreenTransition.Fade
 import com.septianbeneran.urithiru.core.ui.util.ScreenTransition.None

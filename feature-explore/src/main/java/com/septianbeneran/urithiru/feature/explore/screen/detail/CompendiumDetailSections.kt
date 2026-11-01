@@ -34,7 +34,7 @@ import com.septianbeneran.urithiru.core.entity.eldenring.Npc
 import com.septianbeneran.urithiru.core.entity.eldenring.Weapon
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
 import com.septianbeneran.urithiru.feature.explore.screen.feed.Tag
-import com.septianbeneran.urithiru.feature.explore.screen.feed.formatted
+import com.septianbeneran.urithiru.core.util.extension.formatted
 import com.septianbeneran.urithiru.feature.explore.screen.feed.singularLabel
 
 private data class QuickStat(val value: String, val label: String)

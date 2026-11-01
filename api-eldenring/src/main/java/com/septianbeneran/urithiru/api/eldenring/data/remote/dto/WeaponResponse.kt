@@ -3,6 +3,7 @@ package com.septianbeneran.urithiru.api.eldenring.data.remote.dto
 import com.septianbeneran.urithiru.api.eldenring.data.remote.dto.common.AttributesResponse
 import com.septianbeneran.urithiru.api.eldenring.data.remote.dto.common.ScalingResponse
 import com.septianbeneran.urithiru.core.entity.eldenring.Weapon
+import com.septianbeneran.urithiru.core.util.extension.cleaned
 import kotlinx.serialization.Serializable
 
 @Serializable

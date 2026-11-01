@@ -15,9 +15,9 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import com.septianbeneran.urithiru.core.settings.AppSettings
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
-import com.septianbeneran.urithiru.core.ui.theme.applyToSystem
-import com.septianbeneran.urithiru.core.ui.theme.isDarkTheme
-import com.septianbeneran.urithiru.core.ui.theme.withThemeMode
+import com.septianbeneran.urithiru.core.ui.util.extension.applyToSystem
+import com.septianbeneran.urithiru.core.ui.util.extension.isDarkTheme
+import com.septianbeneran.urithiru.core.ui.util.extension.withThemeMode
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.flow.distinctUntilChanged

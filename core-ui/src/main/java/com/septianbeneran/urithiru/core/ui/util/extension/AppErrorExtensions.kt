@@ -1,4 +1,4 @@
-package com.septianbeneran.urithiru.core.ui.util
+package com.septianbeneran.urithiru.core.ui.util.extension
 
 import androidx.annotation.StringRes
 import com.septianbeneran.urithiru.core.remote.entity.AppError

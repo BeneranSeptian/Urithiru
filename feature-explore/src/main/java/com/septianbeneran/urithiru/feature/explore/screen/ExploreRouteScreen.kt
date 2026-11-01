@@ -21,7 +21,6 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -38,11 +37,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -53,8 +49,8 @@ import com.septianbeneran.urithiru.core.entity.eldenring.CompendiumEntry
 import com.septianbeneran.urithiru.core.entity.eldenring.CompendiumKind
 import com.septianbeneran.urithiru.core.navigation.annotation.FeatureRoute
 import com.septianbeneran.urithiru.core.navigation.graph.FeatureExploreNavGraph
-import com.septianbeneran.urithiru.core.navigation.routeparams.feature_explore.ExploreRoute
 import com.septianbeneran.urithiru.core.navigation.routeparams.feature_explore.CompendiumDetailRoute
+import com.septianbeneran.urithiru.core.navigation.routeparams.feature_explore.ExploreRoute
 import com.septianbeneran.urithiru.core.navigation.util.Navigator
 import com.septianbeneran.urithiru.core.ui.base.BaseScreen
 import com.septianbeneran.urithiru.core.ui.component.UriDot
@@ -68,7 +64,9 @@ import com.septianbeneran.urithiru.core.ui.component.UriToastProperties.UriToast
 import com.septianbeneran.urithiru.core.ui.component.UriTopAppBarProperties.defaults
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
 import com.septianbeneran.urithiru.core.ui.util.NonceObserver
-import com.septianbeneran.urithiru.core.ui.util.toMessage
+import com.septianbeneran.urithiru.core.ui.util.extension.bleed
+import com.septianbeneran.urithiru.core.ui.util.extension.pageScale
+import com.septianbeneran.urithiru.core.ui.util.extension.toMessage
 import com.septianbeneran.urithiru.feature.explore.screen.feed.CompendiumFeedCard
 import com.septianbeneran.urithiru.feature.explore.screen.feed.FeaturedEntryCard
 import com.septianbeneran.urithiru.feature.explore.screen.feed.pluralLabel
@@ -88,7 +86,6 @@ import com.septianbeneran.urithiru.feature.explore.screen.stateaction.ExploreUiS
 import com.septianbeneran.urithiru.feature.explore.screen.stateaction.RegionRow
 import com.septianbeneran.urithiru.feature.explore.viewmodel.ExploreViewModel
 import kotlinx.coroutines.delay
-import kotlin.math.absoluteValue
 
 private val ScreenMargin = 24.dp
 private val FeedSpacing = 12.dp
@@ -693,24 +690,4 @@ private fun CardSkeleton(ratio: Float) {
             )
         }
     }
-}
-
-private fun Modifier.bleed(horizontal: Dp): Modifier = layout { measurable, constraints ->
-    val extra = horizontal.roundToPx()
-    val placeable = measurable.measure(
-        constraints.copy(
-            minWidth = constraints.minWidth + extra * 2,
-            maxWidth = constraints.maxWidth + extra * 2
-        )
-    )
-    layout(constraints.maxWidth, placeable.height) {
-        placeable.place(-extra, 0)
-    }
-}
-
-private fun Modifier.pageScale(pagerState: PagerState, page: Int): Modifier = graphicsLayer {
-    val offset = ((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction).absoluteValue
-    val scale = 1f - 0.08f * offset.coerceIn(0f, 1f)
-    scaleX = scale
-    scaleY = scale
 }

@@ -1,22 +1,18 @@
 package com.septianbeneran.urithiru.core.util.datastore
 
 import android.content.Context
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
+import com.septianbeneran.urithiru.core.util.extension.dataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
-
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "base_data_store")
 
 class BaseDataStore @Inject constructor(
     @param:ApplicationContext private val context: Context,

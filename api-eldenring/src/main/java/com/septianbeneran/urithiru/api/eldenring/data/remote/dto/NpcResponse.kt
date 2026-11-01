@@ -1,6 +1,7 @@
 package com.septianbeneran.urithiru.api.eldenring.data.remote.dto
 
 import com.septianbeneran.urithiru.core.entity.eldenring.Npc
+import com.septianbeneran.urithiru.core.util.extension.cleaned
 import kotlinx.serialization.Serializable
 
 @Serializable

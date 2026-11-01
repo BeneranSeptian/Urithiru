@@ -32,7 +32,7 @@ import com.septianbeneran.urithiru.core.ui.component.UriTextField
 import com.septianbeneran.urithiru.core.ui.component.UriTopAppBarProperties.defaults
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
 import com.septianbeneran.urithiru.core.ui.util.NonceObserver
-import com.septianbeneran.urithiru.core.ui.util.toMessage
+import com.septianbeneran.urithiru.core.ui.util.extension.toMessage
 import com.septianbeneran.urithiru.feature.auth.screen.stateaction.LoginAction
 import com.septianbeneran.urithiru.feature.auth.screen.stateaction.LoginNonce
 import com.septianbeneran.urithiru.feature.auth.screen.stateaction.LoginUiState

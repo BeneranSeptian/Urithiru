@@ -39,6 +39,7 @@ import com.septianbeneran.urithiru.core.entity.eldenring.Npc
 import com.septianbeneran.urithiru.core.entity.eldenring.Weapon
 import com.septianbeneran.urithiru.core.ui.component.UriImage
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
+import com.septianbeneran.urithiru.core.util.extension.formatted
 
 private val GearImageRatios = listOf(0.78f, 1f, 0.9f, 1.15f)
 private val ArtImageRatios = listOf(0.72f, 0.82f)
@@ -435,6 +436,3 @@ private fun CompendiumEntry.tags(): List<String> = when (this) {
     is Location -> listOfNotNull(region)
     is Npc -> emptyList()
 }
-
-internal fun Float.formatted(): String =
-    if (this % 1f == 0f) toInt().toString() else "%.1f".format(this)
