@@ -23,6 +23,7 @@ import com.septianbeneran.urithiru.core.navigation.routeparams.feature_catalog.C
 import com.septianbeneran.urithiru.core.navigation.util.Navigator
 import com.septianbeneran.urithiru.core.ui.R
 import com.septianbeneran.urithiru.core.ui.base.BaseScreen
+import com.septianbeneran.urithiru.core.ui.base.LocalScreenBottomPadding
 import com.septianbeneran.urithiru.core.ui.component.UriDivider
 import com.septianbeneran.urithiru.core.ui.component.UriListItem
 import com.septianbeneran.urithiru.core.ui.component.UriTopAppBarProperties.defaults
@@ -44,7 +45,8 @@ fun CatalogRoute(
     BaseScreen(
         viewModel = viewModel,
         topAppBarArgs = defaults(title = "Catalog", backIcon = null),
-        contentPadding = PaddingValues(start = 8.dp, top = 24.dp, end = 8.dp)
+        contentPadding = PaddingValues(start = 8.dp, top = 24.dp, end = 8.dp),
+        drawBehindBottomOverlay = true
     ) {
         CatalogScreen(
             sections = CatalogEntries.sections,
@@ -60,7 +62,7 @@ fun CatalogScreen(
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = 16.dp)
+        contentPadding = PaddingValues(bottom = 16.dp + LocalScreenBottomPadding.current)
     ) {
         sections.forEach { section ->
             item(key = section.title) {

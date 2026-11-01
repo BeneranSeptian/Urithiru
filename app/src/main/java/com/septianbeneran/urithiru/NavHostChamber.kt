@@ -10,14 +10,15 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
-import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
-import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -28,6 +29,7 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldLayout
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -46,6 +48,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.septianbeneran.urithiru.core.navigation.graph.FeatureSplashNavGraph
 import com.septianbeneran.urithiru.core.navigation.util.Navigator
+import com.septianbeneran.urithiru.core.ui.base.LocalBottomOverlayHeight
 import com.septianbeneran.urithiru.core.ui.component.UriNavigationBar
 import com.septianbeneran.urithiru.core.ui.component.UriNavigationBarDefaults
 import com.septianbeneran.urithiru.core.ui.component.UriNavigationBarItem
@@ -54,13 +57,17 @@ import com.septianbeneran.urithiru.core.ui.component.UriNavigationLabelMode
 import com.septianbeneran.urithiru.graph.registerAllFeatureGraphs
 
 /**
- * The app's single NavHost, inside a NavigationSuiteScaffoldLayout: a bottom bar on phones, a rail on larger
- * screens. The bar only shows on the root screen of a [TopLevelDestination] graph, so detail screens,
- * splash, onboarding and login are full screen. The bar sits in our own AnimatedVisibility, not the
+ * The app's single NavHost: a floating bottom bar on phones, a rail (inside a NavigationSuiteScaffoldLayout)
+ * on larger screens. The bar only shows on the root screen of a [TopLevelDestination] graph, so detail
+ * screens, splash, onboarding and login are full screen. Both sit in our own AnimatedVisibility, not the
  * scaffold's built-in show/hide, because the scaffold's animation can't be customized.
  *
+ * The phone bar floats over the screens instead of taking space below them, so content scrolls behind it.
+ * Its height goes to the screens as [LocalBottomOverlayHeight]; BaseScreen keeps content clear of it, or
+ * lets a scrolling screen run behind it with matching bottom padding.
+ *
  * The bar's visibility follows every screen that is visible, not just the current one, so it only comes
- * back once a back animation has finished. Showing it mid-animation would resize the screens as they slide.
+ * back once a back animation has finished.
  */
 @Composable
 fun NavHostChamber() {
@@ -82,43 +89,70 @@ fun NavHostChamber() {
         TopLevelDestination.entries.map { UriNavigationBarItem(it.label, it.icon, it.selectedIcon) }
     }
 
-    NavigationSuiteScaffoldLayout(
-        navigationSuiteType = layoutType,
-        navigationSuite = {
-            AnimatedVisibility(
-                visible = isBarVisible,
-                enter = if (isBottomBar) barEnterTransition() else railEnterTransition(),
-                exit = if (isBottomBar) barExitTransition() else railExitTransition()
-            ) {
-                if (isBottomBar) {
-                    UriNavigationBar(
-                        items = barItems,
-                        selectedIndex = TopLevelDestination.entries.indexOf(currentTab),
-                        onSelect = { navigator.navigateToTopLevel(TopLevelDestination.entries[it].graph) },
-                        style = NavigationBarStyle,
-                        colors = UriNavigationBarDefaults.colors()
-                    )
-                } else NavigationSuite(layoutType = layoutType) {
-                    TopLevelDestination.entries.forEach { tab ->
-                        val isSelected = tab == currentTab
-                        item(
-                            selected = isSelected,
-                            onClick = { navigator.navigateToTopLevel(tab.graph) },
-                            icon = {
-                                Icon(
-                                    painter = painterResource(if (isSelected) tab.selectedIcon else tab.icon),
-                                    contentDescription = null
+    val bottomOverlayHeight = if (isBottomBar && isBarVisible) {
+        NavigationBarStyle.height + NavigationBarStyle.bottomMargin
+    } else {
+        0.dp
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        NavigationSuiteScaffoldLayout(
+            navigationSuiteType = if (isBottomBar) NavigationSuiteType.None else layoutType,
+            navigationSuite = {
+                if (!isBottomBar) {
+                    AnimatedVisibility(
+                        visible = isBarVisible,
+                        enter = railEnterTransition(),
+                        exit = railExitTransition()
+                    ) {
+                        NavigationSuite(layoutType = layoutType) {
+                            TopLevelDestination.entries.forEach { tab ->
+                                val isSelected = tab == currentTab
+                                item(
+                                    selected = isSelected,
+                                    onClick = { navigator.navigateToTopLevel(tab.graph) },
+                                    icon = {
+                                        Icon(
+                                            painter = painterResource(if (isSelected) tab.selectedIcon else tab.icon),
+                                            contentDescription = null
+                                        )
+                                    },
+                                    label = { Text(tab.label) }
                                 )
-                            },
-                            label = { Text(tab.label) }
-                        )
+                            }
+                        }
                     }
                 }
             }
+        ) {
+            Box(
+                modifier = if (isBarVisible && !isBottomBar) {
+                    Modifier.consumeWindowInsets(WindowInsets.navigationBars)
+                } else {
+                    Modifier
+                }
+            ) {
+                CompositionLocalProvider(LocalBottomOverlayHeight provides bottomOverlayHeight) {
+                    AppNavHost(navController = navController, navigator = navigator)
+                }
+            }
         }
-    ) {
-        Box(modifier = if (isBarVisible) Modifier.consumeWindowInsets(WindowInsets.navigationBars) else Modifier) {
-            AppNavHost(navController = navController, navigator = navigator)
+
+        if (isBottomBar) {
+            AnimatedVisibility(
+                modifier = Modifier.align(Alignment.BottomCenter),
+                visible = isBarVisible,
+                enter = barEnterTransition(),
+                exit = barExitTransition()
+            ) {
+                UriNavigationBar(
+                    items = barItems,
+                    selectedIndex = TopLevelDestination.entries.indexOf(currentTab),
+                    onSelect = { navigator.navigateToTopLevel(TopLevelDestination.entries[it].graph) },
+                    style = NavigationBarStyle,
+                    colors = UriNavigationBarDefaults.colors()
+                )
+            }
         }
     }
 }
@@ -183,11 +217,11 @@ private const val BAR_EXIT_DURATION_MS = 100
 
 /** Change these to restyle how the bar (phones) and the rail (larger screens) appear and disappear. */
 private fun barEnterTransition(): EnterTransition =
-    expandVertically(tween(BAR_ENTER_DURATION_MS, easing = FastOutSlowInEasing), expandFrom = Alignment.Top) +
+    slideInVertically(tween(BAR_ENTER_DURATION_MS, easing = FastOutSlowInEasing)) { it } +
         fadeIn(tween(BAR_ENTER_DURATION_MS))
 
 private fun barExitTransition(): ExitTransition =
-    shrinkVertically(tween(BAR_EXIT_DURATION_MS, easing = FastOutSlowInEasing), shrinkTowards = Alignment.Top) +
+    slideOutVertically(tween(BAR_EXIT_DURATION_MS, easing = FastOutSlowInEasing)) { it } +
         fadeOut(tween(BAR_EXIT_DURATION_MS))
 
 private fun railEnterTransition(): EnterTransition =

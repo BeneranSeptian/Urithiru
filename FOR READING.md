@@ -64,7 +64,7 @@ Ideas for later:
 
 **The bottom bar**
 - The tab list is `TopLevelDestination` in `:app`.
-- On phones the bar is `UriNavigationBar` (`core-ui`): a floating pill with a sliding indicator and springy icons. Restyle it with `NavigationBarStyle` in `NavHostChamber.kt` (shape, margins, elevation, labels, springs, haptics), or switch to `UriNavigationBarDefaults.Docked` for a classic edge-to-edge bar. Colors come from `UriNavigationBarDefaults.colors()`. Larger screens keep the Material rail.
+- On phones the bar is `UriNavigationBar` (`core-ui`): a floating pill with a sliding indicator and springy icons. Restyle it with `NavigationBarStyle` in `NavHostChamber.kt` (shape, margins, elevation, labels, springs, haptics), or switch to `UriNavigationBarDefaults.Docked` for a classic edge-to-edge bar. Colors come from `UriNavigationBarDefaults.colors()`. The bar is drawn over the screens, so Explore, Catalog and Profile scroll behind it (`BaseScreen(drawBehindBottomOverlay = true)` plus `LocalScreenBottomPadding`); other screens are padded to stay clear of it. Larger screens keep the Material rail.
 - The bar shows only when **every visible screen is a tab root**, so it comes back only after a back animation has finished. Showing it mid-animation resized the screens while they slid; that was the "weird back animation".
 
 **Animations**

@@ -39,6 +39,7 @@ import com.septianbeneran.urithiru.core.navigation.routeparams.feature_profile.P
 import com.septianbeneran.urithiru.core.navigation.util.Navigator
 import com.septianbeneran.urithiru.core.ui.R
 import com.septianbeneran.urithiru.core.ui.base.BaseScreen
+import com.septianbeneran.urithiru.core.ui.base.LocalScreenBottomPadding
 import com.septianbeneran.urithiru.core.ui.component.UriButton
 import com.septianbeneran.urithiru.core.ui.component.UriButtonProperties
 import com.septianbeneran.urithiru.core.ui.component.UriDialog
@@ -71,6 +72,7 @@ fun ProfileRoute(
 
     BaseScreen(
         viewModel = viewModel,
+        drawBehindBottomOverlay = true,
         topAppBarArgs = defaults(title = "Profile", backIcon = null)
     ) {
         ProfileScreen(
@@ -95,7 +97,8 @@ fun ProfileScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
+            .padding(bottom = LocalScreenBottomPadding.current),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         if (uiState.isSessionLoaded) {

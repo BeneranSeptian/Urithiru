@@ -53,6 +53,7 @@ import com.septianbeneran.urithiru.core.navigation.routeparams.feature_explore.C
 import com.septianbeneran.urithiru.core.navigation.routeparams.feature_explore.ExploreRoute
 import com.septianbeneran.urithiru.core.navigation.util.Navigator
 import com.septianbeneran.urithiru.core.ui.base.BaseScreen
+import com.septianbeneran.urithiru.core.ui.base.LocalScreenBottomPadding
 import com.septianbeneran.urithiru.core.ui.component.UriDot
 import com.septianbeneran.urithiru.core.ui.component.UriEmptyState
 import com.septianbeneran.urithiru.core.ui.component.UriErrorState
@@ -109,6 +110,7 @@ fun ExploreRoute(
     BaseScreen(
         viewModel = viewModel,
         contentPadding = PaddingValues(top = ScreenMargin),
+        drawBehindBottomOverlay = true,
         topAppBarArgs = defaults(title = "Explore", backIcon = null)
     ) {
         ExploreScreen(
@@ -238,7 +240,12 @@ private fun ExploreFeed(
         modifier = Modifier.fillMaxSize(),
         state = gridState,
         columns = StaggeredGridCells.Fixed(2),
-        contentPadding = PaddingValues(start = ScreenMargin, end = ScreenMargin, top = 16.dp, bottom = ScreenMargin),
+        contentPadding = PaddingValues(
+            start = ScreenMargin,
+            end = ScreenMargin,
+            top = 16.dp,
+            bottom = ScreenMargin + LocalScreenBottomPadding.current
+        ),
         horizontalArrangement = Arrangement.spacedBy(FeedSpacing),
         verticalItemSpacing = FeedSpacing
     ) {
@@ -333,7 +340,7 @@ private fun SearchResults(
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(top = 16.dp, bottom = ScreenMargin),
+        contentPadding = PaddingValues(top = 16.dp, bottom = ScreenMargin + LocalScreenBottomPadding.current),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         item(contentType = "kinds") {
@@ -602,7 +609,12 @@ private fun FeedSkeleton(
     LazyVerticalStaggeredGrid(
         modifier = Modifier.fillMaxSize(),
         columns = StaggeredGridCells.Fixed(2),
-        contentPadding = PaddingValues(start = ScreenMargin, end = ScreenMargin, top = 16.dp, bottom = ScreenMargin),
+        contentPadding = PaddingValues(
+            start = ScreenMargin,
+            end = ScreenMargin,
+            top = 16.dp,
+            bottom = ScreenMargin + LocalScreenBottomPadding.current
+        ),
         horizontalArrangement = Arrangement.spacedBy(FeedSpacing),
         verticalItemSpacing = FeedSpacing,
         userScrollEnabled = false

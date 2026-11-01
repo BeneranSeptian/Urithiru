@@ -83,7 +83,7 @@ APIs that need the user's token go in a separate Retrofit interface built with t
   - The bar shows only on a tab's root screen (the start destination of its graph). Detail screens, splash, onboarding and login (`FeatureAuthNavGraph`) are full screen.
   - Switch tabs with `Navigator.navigateToTopLevel(graph)`. It pops up to the home graph's start destination (not the graph itself, which would pop home away) with `saveState`/`restoreState`, so each tab keeps its own history and Back returns to the first tab.
   - Leave splash, onboarding or login with `Navigator.navigateToHome()`, which clears the back stack. Features never reference the home tab directly.
-  - Features never know about the bar. `NavHostChamber` consumes the navigation bar inset while the bar shows, so `BaseScreen`'s `systemBarsPadding()` doesn't pad twice.
+  - Features never know about the bar. On phones it floats over the screens: `NavHostChamber` provides its height as `LocalBottomOverlayHeight` (`core-ui` `base/`), and `BaseScreen` keeps content clear of it. A tab root that scrolls passes `drawBehindBottomOverlay = true` to `BaseScreen` and adds `LocalScreenBottomPadding.current` to its list's bottom `contentPadding`, so content scrolls behind the bar and the last item still clears it.
   - A feature with its own internal sections uses top tabs inside the feature, never a second bottom bar.
 - Icons are official Material Symbols (`core-ui/res/drawable`, `name.xml` outlined and `name_filled.xml` filled), never hand-drawn.
 

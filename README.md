@@ -29,7 +29,7 @@ It ships as **Urithiru Showcase**, a working app that shows the template off: a 
 
 **🎨 A design system you can browse**
 - The Catalog tab demos every `Uri*` component in every state, in light and dark.
-- A floating, configurable bottom bar (`UriNavigationBar`) on phones and a navigation rail on larger screens.
+- A floating, configurable bottom bar (`UriNavigationBar`) on phones that lists scroll behind, and a navigation rail on larger screens.
 - Light, Dark or Match system, saved on the device and applied to the whole app, including the launch window.
 
 **👋 A live onboarding**
@@ -69,6 +69,7 @@ Tabs (floating bottom bar on phones, rail on tablets):
   Profile ─► Login · Replay onboarding
 ```
 - The tabs are listed in `TopLevelDestination` in `:app`. The bar only shows on a tab's root screen.
+- On phones the bar floats over the screen. Scrolling tabs (Explore, Catalog, Profile) run behind it; other screens are padded to stay clear of it.
 - `navigator.navigateToTopLevel(graph)` switches tabs; each tab keeps its own history.
 - `navigator.navigateToHome()` opens the first tab and clears the back stack.
 
@@ -497,6 +498,17 @@ enum class TopLevelDestination(...) {
 ```
 
 Build. The bar shows the new tab, switching to it keeps its own history, and Back returns to the first tab. To restyle the bar itself, change `NavigationBarStyle` in `NavHostChamber.kt`.
+
+#### Step D (optional): Scroll behind the floating bar
+By default `BaseScreen` keeps the content above the floating bar. If the tab's root screen scrolls, let it run behind the bar instead, and give the list enough bottom padding for its last item to clear it:
+
+```kotlin
+BaseScreen(viewModel = viewModel, drawBehindBottomOverlay = true, ...) {
+    LazyColumn(
+        contentPadding = PaddingValues(bottom = 16.dp + LocalScreenBottomPadding.current)
+    ) { ... }
+}
+```
 </details>
 
 <details>
