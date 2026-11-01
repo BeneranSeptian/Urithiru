@@ -11,13 +11,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.septianbeneran.urithiru.core.remote.entity.AppError
 import com.septianbeneran.urithiru.core.ui.R
 import com.septianbeneran.urithiru.core.ui.component.UriButtonProperties.Type.Secondary
+import com.septianbeneran.urithiru.core.ui.localization.localizedString
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
 import com.septianbeneran.urithiru.core.ui.util.extension.toMessage
 
@@ -51,12 +51,12 @@ fun UriListFooter(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = stringResource(R.string.list_load_more_failed),
+                    text = localizedString(R.string.list_load_more_failed),
                     style = UrithiruTheme.typography.h5,
                     color = MaterialTheme.colorScheme.onBackground
                 )
                 Text(
-                    text = stringResource(error.toMessage()),
+                    text = localizedString(error.toMessage()),
                     style = UrithiruTheme.typography.bodyS,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Start
@@ -64,7 +64,7 @@ fun UriListFooter(
             }
             UriButton(
                 type = Secondary,
-                text = stringResource(R.string.error_retry),
+                text = localizedString(R.string.error_retry),
                 onClick = onRetry
             )
         }

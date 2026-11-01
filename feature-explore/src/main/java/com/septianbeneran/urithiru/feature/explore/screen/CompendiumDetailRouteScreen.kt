@@ -26,7 +26,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -40,6 +39,7 @@ import com.septianbeneran.urithiru.core.ui.R as CoreUiR
 import com.septianbeneran.urithiru.core.ui.base.BaseScreen
 import com.septianbeneran.urithiru.core.ui.component.UriErrorState
 import com.septianbeneran.urithiru.core.ui.component.UriSkeleton
+import com.septianbeneran.urithiru.core.ui.localization.localizedString
 import com.septianbeneran.urithiru.feature.explore.R
 import com.septianbeneran.urithiru.feature.explore.screen.detail.DetailSections
 import com.septianbeneran.urithiru.feature.explore.screen.detail.DetailTitle
@@ -175,7 +175,7 @@ private fun BackButton(
                 .padding(10.dp)
                 .size(24.dp),
             painter = painterResource(CoreUiR.drawable.arrow_back),
-            contentDescription = stringResource(R.string.explore_back)
+            contentDescription = localizedString(R.string.explore_back)
         )
     }
 }

@@ -37,8 +37,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.pluralStringResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -65,6 +63,7 @@ import com.septianbeneran.urithiru.core.ui.component.UriSkeleton
 import com.septianbeneran.urithiru.core.ui.component.UriToast
 import com.septianbeneran.urithiru.core.ui.component.UriToastProperties.UriToastType
 import com.septianbeneran.urithiru.core.ui.component.UriTopAppBarProperties.defaults
+import com.septianbeneran.urithiru.core.ui.localization.localizedString
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
 import com.septianbeneran.urithiru.core.ui.util.NonceObserver
 import com.septianbeneran.urithiru.core.ui.util.extension.bleed
@@ -115,7 +114,7 @@ fun ExploreRoute(
         viewModel = viewModel,
         contentPadding = PaddingValues(top = ScreenMargin),
         drawBehindBottomOverlay = true,
-        topAppBarArgs = defaults(title = stringResource(CoreUiR.string.common_title_explore), backIcon = null)
+        topAppBarArgs = defaults(title = localizedString(CoreUiR.string.common_title_explore), backIcon = null)
     ) {
         ExploreScreen(
             uiState = uiState,
@@ -144,7 +143,7 @@ fun ExploreScreen(
             value = uiState.searchText,
             onValueChange = { onAction(OnSearchTextChange(it)) },
             onSearch = { onAction(OnSearch(uiState.searchText)) },
-            placeholder = stringResource(R.string.explore_search_placeholder),
+            placeholder = localizedString(R.string.explore_search_placeholder),
             onClear = { onAction(OnClearSearch) }
         )
 
@@ -181,8 +180,8 @@ fun ExploreScreen(
                         onSelect = { onAction(OnKindSelect(it)) }
                     )
                     UriEmptyState(
-                        title = stringResource(R.string.explore_nothing_found),
-                        message = stringResource(
+                        title = localizedString(R.string.explore_nothing_found),
+                        message = localizedString(
                             if (uiState.isSearching) CoreUiR.string.common_try_different_name
                             else R.string.explore_try_another_section
                         )
@@ -220,8 +219,8 @@ private fun RefreshableContent(
                     .align(Alignment.TopCenter)
                     .padding(horizontal = ScreenMargin, vertical = 12.dp),
                 type = UriToastType.Error,
-                titleText = stringResource(R.string.explore_refresh_failed),
-                subTitleText = stringResource(error.toMessage()),
+                titleText = localizedString(R.string.explore_refresh_failed),
+                subTitleText = localizedString(error.toMessage()),
                 onClose = { onAction(DismissRefreshError) }
             )
         }
@@ -278,7 +277,7 @@ private fun ExploreFeed(
             item(span = StaggeredGridItemSpan.FullLine, key = "region-${row.region}", contentType = "region") {
                 EntryRow(
                     modifier = Modifier.bleed(ScreenMargin),
-                    title = stringResource(R.string.explore_around_region, row.region),
+                    title = localizedString(R.string.explore_around_region, row.region),
                     subtitle = row.summary(),
                     entries = row.entries,
                     showKind = true,
@@ -291,15 +290,15 @@ private fun ExploreFeed(
         item(span = StaggeredGridItemSpan.FullLine, contentType = "header") {
             SectionHeader(
                 title = when {
-                    state.isSearching -> stringResource(R.string.explore_results_for, state.submittedQuery)
+                    state.isSearching -> localizedString(R.string.explore_results_for, state.submittedQuery)
                     state.selectedKind != null -> state.selectedKind.pluralLabel
-                    else -> stringResource(R.string.explore_for_you)
+                    else -> localizedString(R.string.explore_for_you)
                 },
                 subtitle = when {
-                    state.isSearching -> state.selectedKind?.let { stringResource(R.string.explore_search_in, it.pluralLabel.lowercase()) }
-                        ?: stringResource(R.string.explore_search_everywhere)
+                    state.isSearching -> state.selectedKind?.let { localizedString(R.string.explore_search_in, it.pluralLabel.lowercase()) }
+                        ?: localizedString(R.string.explore_search_everywhere)
                     state.selectedKind != null -> state.selectedKind.tagline
-                    else -> stringResource(R.string.explore_for_you_subtitle)
+                    else -> localizedString(R.string.explore_for_you_subtitle)
                 }
             )
         }
@@ -320,7 +319,7 @@ private fun ExploreFeed(
             item(span = StaggeredGridItemSpan.FullLine, contentType = "failed") {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(
+                    text = localizedString(
                         R.string.explore_sections_failed,
                         state.failedKinds.map { it.pluralLabel.lowercase() }.joinToString()
                     ),
@@ -364,9 +363,9 @@ private fun SearchResults(
         item(contentType = "header") {
             SectionHeader(
                 modifier = Modifier.padding(horizontal = ScreenMargin),
-                title = stringResource(R.string.explore_results_for, state.submittedQuery),
+                title = localizedString(R.string.explore_results_for, state.submittedQuery),
                 subtitle = (result.groups.map { it.kind } + listOfNotNull(result.topResult?.kind)).distinct().size.let { count ->
-                    pluralStringResource(R.plurals.explore_found_in_sections, count, count)
+                    localizedString(R.string.explore_found_in_sections, count)
                 }
             )
         }
@@ -378,7 +377,7 @@ private fun SearchResults(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(
-                        text = stringResource(R.string.explore_top_result),
+                        text = localizedString(R.string.explore_top_result),
                         style = UrithiruTheme.typography.h4,
                         color = MaterialTheme.colorScheme.onBackground
                     )
@@ -393,7 +392,7 @@ private fun SearchResults(
 
         items(result.groups, key = { it.kind.name }, contentType = { "group" }) { group ->
             EntryRow(
-                title = stringResource(
+                title = localizedString(
                     if (group.hasMore) R.string.explore_group_title_more else R.string.explore_group_title,
                     group.kind.pluralLabel,
                     group.entries.size
@@ -413,7 +412,7 @@ private fun SearchResults(
             item(contentType = "failed") {
                 Text(
                     modifier = Modifier.padding(horizontal = ScreenMargin),
-                    text = stringResource(
+                    text = localizedString(
                         R.string.explore_search_failed,
                         result.failedKinds.map { it.pluralLabel.lowercase() }.joinToString()
                     ),
@@ -461,7 +460,7 @@ private fun EntryRow(
             }
             onSeeAll?.let {
                 TextButton(onClick = it) {
-                    Text(stringResource(R.string.explore_see_all))
+                    Text(localizedString(R.string.explore_see_all))
                 }
             }
         }
@@ -487,7 +486,7 @@ private fun RegionRow.summary(): String =
     entries.groupingBy { it.kind }.eachCount().entries
         .sortedBy { it.key.ordinal }
         .map { (kind, count) -> kind.countLabel(count) }
-        .joinToString(stringResource(R.string.explore_summary_separator))
+        .joinToString(localizedString(R.string.explore_summary_separator))
 
 private fun entryClick(onAction: (ExploreAction) -> Unit): (CompendiumEntry) -> () -> Unit = { entry ->
     { onAction(OnEntryClick(entry)) }
@@ -527,7 +526,7 @@ private fun KindChips(
             FilterChip(
                 selected = selected == null,
                 onClick = { onSelect(null) },
-                label = { Text(stringResource(R.string.explore_all)) },
+                label = { Text(localizedString(R.string.explore_all)) },
                 shape = CircleShape
             )
         }
@@ -565,8 +564,8 @@ private fun FeaturedSection(
     ) {
         SectionHeader(
             modifier = Modifier.padding(horizontal = ScreenMargin),
-            title = stringResource(R.string.explore_featured),
-            subtitle = stringResource(R.string.explore_featured_subtitle)
+            title = localizedString(R.string.explore_featured),
+            subtitle = localizedString(R.string.explore_featured_subtitle)
         )
         HorizontalPager(
             state = pagerState,

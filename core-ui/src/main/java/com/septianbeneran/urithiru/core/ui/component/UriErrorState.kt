@@ -13,12 +13,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.septianbeneran.urithiru.core.remote.entity.AppError
 import com.septianbeneran.urithiru.core.ui.R
+import com.septianbeneran.urithiru.core.ui.localization.localizedString
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
 import com.septianbeneran.urithiru.core.ui.util.extension.toMessage
 
@@ -31,7 +31,7 @@ import com.septianbeneran.urithiru.core.ui.util.extension.toMessage
 fun UriErrorState(
     modifier: Modifier = Modifier,
     error: AppError,
-    title: String = stringResource(R.string.error_title),
+    title: String = localizedString(R.string.error_title),
     @DrawableRes icon: Int = R.drawable.error,
     showRetry: Boolean = error.isRetryable,
     onRetry: (() -> Unit)? = null
@@ -56,7 +56,7 @@ fun UriErrorState(
             textAlign = TextAlign.Center
         )
         Text(
-            text = stringResource(error.toMessage()),
+            text = localizedString(error.toMessage()),
             style = UrithiruTheme.typography.bodyM,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
@@ -64,7 +64,7 @@ fun UriErrorState(
         if (onRetry != null && showRetry) {
             UriButton(
                 modifier = Modifier.padding(top = 12.dp),
-                text = stringResource(R.string.error_retry),
+                text = localizedString(R.string.error_retry),
                 onClick = onRetry
             )
         }

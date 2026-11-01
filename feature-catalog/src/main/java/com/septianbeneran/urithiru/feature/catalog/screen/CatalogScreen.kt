@@ -13,7 +13,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -28,6 +27,7 @@ import com.septianbeneran.urithiru.core.ui.base.LocalScreenBottomPadding
 import com.septianbeneran.urithiru.core.ui.component.UriDivider
 import com.septianbeneran.urithiru.core.ui.component.UriListItem
 import com.septianbeneran.urithiru.core.ui.component.UriTopAppBarProperties.defaults
+import com.septianbeneran.urithiru.core.ui.localization.localizedString
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
 import com.septianbeneran.urithiru.feature.catalog.catalog.CatalogEntries
 import com.septianbeneran.urithiru.feature.catalog.catalog.CatalogSection
@@ -45,7 +45,7 @@ fun CatalogRoute(
 
     BaseScreen(
         viewModel = viewModel,
-        topAppBarArgs = defaults(title = stringResource(CoreUiR.string.common_title_catalog), backIcon = null),
+        topAppBarArgs = defaults(title = localizedString(CoreUiR.string.common_title_catalog), backIcon = null),
         contentPadding = PaddingValues(start = 8.dp, top = 24.dp, end = 8.dp),
         drawBehindBottomOverlay = true
     ) {
@@ -69,7 +69,7 @@ fun CatalogScreen(
             item(key = section.title) {
                 Text(
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 4.dp),
-                    text = stringResource(section.title),
+                    text = localizedString(section.title),
                     style = UrithiruTheme.typography.h5,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -78,7 +78,7 @@ fun CatalogScreen(
                 UriListItem(
                     modifier = Modifier.clickable { onEntryClick(entry.id) },
                     title = entry.name,
-                    description = stringResource(entry.description),
+                    description = localizedString(entry.description),
                     trailingContent = {
                         Icon(
                             modifier = Modifier.size(20.dp),

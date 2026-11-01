@@ -20,7 +20,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -28,6 +27,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.septianbeneran.urithiru.core.ui.R
+import com.septianbeneran.urithiru.core.ui.localization.localizedString
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
 
 /**
@@ -89,7 +89,7 @@ fun UriTextField(
                             painter = painterResource(
                                 if (isPasswordVisible) R.drawable.visibility_off else R.drawable.visibility
                             ),
-                            contentDescription = stringResource(
+                            contentDescription = localizedString(
                                 if (isPasswordVisible) R.string.text_field_hide_password
                                 else R.string.text_field_show_password
                             ),

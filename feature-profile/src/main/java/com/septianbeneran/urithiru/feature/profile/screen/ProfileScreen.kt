@@ -24,7 +24,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -53,6 +52,7 @@ import com.septianbeneran.urithiru.core.ui.component.UriThemePicker
 import com.septianbeneran.urithiru.core.ui.component.UriToast
 import com.septianbeneran.urithiru.core.ui.component.UriToastProperties.UriToastType
 import com.septianbeneran.urithiru.core.ui.component.UriTopAppBarProperties.defaults
+import com.septianbeneran.urithiru.core.ui.localization.localizedString
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
 import com.septianbeneran.urithiru.core.ui.util.NonceObserver
 import com.septianbeneran.urithiru.feature.profile.R
@@ -75,7 +75,7 @@ fun ProfileRoute(
     BaseScreen(
         viewModel = viewModel,
         drawBehindBottomOverlay = true,
-        topAppBarArgs = defaults(title = stringResource(CoreUiR.string.common_title_profile), backIcon = null)
+        topAppBarArgs = defaults(title = localizedString(CoreUiR.string.common_title_profile), backIcon = null)
     ) {
         ProfileScreen(
             uiState = uiState,
@@ -107,7 +107,7 @@ fun ProfileScreen(
             val user = uiState.user
             if (user != null) {
                 UserHeader(user = user)
-                ProfileSection(stringResource(R.string.profile_account_details)) {
+                ProfileSection(localizedString(R.string.profile_account_details)) {
                     AccountDetails(
                         profileState = uiState.profileState,
                         onRetry = { onAction(ProfileAction.OnRetryProfileClick) }
@@ -117,8 +117,8 @@ fun ProfileScreen(
                 if (uiState.isSessionExpired) {
                     UriToast(
                         type = UriToastType.Warning,
-                        titleText = stringResource(R.string.profile_session_expired_title),
-                        subTitleText = stringResource(R.string.profile_session_expired_message),
+                        titleText = localizedString(R.string.profile_session_expired_title),
+                        subTitleText = localizedString(R.string.profile_session_expired_message),
                         onClose = { onAction(ProfileAction.OnSessionExpiredDismiss) }
                     )
                 }
@@ -126,18 +126,18 @@ fun ProfileScreen(
             }
         }
 
-        ProfileSection(stringResource(R.string.profile_appearance)) {
+        ProfileSection(localizedString(R.string.profile_appearance)) {
             UriThemePicker(
                 selected = uiState.themeMode,
                 onSelect = { onAction(ProfileAction.OnThemeModeSelect(it)) }
             )
         }
 
-        ProfileSection(stringResource(R.string.profile_more)) {
+        ProfileSection(localizedString(R.string.profile_more)) {
             UriListItem(
                 modifier = Modifier.clickable { onAction(ProfileAction.OnReplayOnboardingClick) },
-                title = stringResource(R.string.profile_replay_onboarding),
-                description = stringResource(R.string.profile_replay_onboarding_description),
+                title = localizedString(R.string.profile_replay_onboarding),
+                description = localizedString(R.string.profile_replay_onboarding_description),
                 trailingContent = {
                     Icon(
                         painter = painterResource(CoreUiR.drawable.chevron_right),
@@ -152,7 +152,7 @@ fun ProfileScreen(
             UriButton(
                 modifier = Modifier.fillMaxWidth(),
                 type = UriButtonProperties.Type.Secondary,
-                text = stringResource(R.string.profile_log_out),
+                text = localizedString(R.string.profile_log_out),
                 onClick = { onAction(ProfileAction.OnLogoutClick) }
             )
         }
@@ -160,11 +160,11 @@ fun ProfileScreen(
 
     if (uiState.showLogoutDialog) {
         UriDialog(
-            textTitle = stringResource(R.string.profile_log_out_title),
-            textDescription = stringResource(R.string.profile_log_out_message),
+            textTitle = localizedString(R.string.profile_log_out_title),
+            textDescription = localizedString(R.string.profile_log_out_message),
             type = UriDialogProperties.Type.Confirmation(
-                primaryButtonText = stringResource(R.string.profile_log_out),
-                secondaryButtonText = stringResource(CoreUiR.string.common_cancel),
+                primaryButtonText = localizedString(R.string.profile_log_out),
+                secondaryButtonText = localizedString(CoreUiR.string.common_cancel),
                 onPrimaryButtonClick = { onAction(ProfileAction.OnLogoutConfirm) },
                 onSecondaryButtonClick = { onAction(ProfileAction.OnLogoutDismiss) }
             ),
@@ -188,12 +188,12 @@ private fun UserHeader(user: User) {
         )
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
-                text = stringResource(R.string.profile_full_name, user.firstName, user.lastName),
+                text = localizedString(R.string.profile_full_name, user.firstName, user.lastName),
                 style = UrithiruTheme.typography.h3,
                 color = MaterialTheme.colorScheme.onBackground
             )
             Text(
-                text = stringResource(R.string.profile_username, user.username),
+                text = localizedString(R.string.profile_username, user.username),
                 style = UrithiruTheme.typography.bodyM,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -219,12 +219,12 @@ private fun GuestCard(onSignInClick: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = stringResource(R.string.profile_guest_title),
+                text = localizedString(R.string.profile_guest_title),
                 style = UrithiruTheme.typography.h4,
                 color = MaterialTheme.colorScheme.onSurface
             )
             Text(
-                text = stringResource(R.string.profile_guest_message),
+                text = localizedString(R.string.profile_guest_message),
                 style = UrithiruTheme.typography.bodyS,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -232,7 +232,7 @@ private fun GuestCard(onSignInClick: () -> Unit) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 8.dp),
-                text = stringResource(CoreUiR.string.common_sign_in),
+                text = localizedString(CoreUiR.string.common_sign_in),
                 onClick = onSignInClick
             )
         }
@@ -252,7 +252,7 @@ private fun AccountDetails(
                 UriListItem(title = label, description = value)
             }
             Text(
-                text = stringResource(R.string.profile_details_source),
+                text = localizedString(R.string.profile_details_source),
                 style = UrithiruTheme.typography.bodyS,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -269,12 +269,12 @@ private fun AccountDetails(
 
 @Composable
 private fun UserProfile.toDetailRows(): List<Pair<String, String>> = listOfNotNull(
-    phone?.let { stringResource(R.string.profile_phone) to it },
-    birthDate?.let { stringResource(R.string.profile_birth_date) to it },
-    age?.let { stringResource(R.string.profile_age) to it.toString() },
-    gender?.let { stringResource(R.string.profile_gender) to it.replaceFirstChar(Char::uppercase) },
-    workDescription()?.let { stringResource(R.string.profile_work) to it },
-    listOfNotNull(city, country).takeIf { it.isNotEmpty() }?.let { stringResource(R.string.profile_location) to it.joinToString(", ") }
+    phone?.let { localizedString(R.string.profile_phone) to it },
+    birthDate?.let { localizedString(R.string.profile_birth_date) to it },
+    age?.let { localizedString(R.string.profile_age) to it.toString() },
+    gender?.let { localizedString(R.string.profile_gender) to it.replaceFirstChar(Char::uppercase) },
+    workDescription()?.let { localizedString(R.string.profile_work) to it },
+    listOfNotNull(city, country).takeIf { it.isNotEmpty() }?.let { localizedString(R.string.profile_location) to it.joinToString(", ") }
 )
 
 @Composable
@@ -282,7 +282,7 @@ private fun UserProfile.workDescription(): String? {
     val title = jobTitle
     val employer = company
     return when {
-        title != null && employer != null -> stringResource(R.string.profile_work_value, title, employer)
+        title != null && employer != null -> localizedString(R.string.profile_work_value, title, employer)
         else -> title ?: employer
     }
 }

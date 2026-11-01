@@ -20,11 +20,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.septianbeneran.urithiru.core.ui.R
+import com.septianbeneran.urithiru.core.ui.localization.localizedString
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
 
 /**
@@ -59,7 +59,7 @@ fun UriSearchBar(
             Icon(
                 modifier = Modifier.size(20.dp),
                 painter = painterResource(R.drawable.search),
-                contentDescription = stringResource(R.string.search_icon_description),
+                contentDescription = localizedString(R.string.search_icon_description),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         },
@@ -74,7 +74,7 @@ fun UriSearchBar(
                     Icon(
                         modifier = Modifier.size(20.dp),
                         painter = painterResource(R.drawable.close),
-                        contentDescription = stringResource(R.string.search_clear_description),
+                        contentDescription = localizedString(R.string.search_clear_description),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }

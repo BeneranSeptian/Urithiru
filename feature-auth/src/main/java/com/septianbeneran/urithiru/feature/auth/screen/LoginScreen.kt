@@ -14,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -31,6 +30,7 @@ import com.septianbeneran.urithiru.core.ui.component.UriButton
 import com.septianbeneran.urithiru.core.ui.component.UriButtonProperties.Type.Tertiary
 import com.septianbeneran.urithiru.core.ui.component.UriTextField
 import com.septianbeneran.urithiru.core.ui.component.UriTopAppBarProperties.defaults
+import com.septianbeneran.urithiru.core.ui.localization.localizedString
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
 import com.septianbeneran.urithiru.core.ui.util.NonceObserver
 import com.septianbeneran.urithiru.core.ui.util.extension.toMessage
@@ -53,7 +53,7 @@ fun LoginRoute(
 
     BaseScreen(
         viewModel = viewModel,
-        topAppBarArgs = defaults(title = stringResource(CoreUiR.string.common_sign_in))
+        topAppBarArgs = defaults(title = localizedString(CoreUiR.string.common_sign_in))
     ) {
         LoginScreen(
             uiState = uiState,
@@ -84,25 +84,25 @@ fun LoginScreen(
     ) {
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = stringResource(R.string.auth_welcome_back),
+            text = localizedString(R.string.auth_welcome_back),
             style = UrithiruTheme.typography.h1,
             color = MaterialTheme.colorScheme.onBackground
         )
         Text(
-            text = stringResource(R.string.auth_intro),
+            text = localizedString(R.string.auth_intro),
             style = UrithiruTheme.typography.bodyM,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         UriTextField(
             value = uiState.username,
             onValueChange = { onAction(LoginAction.OnUsernameChange(it)) },
-            label = stringResource(CoreUiR.string.common_username),
+            label = localizedString(CoreUiR.string.common_username),
             enabled = !uiState.isLoading
         )
         UriTextField(
             value = uiState.password,
             onValueChange = { onAction(LoginAction.OnPasswordChange(it)) },
-            label = stringResource(CoreUiR.string.common_password),
+            label = localizedString(CoreUiR.string.common_password),
             isPassword = true,
             enabled = !uiState.isLoading,
             errorText = uiState.error?.toLoginMessage(),
@@ -114,7 +114,7 @@ fun LoginScreen(
         )
         UriButton(
             modifier = Modifier.fillMaxWidth(),
-            text = stringResource(if (uiState.isLoading) R.string.auth_signing_in else CoreUiR.string.common_sign_in),
+            text = localizedString(if (uiState.isLoading) R.string.auth_signing_in else CoreUiR.string.common_sign_in),
             onClick = {
                 keyboardController?.hide()
                 onAction(LoginAction.OnSignInClick)
@@ -123,7 +123,7 @@ fun LoginScreen(
         UriButton(
             modifier = Modifier.fillMaxWidth(),
             type = Tertiary,
-            text = stringResource(R.string.auth_use_demo_account),
+            text = localizedString(R.string.auth_use_demo_account),
             onClick = { onAction(LoginAction.OnUseDemoAccountClick) }
         )
     }
@@ -131,8 +131,8 @@ fun LoginScreen(
 
 @Composable
 private fun AppError.toLoginMessage(): String = when (this) {
-    is AppError.Http, AppError.Unauthorized -> stringResource(R.string.auth_invalid_credentials)
-    else -> stringResource(toMessage())
+    is AppError.Http, AppError.Unauthorized -> localizedString(R.string.auth_invalid_credentials)
+    else -> localizedString(toMessage())
 }
 
 @Preview(showBackground = true)

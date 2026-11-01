@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.septianbeneran.urithiru.core.ui.R as CoreUiR
 import com.septianbeneran.urithiru.core.ui.component.UriAvatar
@@ -27,22 +26,23 @@ import com.septianbeneran.urithiru.core.ui.component.UriListItem
 import com.septianbeneran.urithiru.core.ui.component.UriMediaPlaceHolder
 import com.septianbeneran.urithiru.core.ui.component.UriStepper
 import com.septianbeneran.urithiru.core.ui.component.UriStepperProperties
+import com.septianbeneran.urithiru.core.ui.localization.localizedString
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
 import com.septianbeneran.urithiru.feature.catalog.R
 
 @Composable
 fun ListItemDemo() {
-    DemoSection(stringResource(R.string.catalog_demo_variants)) {
-        UriListItem(title = stringResource(R.string.catalog_demo_title_only))
-        UriListItem(title = stringResource(R.string.catalog_demo_with_description), description = stringResource(R.string.catalog_demo_second_line))
+    DemoSection(localizedString(R.string.catalog_demo_variants)) {
+        UriListItem(title = localizedString(R.string.catalog_demo_title_only))
+        UriListItem(title = localizedString(R.string.catalog_demo_with_description), description = localizedString(R.string.catalog_demo_second_line))
         UriListItem(
-            title = stringResource(R.string.catalog_demo_with_leading),
-            description = stringResource(R.string.catalog_demo_avatar_left),
+            title = localizedString(R.string.catalog_demo_with_leading),
+            description = localizedString(R.string.catalog_demo_avatar_left),
             leadingContent = { UriAvatar() }
         )
         UriListItem(
-            title = stringResource(R.string.catalog_demo_with_trailing),
-            description = stringResource(R.string.catalog_demo_chevron_right),
+            title = localizedString(R.string.catalog_demo_with_trailing),
+            description = localizedString(R.string.catalog_demo_chevron_right),
             trailingContent = {
                 Icon(
                     modifier = Modifier.size(20.dp),
@@ -57,15 +57,15 @@ fun ListItemDemo() {
 
 @Composable
 fun ImageDemo() {
-    DemoSection(stringResource(R.string.catalog_demo_loaded)) {
+    DemoSection(localizedString(R.string.catalog_demo_loaded)) {
         UriImage(
             modifier = Modifier.size(120.dp),
             model = DEMO_IMAGE_URL,
-            contentDescription = stringResource(R.string.catalog_demo_product_photo),
+            contentDescription = localizedString(R.string.catalog_demo_product_photo),
             shape = RoundedCornerShape(12.dp)
         )
     }
-    DemoSection(stringResource(R.string.catalog_demo_failed_to_load)) {
+    DemoSection(localizedString(R.string.catalog_demo_failed_to_load)) {
         UriImage(
             modifier = Modifier.size(120.dp),
             model = "https://dummyjson.com/not-an-image.png",
@@ -77,7 +77,7 @@ fun ImageDemo() {
 
 @Composable
 fun MediaPlaceHolderDemo() {
-    DemoSection(stringResource(R.string.catalog_demo_image_and_video)) {
+    DemoSection(localizedString(R.string.catalog_demo_image_and_video)) {
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             UriMediaPlaceHolder()
             UriMediaPlaceHolder(icon = CoreUiR.drawable.play)
@@ -87,7 +87,7 @@ fun MediaPlaceHolderDemo() {
 
 @Composable
 fun AvatarDemo() {
-    DemoSection(stringResource(R.string.catalog_demo_sizes)) {
+    DemoSection(localizedString(R.string.catalog_demo_sizes)) {
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
             UriAvatar(size = UriAvatarProperties.S)
             UriAvatar(size = UriAvatarProperties.M)
@@ -98,7 +98,7 @@ fun AvatarDemo() {
 
 @Composable
 fun BadgeDemo() {
-    DemoSection(stringResource(R.string.catalog_demo_types)) {
+    DemoSection(localizedString(R.string.catalog_demo_types)) {
         Row(horizontalArrangement = Arrangement.spacedBy(24.dp), verticalAlignment = Alignment.CenterVertically) {
             UriBadge(type = UriBadgeProperties.Type.Number("9"))
             UriBadge(type = UriBadgeProperties.Type.Icon)
@@ -109,7 +109,7 @@ fun BadgeDemo() {
 
 @Composable
 fun DotDemo() {
-    DemoSection(stringResource(R.string.catalog_demo_pager_indicator)) {
+    DemoSection(localizedString(R.string.catalog_demo_pager_indicator)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             UriDot(isFilled = true)
             UriDot()
@@ -120,22 +120,22 @@ fun DotDemo() {
 
 @Composable
 fun StepperDemo() {
-    DemoSection(stringResource(R.string.catalog_demo_states)) {
+    DemoSection(localizedString(R.string.catalog_demo_states)) {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            UriStepper(type = UriStepperProperties.Type.Done, stepText = "1", titleText = stringResource(R.string.catalog_demo_step_account))
-            UriStepper(type = UriStepperProperties.Type.Filled, stepText = "2", titleText = stringResource(R.string.catalog_demo_step_address))
-            UriStepper(type = UriStepperProperties.Type.Unfilled, stepText = "3", titleText = stringResource(R.string.catalog_demo_step_payment))
+            UriStepper(type = UriStepperProperties.Type.Done, stepText = "1", titleText = localizedString(R.string.catalog_demo_step_account))
+            UriStepper(type = UriStepperProperties.Type.Filled, stepText = "2", titleText = localizedString(R.string.catalog_demo_step_address))
+            UriStepper(type = UriStepperProperties.Type.Unfilled, stepText = "3", titleText = localizedString(R.string.catalog_demo_step_payment))
         }
     }
 }
 
 @Composable
 fun DividerDemo() {
-    DemoSection(stringResource(R.string.catalog_demo_between_rows)) {
+    DemoSection(localizedString(R.string.catalog_demo_between_rows)) {
         Column(modifier = Modifier.fillMaxWidth()) {
-            Text(text = stringResource(R.string.catalog_demo_above), style = UrithiruTheme.typography.bodyM, color = MaterialTheme.colorScheme.onSurface)
+            Text(text = localizedString(R.string.catalog_demo_above), style = UrithiruTheme.typography.bodyM, color = MaterialTheme.colorScheme.onSurface)
             UriDivider()
-            Text(text = stringResource(R.string.catalog_demo_below), style = UrithiruTheme.typography.bodyM, color = MaterialTheme.colorScheme.onSurface)
+            Text(text = localizedString(R.string.catalog_demo_below), style = UrithiruTheme.typography.bodyM, color = MaterialTheme.colorScheme.onSurface)
         }
     }
 }

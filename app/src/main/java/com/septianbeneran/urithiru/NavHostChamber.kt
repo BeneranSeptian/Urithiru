@@ -36,7 +36,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDestination
@@ -55,6 +54,7 @@ import com.septianbeneran.urithiru.core.ui.component.UriNavigationBarDefaults
 import com.septianbeneran.urithiru.core.ui.component.UriNavigationBarItem
 import com.septianbeneran.urithiru.core.ui.component.UriNavigationBarStyle
 import com.septianbeneran.urithiru.core.ui.component.UriNavigationLabelMode
+import com.septianbeneran.urithiru.core.ui.localization.localizedString
 import com.septianbeneran.urithiru.graph.registerAllFeatureGraphs
 
 /**
@@ -87,7 +87,7 @@ fun NavHostChamber() {
     val layoutType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(currentWindowAdaptiveInfoV2())
     val isBottomBar = layoutType == NavigationSuiteType.NavigationBar
     val barItems = TopLevelDestination.entries.map {
-        UriNavigationBarItem(stringResource(it.label), it.icon, it.selectedIcon)
+        UriNavigationBarItem(localizedString(it.label), it.icon, it.selectedIcon)
     }
 
     val bottomOverlayHeight = if (isBottomBar && isBarVisible) {
@@ -118,7 +118,7 @@ fun NavHostChamber() {
                                             contentDescription = null
                                         )
                                     },
-                                    label = { Text(stringResource(tab.label)) }
+                                    label = { Text(localizedString(tab.label)) }
                                 )
                             }
                         }

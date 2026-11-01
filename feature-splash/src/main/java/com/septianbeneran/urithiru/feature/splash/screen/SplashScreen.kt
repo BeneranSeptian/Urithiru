@@ -9,7 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.septianbeneran.urithiru.core.navigation.annotation.FeatureRoute
@@ -19,6 +18,7 @@ import com.septianbeneran.urithiru.core.navigation.routeparams.feature_splash.Sp
 import com.septianbeneran.urithiru.core.navigation.util.Navigator
 import com.septianbeneran.urithiru.core.ui.R as CoreUiR
 import com.septianbeneran.urithiru.core.ui.base.BaseScreen
+import com.septianbeneran.urithiru.core.ui.localization.localizedString
 import com.septianbeneran.urithiru.core.ui.util.NonceObserver
 import com.septianbeneran.urithiru.feature.splash.R
 import com.septianbeneran.urithiru.feature.splash.screen.stateaction.SplashScreenNonce
@@ -55,7 +55,7 @@ fun SplashScreen(
                     .wrapContentSize()
                     .padding(horizontal = 24.dp),
                 painter = painterResource(CoreUiR.drawable.splash_logo),
-                contentDescription = stringResource(R.string.splash_logo_description)
+                contentDescription = localizedString(R.string.splash_logo_description)
             )
         }
     }

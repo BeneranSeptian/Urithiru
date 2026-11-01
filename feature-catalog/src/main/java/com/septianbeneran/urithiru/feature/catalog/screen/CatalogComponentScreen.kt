@@ -9,7 +9,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -18,6 +17,7 @@ import com.septianbeneran.urithiru.core.navigation.routeparams.feature_catalog.C
 import com.septianbeneran.urithiru.core.navigation.util.Navigator
 import com.septianbeneran.urithiru.core.ui.base.BaseScreen
 import com.septianbeneran.urithiru.core.ui.component.UriTopAppBarProperties.defaults
+import com.septianbeneran.urithiru.core.ui.localization.localizedString
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
 import com.septianbeneran.urithiru.feature.catalog.catalog.CatalogEntries
 import com.septianbeneran.urithiru.feature.catalog.catalog.CatalogEntry
@@ -51,7 +51,7 @@ fun CatalogComponentScreen(entry: CatalogEntry) {
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         Text(
-            text = stringResource(entry.description),
+            text = localizedString(entry.description),
             style = UrithiruTheme.typography.bodyM,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

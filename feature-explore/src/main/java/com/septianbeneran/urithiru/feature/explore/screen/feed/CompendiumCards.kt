@@ -25,8 +25,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.pluralStringResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -40,6 +38,7 @@ import com.septianbeneran.urithiru.core.entity.eldenring.Location
 import com.septianbeneran.urithiru.core.entity.eldenring.Npc
 import com.septianbeneran.urithiru.core.entity.eldenring.Weapon
 import com.septianbeneran.urithiru.core.ui.component.UriImage
+import com.septianbeneran.urithiru.core.ui.localization.localizedString
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
 import com.septianbeneran.urithiru.core.util.extension.formatted
 import com.septianbeneran.urithiru.feature.explore.R
@@ -50,7 +49,7 @@ private val LocationImageRatios = listOf(1f, 1.2f)
 private val UniformImageRatio = listOf(1.1f)
 
 internal val CompendiumKind.pluralLabel: String
-    @Composable get() = stringResource(
+    @Composable get() = localizedString(
         when (this) {
             CompendiumKind.Bosses -> R.string.explore_kind_bosses
             CompendiumKind.Weapons -> R.string.explore_kind_weapons
@@ -62,7 +61,7 @@ internal val CompendiumKind.pluralLabel: String
     )
 
 internal val CompendiumKind.singularLabel: String
-    @Composable get() = stringResource(
+    @Composable get() = localizedString(
         when (this) {
             CompendiumKind.Bosses -> R.string.explore_kind_bosses_singular
             CompendiumKind.Weapons -> R.string.explore_kind_weapons_singular
@@ -74,7 +73,7 @@ internal val CompendiumKind.singularLabel: String
     )
 
 internal val CompendiumKind.tagline: String
-    @Composable get() = stringResource(
+    @Composable get() = localizedString(
         when (this) {
             CompendiumKind.Bosses -> R.string.explore_kind_bosses_tagline
             CompendiumKind.Weapons -> R.string.explore_kind_weapons_tagline
@@ -86,16 +85,15 @@ internal val CompendiumKind.tagline: String
     )
 
 @Composable
-internal fun CompendiumKind.countLabel(count: Int): String = pluralStringResource(
+internal fun CompendiumKind.countLabel(count: Int): String = localizedString(
     when (this) {
-        CompendiumKind.Bosses -> R.plurals.explore_kind_bosses_count
-        CompendiumKind.Weapons -> R.plurals.explore_kind_weapons_count
-        CompendiumKind.Armors -> R.plurals.explore_kind_armors_count
-        CompendiumKind.Items -> R.plurals.explore_kind_items_count
-        CompendiumKind.Locations -> R.plurals.explore_kind_locations_count
-        CompendiumKind.Npcs -> R.plurals.explore_kind_npcs_count
+        CompendiumKind.Bosses -> R.string.explore_kind_bosses_count
+        CompendiumKind.Weapons -> R.string.explore_kind_weapons_count
+        CompendiumKind.Armors -> R.string.explore_kind_armors_count
+        CompendiumKind.Items -> R.string.explore_kind_items_count
+        CompendiumKind.Locations -> R.string.explore_kind_locations_count
+        CompendiumKind.Npcs -> R.string.explore_kind_npcs_count
     },
-    count,
     count
 )
 
@@ -250,7 +248,7 @@ private fun NpcCard(
             }
             entry.quote?.let {
                 Text(
-                    text = stringResource(R.string.explore_quote, it),
+                    text = localizedString(R.string.explore_quote, it),
                     style = UrithiruTheme.typography.bodyS,
                     fontStyle = FontStyle.Italic,
                     textAlign = TextAlign.Center,
@@ -447,15 +445,15 @@ private fun CompendiumEntry.subtitle(): String? = when (this) {
 private fun CompendiumEntry.tags(): List<String> = when (this) {
     is Weapon -> listOfNotNull(
         attack.maxByOrNull { it.amount }?.let { "${it.name} ${it.amount}" },
-        stringResource(R.string.explore_weight_short, weight.formatted())
+        localizedString(R.string.explore_weight_short, weight.formatted())
     )
     is Armor -> listOfNotNull(
         dmgNegation.maxByOrNull { it.amount }?.let { "${it.name} ${it.amount.formatted()}" },
-        weight?.let { stringResource(R.string.explore_weight_short, it.formatted()) }
+        weight?.let { localizedString(R.string.explore_weight_short, it.formatted()) }
     )
     is Boss -> listOfNotNull(
-        healthPoints?.let { stringResource(R.string.explore_health_short, it) },
-        drops.size.takeIf { it > 0 }?.let { pluralStringResource(R.plurals.explore_drop_count, it, it) }
+        healthPoints?.let { localizedString(R.string.explore_health_short, it) },
+        drops.size.takeIf { it > 0 }?.let { localizedString(R.string.explore_drop_count, it) }
     )
     is Item -> listOfNotNull(type)
     is Location -> listOfNotNull(region)
