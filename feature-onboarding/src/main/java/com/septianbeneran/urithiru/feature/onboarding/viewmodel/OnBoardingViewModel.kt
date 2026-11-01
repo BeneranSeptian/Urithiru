@@ -10,6 +10,7 @@ import com.septianbeneran.urithiru.feature.onboarding.screen.stateaction.OnBoard
 import com.septianbeneran.urithiru.feature.onboarding.screen.stateaction.OnBoardingScreenAction.OnContinueClick
 import com.septianbeneran.urithiru.feature.onboarding.screen.stateaction.OnBoardingScreenAction.OnDemoOfflineChange
 import com.septianbeneran.urithiru.feature.onboarding.screen.stateaction.OnBoardingScreenAction.OnDemoRetryClick
+import com.septianbeneran.urithiru.feature.onboarding.screen.stateaction.OnBoardingScreenAction.OnLanguageSelect
 import com.septianbeneran.urithiru.feature.onboarding.screen.stateaction.OnBoardingScreenAction.OnSignInClick
 import com.septianbeneran.urithiru.feature.onboarding.screen.stateaction.OnBoardingScreenAction.OnThemeModeSelect
 import com.septianbeneran.urithiru.feature.onboarding.screen.stateaction.OnBoardingScreenNonce
@@ -45,6 +46,9 @@ class OnBoardingViewModel @Inject constructor(
         collectLocalData(appSettings.effectiveThemeMode) { themeMode ->
             _uiState.update { it.copy(themeMode = themeMode) }
         }
+        collectLocalData(appSettings.effectiveLanguage) { language ->
+            _uiState.update { it.copy(language = language) }
+        }
         collectLocalData(loadSessionUseCase().map { it?.user?.firstName.orEmpty() }) { name ->
             _uiState.update { it.copy(signedInName = name.ifBlank { null }) }
         }
@@ -58,6 +62,7 @@ class OnBoardingViewModel @Inject constructor(
             }
             OnDemoRetryClick -> runDemoRequest()
             is OnThemeModeSelect -> viewModelScope.launch { appSettings.saveThemeMode(action.themeMode) }
+            is OnLanguageSelect -> viewModelScope.launch { appSettings.saveLanguage(action.languageTag) }
             OnSignInClick -> finishOnboarding(OnBoardingScreenNonce.NavigateToLogin)
             OnContinueClick -> finishOnboarding(OnBoardingScreenNonce.NavigateToHome)
         }

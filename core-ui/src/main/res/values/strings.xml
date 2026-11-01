@@ -37,4 +37,6 @@
     <string name="common_secondary">commonSecondary</string>
     <string name="common_try_different_name">commonTryDifferentName</string>
     <string name="language_name">languageName</string>
+    <string name="common_appearance">commonAppearance</string>
+    <string name="common_language">commonLanguage</string>
 </resources>

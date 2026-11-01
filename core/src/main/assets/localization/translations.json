@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "defaultLanguage": "en",
   "languages": {
     "en": {
@@ -223,7 +223,7 @@
       "onboardingErrorsTitle": "Errors, handled for you",
       "onboardingErrorsDescription": "Go offline and watch the loading, error and retry states that every screen gets for free.",
       "onboardingThemeTitle": "Make it yours",
-      "onboardingThemeDescription": "Pick a theme. It's saved on your device, and the whole app switches right away.",
+      "onboardingThemeDescription": "Pick a theme and a language. They're saved on your device, and the whole app switches right away.",
       "onboardingSignInTitle": "Sign in or explore",
       "onboardingSignInDescription": "Try the login flow with a DummyJSON demo account, or go straight into the app.",
       "onboardingSkip": "Skip",
@@ -239,7 +239,6 @@
       "profileAccountDetails": "Account details",
       "profileSessionExpiredTitle": "Your session expired",
       "profileSessionExpiredMessage": "Sign in again to see your profile.",
-      "profileAppearance": "Appearance",
       "profileMore": "More",
       "profileReplayOnboarding": "Replay onboarding",
       "profileReplayOnboardingDescription": "See the first-launch tour again",
@@ -261,8 +260,9 @@
       "shopComingSoon": "Products from DummyJSON, with paging, search and filters, are coming here next.",
       "splashLogoDescription": "Urithiru logo",
       "languageName": "English",
-      "profileLanguage": "Language",
-      "catalogEntryLanguagePicker": "Every language in the translation file, each named in its own language."
+      "catalogEntryLanguagePicker": "Every language in the translation file, each named in its own language.",
+      "commonAppearance": "Appearance",
+      "commonLanguage": "Language"
     },
     "id": {
       "errorTitle": "Terjadi kesalahan",
@@ -485,7 +485,7 @@
       "onboardingErrorsTitle": "Error, sudah ditangani",
       "onboardingErrorsDescription": "Matikan koneksi dan lihat status memuat, error, dan coba lagi yang otomatis didapat setiap layar.",
       "onboardingThemeTitle": "Jadikan milikmu",
-      "onboardingThemeDescription": "Pilih tema. Pilihan disimpan di perangkat kamu, dan seluruh aplikasi langsung berubah.",
+      "onboardingThemeDescription": "Pilih tema dan bahasa. Pilihan disimpan di perangkat kamu, dan seluruh aplikasi langsung berubah.",
       "onboardingSignInTitle": "Masuk atau jelajahi",
       "onboardingSignInDescription": "Coba alur login dengan akun demo DummyJSON, atau langsung masuk ke aplikasi.",
       "onboardingSkip": "Lewati",
@@ -501,7 +501,6 @@
       "profileAccountDetails": "Detail akun",
       "profileSessionExpiredTitle": "Sesi kamu telah berakhir",
       "profileSessionExpiredMessage": "Masuk lagi untuk melihat profil kamu.",
-      "profileAppearance": "Tampilan",
       "profileMore": "Lainnya",
       "profileReplayOnboarding": "Ulangi onboarding",
       "profileReplayOnboardingDescription": "Lihat lagi tur saat pertama kali membuka aplikasi",
@@ -523,8 +522,9 @@
       "shopComingSoon": "Produk dari DummyJSON, dengan halaman, pencarian, dan filter, akan segera hadir di sini.",
       "splashLogoDescription": "Logo Urithiru",
       "languageName": "Bahasa Indonesia",
-      "profileLanguage": "Bahasa",
-      "catalogEntryLanguagePicker": "Semua bahasa di file terjemahan, masing-masing dengan namanya sendiri."
+      "catalogEntryLanguagePicker": "Semua bahasa di file terjemahan, masing-masing dengan namanya sendiri.",
+      "commonAppearance": "Tampilan",
+      "commonLanguage": "Bahasa"
     }
   }
 }

@@ -127,14 +127,14 @@ fun ProfileScreen(
             }
         }
 
-        ProfileSection(localizedString(R.string.profile_appearance)) {
+        ProfileSection(localizedString(CoreUiR.string.common_appearance)) {
             UriThemePicker(
                 selected = uiState.themeMode,
                 onSelect = { onAction(ProfileAction.OnThemeModeSelect(it)) }
             )
         }
 
-        ProfileSection(localizedString(R.string.profile_language)) {
+        ProfileSection(localizedString(CoreUiR.string.common_language)) {
             UriLanguagePicker(
                 selected = uiState.language,
                 onSelect = { onAction(ProfileAction.OnLanguageSelect(it)) }

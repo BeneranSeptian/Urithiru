@@ -30,7 +30,6 @@ import com.septianbeneran.urithiru.core.navigation.routeparams.feature_onboardin
 import com.septianbeneran.urithiru.core.navigation.util.Navigator
 import com.septianbeneran.urithiru.core.ui.R as CoreUiR
 import com.septianbeneran.urithiru.core.ui.base.BaseScreen
-import com.septianbeneran.urithiru.core.ui.component.UriThemePicker
 import com.septianbeneran.urithiru.core.ui.component.UriButton
 import com.septianbeneran.urithiru.core.ui.component.UriButtonProperties.Type.Tertiary
 import com.septianbeneran.urithiru.core.ui.component.UriDot
@@ -40,6 +39,7 @@ import com.septianbeneran.urithiru.core.ui.util.NonceObserver
 import com.septianbeneran.urithiru.feature.onboarding.R
 import com.septianbeneran.urithiru.feature.onboarding.screen.demo.ComponentsDemo
 import com.septianbeneran.urithiru.feature.onboarding.screen.demo.ErrorHandlingDemo
+import com.septianbeneran.urithiru.feature.onboarding.screen.demo.PreferencesDemo
 import com.septianbeneran.urithiru.feature.onboarding.screen.demo.SignInDemo
 import com.septianbeneran.urithiru.feature.onboarding.screen.stateaction.OnBoardingDefaults
 import com.septianbeneran.urithiru.feature.onboarding.screen.stateaction.OnBoardingScreenAction
@@ -124,9 +124,11 @@ fun OnBoardingScreen(
                         onOfflineChange = { onAction(OnBoardingScreenAction.OnDemoOfflineChange(it)) },
                         onRetry = { onAction(OnBoardingScreenAction.OnDemoRetryClick) }
                     )
-                    2 -> UriThemePicker(
-                        selected = uiState.themeMode,
-                        onSelect = { onAction(OnBoardingScreenAction.OnThemeModeSelect(it)) }
+                    2 -> PreferencesDemo(
+                        themeMode = uiState.themeMode,
+                        language = uiState.language,
+                        onThemeModeSelect = { onAction(OnBoardingScreenAction.OnThemeModeSelect(it)) },
+                        onLanguageSelect = { onAction(OnBoardingScreenAction.OnLanguageSelect(it)) }
                     )
                     else -> SignInDemo(signedInName = uiState.signedInName)
                 }

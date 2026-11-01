@@ -11,6 +11,7 @@ data class OnBoardingScreenState(
     val isDemoOffline: Boolean = false,
     val demoRequestState: DemoRequestState = DemoRequestState.Success,
     val themeMode: ThemeMode = ThemeMode.System,
+    val language: String = "en",
     val signedInName: String? = null
 )
 
@@ -24,6 +25,7 @@ sealed interface OnBoardingScreenAction {
     data class OnDemoOfflineChange(val isOffline: Boolean) : OnBoardingScreenAction
     data object OnDemoRetryClick : OnBoardingScreenAction
     data class OnThemeModeSelect(val themeMode: ThemeMode) : OnBoardingScreenAction
+    data class OnLanguageSelect(val languageTag: String) : OnBoardingScreenAction
     data object OnSignInClick : OnBoardingScreenAction
     data object OnContinueClick : OnBoardingScreenAction
 }

@@ -2,7 +2,6 @@
     <string name="profile_account_details">profileAccountDetails</string>
     <string name="profile_session_expired_title">profileSessionExpiredTitle</string>
     <string name="profile_session_expired_message">profileSessionExpiredMessage</string>
-    <string name="profile_appearance">profileAppearance</string>
     <string name="profile_more">profileMore</string>
     <string name="profile_replay_onboarding">profileReplayOnboarding</string>
     <string name="profile_replay_onboarding_description">profileReplayOnboardingDescription</string>
@@ -21,5 +20,4 @@
     <string name="profile_work">profileWork</string>
     <string name="profile_work_value">profileWorkValue</string>
     <string name="profile_location">profileLocation</string>
-    <string name="profile_language">profileLanguage</string>
 </resources>

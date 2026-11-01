@@ -31,7 +31,7 @@ It ships as **Urithiru Showcase**, a working app that shows the template off: a 
 - The Catalog tab demos every `Uri*` component in every state, in light and dark.
 - A floating, configurable bottom bar (`UriNavigationBar`) on phones that lists scroll behind, and a navigation rail on larger screens.
 - Light, Dark or Match system, saved on the device and applied to the whole app, including the launch window.
-- English or Bahasa Indonesia, picked in Profile (English until the user picks; the device language is never assumed). All text comes from one translation JSON.
+- English or Bahasa Indonesia, picked on the onboarding's "Make it yours" page or in Profile (English until the user picks; the device language is never assumed). All text comes from one translation JSON.
 
 **👋 A live onboarding**
 - Text comes from JSONBin (server-driven), and every page is a working demo: real components, a simulated network error with retry, the theme picker and sign-in.
