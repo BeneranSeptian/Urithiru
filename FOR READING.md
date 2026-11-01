@@ -173,6 +173,7 @@ Small tasks, good for a lunch break:
 - **A failed image doesn't retry** until it scrolls off screen and back. That needs a connectivity observer (section 8, step 7).
 - **Repositories expose their cache** (`repository.cache`). Fix this when Room arrives.
 - **The Indonesian translations were written by Claude.** Have a native speaker read them (e.g. "3,5 berat" on weapon cards, "Hadiah" for boss drops).
+- **Startup waits on two disk reads.** `UrithiruProject.onCreate` reads the theme and language from DataStore with `runBlocking`, so they're ready before the first frame (like AppCompat does), and the translation JSON loads on the first `localizedString` call. Each is a few milliseconds today. If startup ever feels slow: measure first (`adb shell am start -W com.septianbeneran.urithiru.dev/com.septianbeneran.urithiru.MainActivity`, compare `TotalTime`), then move theme and language to SharedPreferences, or keep the splash on screen while they load (`installSplashScreen().setKeepOnScreenCondition`).
 - **A missing translation shows its key on screen**, even in release builds. That's on purpose; the translation test catches it for app text, but not for keys sent by a backend.
 
 ---
