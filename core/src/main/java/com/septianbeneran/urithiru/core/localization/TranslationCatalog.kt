@@ -7,6 +7,10 @@ class TranslationCatalog(private val file: TranslationFile) {
 
     val version: Int get() = file.version
 
+    val defaultLanguage: String get() = file.defaultLanguage
+
+    val languages: List<String> get() = file.languages.keys.toList()
+
     fun pattern(key: String, locale: Locale): String? =
         languagesFor(locale).firstNotNullOfOrNull { file.languages[it]?.get(key) }
 

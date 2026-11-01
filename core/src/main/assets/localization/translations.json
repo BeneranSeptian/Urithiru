@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "defaultLanguage": "en",
   "languages": {
     "en": {
@@ -259,7 +259,10 @@
       "profileWorkValue": "{0} at {1}",
       "profileLocation": "Location",
       "shopComingSoon": "Products from DummyJSON, with paging, search and filters, are coming here next.",
-      "splashLogoDescription": "Urithiru logo"
+      "splashLogoDescription": "Urithiru logo",
+      "languageName": "English",
+      "profileLanguage": "Language",
+      "catalogEntryLanguagePicker": "Every language in the translation file, each named in its own language."
     },
     "id": {
       "errorTitle": "Terjadi kesalahan",
@@ -518,7 +521,10 @@
       "profileWorkValue": "{0} di {1}",
       "profileLocation": "Lokasi",
       "shopComingSoon": "Produk dari DummyJSON, dengan halaman, pencarian, dan filter, akan segera hadir di sini.",
-      "splashLogoDescription": "Logo Urithiru"
+      "splashLogoDescription": "Logo Urithiru",
+      "languageName": "Bahasa Indonesia",
+      "profileLanguage": "Bahasa",
+      "catalogEntryLanguagePicker": "Semua bahasa di file terjemahan, masing-masing dengan namanya sendiri."
     }
   }
 }

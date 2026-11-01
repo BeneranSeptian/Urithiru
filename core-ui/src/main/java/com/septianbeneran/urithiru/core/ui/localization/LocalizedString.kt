@@ -9,7 +9,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.septianbeneran.urithiru.core.localization.AssetTranslator
 import com.septianbeneran.urithiru.core.localization.Translator
+import com.septianbeneran.urithiru.core.ui.R
 import kotlinx.serialization.json.Json
+import java.util.Locale
 
 /** The app's [Translator], provided by `MainActivity`. Previews fall back to reading the bundled file. */
 val LocalTranslator = staticCompositionLocalOf<Translator?> { null }
@@ -32,6 +34,15 @@ fun localizedString(key: String, args: Map<String, Any> = emptyMap()): String {
     val locale = LocalConfiguration.current.locales[0]
     return currentTranslator().translate(key, args, locale)
 }
+
+/** The language tags the translation file has text for, in file order. */
+@Composable
+fun availableLanguages(): List<String> = currentTranslator().languages
+
+/** The name of the language [languageTag] in that language itself, e.g. `id` → "Bahasa Indonesia". */
+@Composable
+fun languageName(languageTag: String): String =
+    currentTranslator().translate(stringResource(R.string.language_name), locale = Locale.forLanguageTag(languageTag))
 
 @Composable
 private fun currentTranslator(): Translator {

@@ -23,6 +23,7 @@ fun ComponentDemo(id: String) {
         "check_box" -> CheckBoxDemo()
         "radio_button" -> RadioButtonDemo()
         "theme_picker" -> ThemePickerDemo()
+        "language_picker" -> LanguagePickerDemo()
         "loader" -> LoaderDemo()
         "progress_bar" -> ProgressBarDemo()
         "skeleton" -> SkeletonDemo()

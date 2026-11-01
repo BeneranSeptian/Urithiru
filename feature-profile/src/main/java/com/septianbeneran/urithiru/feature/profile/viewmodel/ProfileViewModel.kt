@@ -14,6 +14,7 @@ import com.septianbeneran.urithiru.core.entity.auth.User
 import com.septianbeneran.urithiru.core.settings.AppSettings
 import com.septianbeneran.urithiru.core.ui.base.BaseViewModel
 import com.septianbeneran.urithiru.feature.profile.screen.stateaction.ProfileAction
+import com.septianbeneran.urithiru.feature.profile.screen.stateaction.ProfileAction.OnLanguageSelect
 import com.septianbeneran.urithiru.feature.profile.screen.stateaction.ProfileAction.OnLogoutClick
 import com.septianbeneran.urithiru.feature.profile.screen.stateaction.ProfileAction.OnLogoutConfirm
 import com.septianbeneran.urithiru.feature.profile.screen.stateaction.ProfileAction.OnLogoutDismiss
@@ -53,6 +54,9 @@ class ProfileViewModel @Inject constructor(
         collectLocalData(appSettings.effectiveThemeMode) { themeMode ->
             _uiState.update { it.copy(themeMode = themeMode) }
         }
+        collectLocalData(appSettings.effectiveLanguage) { language ->
+            _uiState.update { it.copy(language = language) }
+        }
         collectLocalData(loadSessionExpiredUseCase()) { isExpired ->
             _uiState.update { it.copy(isSessionExpired = isExpired) }
         }
@@ -63,6 +67,7 @@ class ProfileViewModel @Inject constructor(
             OnSignInClick -> sendNonce(ProfileNonce.NavigateToLogin)
             OnRetryProfileClick -> loadProfile()
             is OnThemeModeSelect -> viewModelScope.launch { appSettings.saveThemeMode(action.themeMode) }
+            is OnLanguageSelect -> viewModelScope.launch { appSettings.saveLanguage(action.languageTag) }
             OnReplayOnboardingClick -> sendNonce(ProfileNonce.NavigateToOnboarding)
             OnLogoutClick -> _uiState.update { it.copy(showLogoutDialog = true) }
             OnLogoutDismiss -> _uiState.update { it.copy(showLogoutDialog = false) }

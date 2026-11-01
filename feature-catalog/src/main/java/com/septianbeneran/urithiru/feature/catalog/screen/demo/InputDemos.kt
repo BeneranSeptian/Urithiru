@@ -17,6 +17,7 @@ import com.septianbeneran.urithiru.core.settings.ThemeMode
 import com.septianbeneran.urithiru.core.ui.R as CoreUiR
 import com.septianbeneran.urithiru.core.ui.component.UriCheckBox
 import com.septianbeneran.urithiru.core.ui.component.UriCheckBoxProperties
+import com.septianbeneran.urithiru.core.ui.component.UriLanguagePicker
 import com.septianbeneran.urithiru.core.ui.component.UriRadioButton
 import com.septianbeneran.urithiru.core.ui.component.UriRadioButtonProperties
 import com.septianbeneran.urithiru.core.ui.component.UriSearchBar
@@ -122,6 +123,20 @@ fun ThemePickerDemo() {
 
     DemoSection(localizedString(R.string.catalog_demo_try_it)) {
         UriThemePicker(selected = selected, onSelect = { selected = it })
+        Text(
+            text = localizedString(R.string.catalog_demo_theme_note),
+            style = UrithiruTheme.typography.bodyS,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+fun LanguagePickerDemo() {
+    var selected by rememberSaveable { mutableStateOf("en") }
+
+    DemoSection(localizedString(R.string.catalog_demo_try_it)) {
+        UriLanguagePicker(selected = selected, onSelect = { selected = it })
         Text(
             text = localizedString(R.string.catalog_demo_theme_note),
             style = UrithiruTheme.typography.bodyS,

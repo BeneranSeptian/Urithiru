@@ -20,8 +20,10 @@ import com.septianbeneran.urithiru.core.ui.localization.LocalTranslator
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
 import com.septianbeneran.urithiru.core.ui.util.extension.applyToSystem
 import com.septianbeneran.urithiru.core.ui.util.extension.isDarkTheme
+import com.septianbeneran.urithiru.core.ui.util.extension.withLanguage
 import com.septianbeneran.urithiru.core.ui.util.extension.withThemeMode
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -36,13 +38,19 @@ class MainActivity : ComponentActivity() {
     lateinit var translator: Translator
 
     override fun attachBaseContext(newBase: Context) {
-        super.attachBaseContext(newBase.withThemeMode(UrithiruProject.currentThemeMode))
+        Locale.setDefault(Locale.forLanguageTag(UrithiruProject.currentLanguage))
+        super.attachBaseContext(
+            newBase
+                .withThemeMode(UrithiruProject.currentThemeMode)
+                .withLanguage(UrithiruProject.currentLanguage)
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         observeThemeMode()
+        observeLanguage()
 
         setContent {
             val darkTheme = UrithiruProject.currentThemeMode.isDarkTheme()
@@ -80,6 +88,20 @@ class MainActivity : ComponentActivity() {
                     if (themeMode != UrithiruProject.currentThemeMode) {
                         UrithiruProject.currentThemeMode = themeMode
                         themeMode.applyToSystem(this@MainActivity)
+                        recreate()
+                    }
+                }
+        }
+    }
+
+    /** Recreates the activity when the saved language changes, so every screen is drawn in it. */
+    private fun observeLanguage() {
+        lifecycleScope.launch {
+            appSettings.effectiveLanguage
+                .distinctUntilChanged()
+                .collect { language ->
+                    if (language != UrithiruProject.currentLanguage) {
+                        UrithiruProject.currentLanguage = language
                         recreate()
                     }
                 }

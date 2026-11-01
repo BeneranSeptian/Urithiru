@@ -13,6 +13,12 @@ interface Translator {
     /** The version of the translation file in use. It's picked once per launch. */
     val version: Int
 
+    /** The language used when the user hasn't picked one, and for keys missing in the chosen language. */
+    val defaultLanguage: String
+
+    /** The language tags the translation file has text for, e.g. `en`, `id`. */
+    val languages: List<String>
+
     /** Translates [key], filling `{0}`, `{1}`, … with [args] in order. */
     fun translate(key: String, vararg args: Any, locale: Locale = Locale.getDefault()): String
 

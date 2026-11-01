@@ -46,6 +46,7 @@ import com.septianbeneran.urithiru.core.ui.component.UriDialog
 import com.septianbeneran.urithiru.core.ui.component.UriDialogProperties
 import com.septianbeneran.urithiru.core.ui.component.UriErrorState
 import com.septianbeneran.urithiru.core.ui.component.UriImage
+import com.septianbeneran.urithiru.core.ui.component.UriLanguagePicker
 import com.septianbeneran.urithiru.core.ui.component.UriListItem
 import com.septianbeneran.urithiru.core.ui.component.UriSkeleton
 import com.septianbeneran.urithiru.core.ui.component.UriThemePicker
@@ -130,6 +131,13 @@ fun ProfileScreen(
             UriThemePicker(
                 selected = uiState.themeMode,
                 onSelect = { onAction(ProfileAction.OnThemeModeSelect(it)) }
+            )
+        }
+
+        ProfileSection(localizedString(R.string.profile_language)) {
+            UriLanguagePicker(
+                selected = uiState.language,
+                onSelect = { onAction(ProfileAction.OnLanguageSelect(it)) }
             )
         }
 

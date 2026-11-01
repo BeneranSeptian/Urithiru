@@ -11,6 +11,7 @@ data class ProfileUiState(
     val user: User? = null,
     val profileState: BaseState<UserProfile> = BaseState.StateInitial,
     val themeMode: ThemeMode = ThemeMode.System,
+    val language: String = "en",
     val showLogoutDialog: Boolean = false,
     val isSessionExpired: Boolean = false
 )
@@ -19,6 +20,7 @@ sealed interface ProfileAction {
     data object OnSignInClick : ProfileAction
     data object OnRetryProfileClick : ProfileAction
     data class OnThemeModeSelect(val themeMode: ThemeMode) : ProfileAction
+    data class OnLanguageSelect(val languageTag: String) : ProfileAction
     data object OnReplayOnboardingClick : ProfileAction
     data object OnLogoutClick : ProfileAction
     data object OnLogoutConfirm : ProfileAction

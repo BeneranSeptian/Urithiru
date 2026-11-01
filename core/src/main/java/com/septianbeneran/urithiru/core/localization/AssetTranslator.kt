@@ -25,6 +25,10 @@ class AssetTranslator @Inject constructor(
 
     override val version: Int get() = catalog.version
 
+    override val defaultLanguage: String get() = catalog.defaultLanguage
+
+    override val languages: List<String> get() = catalog.languages
+
     override fun translate(key: String, vararg args: Any, locale: Locale): String {
         val pattern = catalog.pattern(key, locale) ?: return missing(key)
         return if (args.isEmpty()) pattern else format(pattern, args, locale)

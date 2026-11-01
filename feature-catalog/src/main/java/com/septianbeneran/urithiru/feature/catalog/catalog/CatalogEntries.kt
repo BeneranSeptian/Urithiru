@@ -32,7 +32,8 @@ object CatalogEntries {
                 CatalogEntry("search_bar", "UriSearchBar", R.string.catalog_entry_search_bar),
                 CatalogEntry("check_box", "UriCheckBox", R.string.catalog_entry_check_box),
                 CatalogEntry("radio_button", "UriRadioButton", R.string.catalog_entry_radio_button),
-                CatalogEntry("theme_picker", "UriThemePicker", R.string.catalog_entry_theme_picker)
+                CatalogEntry("theme_picker", "UriThemePicker", R.string.catalog_entry_theme_picker),
+                CatalogEntry("language_picker", "UriLanguagePicker", R.string.catalog_entry_language_picker)
             )
         ),
         CatalogSection(

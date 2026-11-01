@@ -19,12 +19,16 @@ class UrithiruProject : Application() {
         super.onCreate()
         currentThemeMode = runBlocking { appSettings.effectiveThemeMode.first() }
         currentThemeMode.applyToSystem(this)
+        currentLanguage = runBlocking { appSettings.effectiveLanguage.first() }
     }
 
     companion object {
         val defaultThemeMode = ThemeMode.System
 
         var currentThemeMode = defaultThemeMode
+            internal set
+
+        var currentLanguage = "en"
             internal set
     }
 }
