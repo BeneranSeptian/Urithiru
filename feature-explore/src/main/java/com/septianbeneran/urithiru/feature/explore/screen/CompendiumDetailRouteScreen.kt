@@ -172,7 +172,7 @@ private fun BackButton(
             modifier = Modifier
                 .padding(10.dp)
                 .size(24.dp),
-            painter = painterResource(R.drawable.arrow_left),
+            painter = painterResource(R.drawable.arrow_back),
             contentDescription = "Back"
         )
     }

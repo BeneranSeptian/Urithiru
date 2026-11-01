@@ -88,7 +88,7 @@ fun AppBarBackButton(
             painter = painterResource(it),
             contentDescription = null,
             modifier = modifier
-                .size(20.dp)
+                .size(24.dp)
                 .clickable(onClick = onClick),
             tint = MaterialTheme.colorScheme.primary
         )
@@ -100,7 +100,7 @@ object UriTopAppBarProperties {
     @Composable
     fun defaults(
         title: String = "",
-        backIcon: Int? = R.drawable.arrow_left,
+        backIcon: Int? = R.drawable.arrow_back,
         onTrailingComposableClick: () -> Unit = {},
         leadingComposable: (@Composable (onClick: () -> Unit) -> Unit)? = null,
         trailingComposable: (@Composable (onClick: () -> Unit) -> Unit)? = null
