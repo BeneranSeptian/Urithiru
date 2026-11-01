@@ -15,9 +15,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.septianbeneran.urithiru.core.settings.ThemeMode
+import com.septianbeneran.urithiru.core.ui.R
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
 
 /** Light / Dark / Match system choice. Save the picked mode with `AppSettings.saveThemeMode`. */
@@ -31,11 +33,21 @@ fun UriThemePicker(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        ThemeOption("Light", "Always use the light theme", selected == ThemeMode.Light) { onSelect(ThemeMode.Light) }
-        ThemeOption("Dark", "Always use the dark theme", selected == ThemeMode.Dark) { onSelect(ThemeMode.Dark) }
-        ThemeOption("Match system", "Follow your phone's setting", selected == ThemeMode.System) {
-            onSelect(ThemeMode.System)
-        }
+        ThemeOption(
+            title = stringResource(R.string.theme_light),
+            description = stringResource(R.string.theme_light_description),
+            isSelected = selected == ThemeMode.Light
+        ) { onSelect(ThemeMode.Light) }
+        ThemeOption(
+            title = stringResource(R.string.theme_dark),
+            description = stringResource(R.string.theme_dark_description),
+            isSelected = selected == ThemeMode.Dark
+        ) { onSelect(ThemeMode.Dark) }
+        ThemeOption(
+            title = stringResource(R.string.theme_system),
+            description = stringResource(R.string.theme_system_description),
+            isSelected = selected == ThemeMode.System
+        ) { onSelect(ThemeMode.System) }
     }
 }
 

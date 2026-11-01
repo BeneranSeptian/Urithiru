@@ -36,6 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDestination
@@ -85,8 +86,8 @@ fun NavHostChamber() {
 
     val layoutType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(currentWindowAdaptiveInfoV2())
     val isBottomBar = layoutType == NavigationSuiteType.NavigationBar
-    val barItems = remember {
-        TopLevelDestination.entries.map { UriNavigationBarItem(it.label, it.icon, it.selectedIcon) }
+    val barItems = TopLevelDestination.entries.map {
+        UriNavigationBarItem(stringResource(it.label), it.icon, it.selectedIcon)
     }
 
     val bottomOverlayHeight = if (isBottomBar && isBarVisible) {
@@ -117,7 +118,7 @@ fun NavHostChamber() {
                                             contentDescription = null
                                         )
                                     },
-                                    label = { Text(tab.label) }
+                                    label = { Text(stringResource(tab.label)) }
                                 )
                             }
                         }

@@ -14,4 +14,29 @@
     <string name="search_clear_description">Clear search</string>
     <string name="text_field_show_password">Show password</string>
     <string name="text_field_hide_password">Hide password</string>
+    <string name="permission_needed">%1$s is needed</string>
+    <string name="permission_go_to_settings">Go to Setting</string>
+
+    <string name="theme_light">Light</string>
+    <string name="theme_light_description">Always use the light theme</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_dark_description">Always use the dark theme</string>
+    <string name="theme_system">Match system</string>
+    <string name="theme_system_description">Follow your phone\'s setting</string>
+
+    <!-- Shared by more than one module -->
+    <string name="common_title_catalog">Catalog</string>
+    <string name="common_title_shop">Shop</string>
+    <string name="common_title_explore">Explore</string>
+    <string name="common_title_profile">Profile</string>
+    <string name="common_details">Details</string>
+    <string name="common_sign_in">Sign in</string>
+    <string name="common_username">Username</string>
+    <string name="common_password">Password</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_next">Next</string>
+    <string name="common_saved">Saved</string>
+    <string name="common_primary">Primary</string>
+    <string name="common_secondary">Secondary</string>
+    <string name="common_try_different_name">Try a different name.</string>
 </resources>
