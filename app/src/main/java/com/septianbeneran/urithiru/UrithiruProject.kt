@@ -17,7 +17,7 @@ class UrithiruProject : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        currentThemeMode = runBlocking { appSettings.themeMode.first() } ?: defaultThemeMode
+        currentThemeMode = runBlocking { appSettings.effectiveThemeMode.first() }
         currentThemeMode.applyToSystem(this)
     }
 

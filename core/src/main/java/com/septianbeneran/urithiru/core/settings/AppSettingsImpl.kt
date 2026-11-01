@@ -1,16 +1,20 @@
 package com.septianbeneran.urithiru.core.settings
 
+import com.septianbeneran.urithiru.core.annotation.DefaultThemeMode
 import com.septianbeneran.urithiru.core.util.datastore.BaseDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class AppSettingsImpl @Inject constructor(
-    private val baseDataStore: BaseDataStore
+    private val baseDataStore: BaseDataStore,
+    @DefaultThemeMode private val defaultThemeMode: ThemeMode
 ) : AppSettings {
     override val themeMode: Flow<ThemeMode?> = baseDataStore.readString(THEME_MODE_KEY).map { name ->
         ThemeMode.entries.firstOrNull { it.name == name }
     }
+
+    override val effectiveThemeMode: Flow<ThemeMode> = themeMode.map { it ?: defaultThemeMode }
 
     override val hasCompletedOnboarding: Flow<Boolean> =
         baseDataStore.readBoolean(ONBOARDING_COMPLETED_KEY).map { it ?: false }

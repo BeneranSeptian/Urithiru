@@ -21,7 +21,6 @@ import com.septianbeneran.urithiru.core.ui.util.extension.withThemeMode
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -67,8 +66,7 @@ class MainActivity : ComponentActivity() {
      */
     private fun observeThemeMode() {
         lifecycleScope.launch {
-            appSettings.themeMode
-                .map { it ?: UrithiruProject.defaultThemeMode }
+            appSettings.effectiveThemeMode
                 .distinctUntilChanged()
                 .collect { themeMode ->
                     if (themeMode != UrithiruProject.currentThemeMode) {

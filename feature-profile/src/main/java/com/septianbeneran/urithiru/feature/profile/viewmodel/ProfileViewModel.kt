@@ -10,7 +10,6 @@ import com.septianbeneran.urithiru.core.base.BaseState.StateLoading
 import com.septianbeneran.urithiru.core.base.BaseState.StateSuccess
 import com.septianbeneran.urithiru.core.entity.auth.User
 import com.septianbeneran.urithiru.core.settings.AppSettings
-import com.septianbeneran.urithiru.core.settings.ThemeMode
 import com.septianbeneran.urithiru.core.ui.base.BaseViewModel
 import com.septianbeneran.urithiru.feature.profile.screen.stateaction.ProfileAction
 import com.septianbeneran.urithiru.feature.profile.screen.stateaction.ProfileAction.OnLogoutClick
@@ -46,7 +45,7 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             loadSessionUseCase().map { it?.user }.distinctUntilChanged().collect(::onUserChange)
         }
-        collectLocalData(appSettings.themeMode.map { it ?: ThemeMode.System }) { themeMode ->
+        collectLocalData(appSettings.effectiveThemeMode) { themeMode ->
             _uiState.update { it.copy(themeMode = themeMode) }
         }
     }

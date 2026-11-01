@@ -4,7 +4,6 @@ import androidx.lifecycle.viewModelScope
 import com.septianbeneran.urithiru.api.dummyjson.domain.load.LoadSessionUseCase
 import com.septianbeneran.urithiru.api.jsonbin.domain.load.LoadOnBoardingPageDataListUseCase
 import com.septianbeneran.urithiru.core.settings.AppSettings
-import com.septianbeneran.urithiru.core.settings.ThemeMode
 import com.septianbeneran.urithiru.core.ui.base.BaseViewModel
 import com.septianbeneran.urithiru.feature.onboarding.screen.stateaction.DemoRequestState
 import com.septianbeneran.urithiru.feature.onboarding.screen.stateaction.OnBoardingDefaults
@@ -48,7 +47,7 @@ class OnBoardingViewModel @Inject constructor(
                 )
             }
         }
-        collectLocalData(appSettings.themeMode.map { it ?: ThemeMode.System }) { themeMode ->
+        collectLocalData(appSettings.effectiveThemeMode) { themeMode ->
             _uiState.update { it.copy(themeMode = themeMode) }
         }
         collectLocalData(loadSessionUseCase().map { it?.user?.firstName.orEmpty() }) { name ->
