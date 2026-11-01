@@ -2,7 +2,7 @@
 
 Notes for reading on your phone (before sleeping, while commuting) and for working away from the main laptop without AI. Each section starts with its status. For how the code is built, see `SUMMARY.md`; for the rules Claude follows, see `CLAUDE.md`.
 
-Last updated: 2026-10-31, branch `improvement` (nothing pushed yet).
+Last updated: 2026-11-01, branch `improvement` (not merged into `main` yet).
 
 ---
 
@@ -17,7 +17,8 @@ The app is becoming **Urithiru Showcase**: a working template app that shows off
 - **Explore:** a mixed feed of the Elden Ring compendium (bosses, weapons, armor, items, locations, NPCs) with section chips, a Featured carousel, a staggered grid with a card style per type, grouped search (top result plus a row per section) and paging. Every entry opens one shared detail screen.
 - **Login:** DummyJSON demo account (`emilys` / `emilyspass`). The session is saved on the device.
 - **Profile:** the signed-in user and account details from `auth/me` (the access token is refreshed automatically when it expires), or a guest card with "Sign in". Also the theme setting, replay onboarding and logout.
-- **Theme:** Light / Dark / Match system, picked in onboarding and saved.
+- **Theme:** Light / Dark / Match system, picked in onboarding or Profile and saved.
+- **Language:** English or Bahasa Indonesia, picked in onboarding (page 3) or Profile and saved. The app starts in English and never follows the device language. All text comes from one translation JSON.
 - **Errors:** typed `AppError`, with error, empty, loading and "couldn't load more" states everywhere.
 
 **Still a placeholder:** Shop.
@@ -68,13 +69,22 @@ Ideas for later:
 - The bar shows only when **every visible screen is a tab root**, so it comes back only after a back animation has finished. Showing it mid-animation resized the screens while they slid; that was the "weird back animation".
 
 **Animations**
-- Opening a screen slides in from the right, and Back slides it out to the right (300 ms both ways).
-- Moving between two tab roots **crossfades** (200 ms), because a slide misbehaved there.
+- Opening a screen slides in from the right, and Back slides it out to the right (150 ms both ways, `SLIDE_DURATION_MS` in `NavHostChamber.kt`).
+- Moving between two tab roots **crossfades** (100 ms, `TAB_FADE_DURATION_MS`), because a slide misbehaved there.
 
 **Theme**
 - `ThemeMode` is saved by `AppSettings` (in `:core`).
 - `UrithiruProject.defaultThemeMode` applies until the user picks one. Change it to force a mode while developing. `:app` hands it to `AppSettings` (`@DefaultThemeMode`), so screens read `AppSettings.effectiveThemeMode` and the picker always shows the mode actually in use.
 - Every Material color role is mapped in `UrithiruTheme.kt`. **If something looks purple, a role is missing there.**
+
+**Text and language**
+- Real text lives in **one file**: `core/src/main/assets/localization/translations.json`, with a block per language (`en`, `id`).
+- `strings.xml` files only hold **keys**: `<string name="explore_featured">exploreFeatured</string>`. The value is the name in camelCase.
+- Screens read text with `localizedString(R.string.explore_featured)`. Never use `stringResource`.
+- Placeholders are `{0}`, `{1}`; counts are `{0, plural, one {# drop} other {# drops}}`.
+- Backend text (e.g. an error title) goes through `localizedString(text)`: if it's a key in the JSON it's translated, otherwise it's shown exactly as sent. A misspelled key shows up on screen as-is, which makes it easy to spot.
+- The language is saved by `AppSettings`. English applies until the user picks one. `MainActivity` applies it and redraws when it changes.
+- The JSON is read once per launch. A newer downloaded copy (not built yet) would only apply on the next launch.
 
 **Errors**
 - `BaseDataSource.getResult` turns every failure into an `AppError`.
@@ -108,10 +118,24 @@ Ideas for later:
 5. Add one line to `TopLevelDestination` in `:app`, with two Material Symbols icons (outlined and filled).
 
 ### Add a component to the Catalog
-1. Add a `CatalogEntry("my_thing", "UriMyThing", "One sentence.")` to the right section in `feature-catalog/.../catalog/CatalogEntries.kt`.
-2. Add `"my_thing" -> MyThingDemo()` to `ComponentDemo` in `screen/demo/ComponentDemo.kt`.
-3. Write `MyThingDemo()` in the matching `*Demos.kt` file, using `DemoSection("Title") { … }`.
-4. **Check it in dark mode** (see "Force dark mode" below). That's how the toast and divider bugs were found.
+1. Add its description as text (see "Add or change text"): key `catalog_entry_my_thing`.
+2. Add a `CatalogEntry("my_thing", "UriMyThing", R.string.catalog_entry_my_thing)` to the right section in `feature-catalog/.../catalog/CatalogEntries.kt`.
+3. Add `"my_thing" -> MyThingDemo()` to `ComponentDemo` in `screen/demo/ComponentDemo.kt`.
+4. Write `MyThingDemo()` in the matching `*Demos.kt` file, using `DemoSection(localizedString(R.string.catalog_demo_…)) { … }`.
+5. **Check it in dark mode** (see "Force dark mode" below). That's how the toast and divider bugs were found.
+
+### Add or change text
+1. In the `strings.xml` of the module that shows it, add `<string name="profile_thing">profileThing</string>`. Use the module's prefix. If two or more modules need it, put it in `core-ui` as `common_thing` instead.
+2. In `core/src/main/assets/localization/translations.json`, add `"profileThing": "…"` to **every** language block.
+3. In the screen: `localizedString(R.string.profile_thing)`. In a file that also uses `core-ui` keys, import those as `com.septianbeneran.urithiru.core.ui.R as CoreUiR`.
+4. Run `./gradlew :core:testDevDebugUnitTest`. It fails if a key is missing in any language, so you can't forget one.
+- To only fix wording, edit the JSON value. No Kotlin changes needed.
+
+### Add a language
+1. Copy the `"en"` block in `translations.json`, name it with the language code (`"ms"`, `"pt-BR"`), and translate every value. Keep `{0}` placeholders exactly as they are.
+2. Set `"languageName"` to the language's own name (`"Bahasa Melayu"`). That's what the picker shows.
+3. Bump `"version"` at the top.
+4. Run the test from the recipe above. The new language appears in the picker automatically.
 
 ### Add an icon
 1. Go to fonts.google.com/icons, pick the icon, and choose **Outlined** (and **Filled** too if it's for a tab).
@@ -130,6 +154,7 @@ Ideas for later:
 - It's in your JSONBin bin `6ae0e204ac6210605a56e0bf`; the ID is `ONBOARDING_BIN_ID` in `SplashScreenViewModel`.
 - The bin must stay **public**. Check it in a browser: `https://api.jsonbin.io/v3/b/6ae0e204ac6210605a56e0bf`.
 - The text is only downloaded on first launch, so clear the app data to see a change.
+- **JSONBin text is shown as-is, not translated.** Pages the bin doesn't provide use the translated defaults (`onboarding…` keys in `translations.json`). To keep onboarding translated, either leave those pages out of the bin, or put translation keys in the bin instead of sentences.
 
 ### Force dark mode / see first launch again
 ```
@@ -147,6 +172,8 @@ Small tasks, good for a lunch break:
 - **Login tokens are unencrypted** in DataStore. That's fine for the demo account; a real app should encrypt them.
 - **A failed image doesn't retry** until it scrolls off screen and back. That needs a connectivity observer (section 8, step 7).
 - **Repositories expose their cache** (`repository.cache`). Fix this when Room arrives.
+- **The Indonesian translations were written by Claude.** Have a native speaker read them (e.g. "3,5 berat" on weapon cards, "Hadiah" for boss drops).
+- **A missing translation shows its key on screen**, even in release builds. That's on purpose; the translation test catches it for app text, but not for keys sent by a backend.
 
 ---
 
@@ -154,7 +181,7 @@ Small tasks, good for a lunch break:
 
 **Rule:** a component goes in `core-ui` if 2+ features use it, or if it's a basic building block. Every new one also gets a **Catalog entry**.
 
-Already have: Avatar, Badge, Banner, Button, CheckBox, Dialog, Divider, Dot, EmptyState, ErrorState, Image, ListFooter, ListItem, Loader, MediaPlaceHolder, ProgressBar, RadioButton, SearchBar, Skeleton, Stepper, TextField, Toast, TopAppBar.
+Already have: Avatar, Badge, Banner, Button, CheckBox, Dialog, Divider, Dot, EmptyState, ErrorState, Image, LanguagePicker, ListFooter, ListItem, Loader, MediaPlaceHolder, NavigationBar, ProgressBar, RadioButton, SearchBar, Skeleton, Stepper, TextField, ThemePicker, Toast, TopAppBar.
 
 Next, in rough order:
 1. **`UriChip` / `UriChipGroup`**: Shop categories.
@@ -177,6 +204,7 @@ Next, in rough order:
 - **3.** `AppError.toMessage()` gives a string resource per error.
 - **4.** The right UI for each case: full-screen `UriErrorState`, a footer when the next page fails, an inline login error.
 - **6.** Token refresh: `TokenAuthenticator` in `api-dummyjson` refreshes on a 401 and retries once.
+- **Backend error text is ready to translate:** `localizedString(text)` translates a key and shows plain text as-is, so a backend can send either in `errorTitle` / `errorDescription`. Still to do: parse those fields into `AppError` once a real backend exists (DummyJSON only sends `{"message": …}`).
 
 ⏳ **Left:**
 - **5. Automatic retry:** `retryWhen` with backoff (1s, 2s, 4s), **only** for `NoInternet` and `Timeout`. Never retry 4xx errors.
@@ -231,6 +259,10 @@ Next, in rough order:
     - [ ] Cache the first feed page (repository emits cache, then network). Deferred for now.
     - [x] Region rows on All ("Around Limgrave"), built from what the feed has loaded
 - [ ] Connectivity observer + offline banner
+- [x] All UI text in one translation JSON (English + Bahasa Indonesia), read with `localizedString`
+- [x] Language picker in onboarding and Profile; English by default, never the device language
+- [ ] Download a newer translation file (at splash, applied on the next launch)
+- [ ] Parse backend `errorTitle` / `errorDescription` into `AppError`
 
 **Phase 4: ship it**
 - [ ] Remove the unused permissions from the manifest
@@ -253,6 +285,19 @@ Next, in rough order:
   `ffmpeg` is installed through WinGet.
 - **`uiautomator dump` can lag one screen behind** on a slow emulator. Trust screenshots over text dumps.
 - **To see the back stack,** log `navController.currentBackStack.value` in `NavHostChamber`. That's how the "tab pops home away" bug was found.
+- **To pretend the phone is in another language** (the app should still start in English):
+  ```
+  adb shell cmd locale set-app-locales com.septianbeneran.urithiru.dev --locales id-ID
+  adb shell cmd locale set-app-locales com.septianbeneran.urithiru.dev --locales ""   # undo
+  ```
+- **Clean screenshots** (9:41, full battery, no notifications) use demo mode:
+  ```
+  adb shell settings put global sysui_demo_allowed 1
+  adb shell am broadcast -a com.android.systemui.demo -e command clock -e hhmm 0941
+  adb shell am broadcast -a com.android.systemui.demo -e command notifications -e visible false
+  adb shell am broadcast -a com.android.systemui.demo -e command exit   # undo
+  ```
+  Screenshots in `docs/screenshots` are scaled to 432×960.
 
 ---
 

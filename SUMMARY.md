@@ -1,6 +1,6 @@
 # Urithiru Project — Summary
 
-A modular Android app template built with Clean Architecture, Jetpack Compose, Hilt, Retrofit and Coroutines/Flow. It ships as **Urithiru Showcase**: a live onboarding (text from **JSONBin**), a **DummyJSON** login, and four tabs (Catalog · Shop · Explore · Profile). Explore uses **Elden Ring** data from `eldenring.fanapis.com`; Profile shows the signed-in user (`auth/me`, with automatic token refresh), the theme setting, replay onboarding and logout. Shop is a placeholder for now. An unused Twitch/IGDB OAuth token flow is still in `api-twitch`. The plan and roadmap are in `FOR READING.md`.
+A modular Android app template built with Clean Architecture, Jetpack Compose, Hilt, Retrofit and Coroutines/Flow. It ships as **Urithiru Showcase**: a live onboarding (text from **JSONBin**), a **DummyJSON** login, and four tabs (Catalog · Shop · Explore · Profile). Explore uses **Elden Ring** data from `eldenring.fanapis.com`; Profile shows the signed-in user (`auth/me`, with automatic token refresh), the theme and language settings, replay onboarding and logout. Shop is a placeholder for now. All UI text comes from one translation JSON (English and Bahasa Indonesia); the app starts in English and never assumes the device language. An unused Twitch/IGDB OAuth token flow is still in `api-twitch`. The plan and roadmap are in `FOR READING.md`.
 
 - Package root: `com.septianbeneran.urithiru` for every module. A module's namespace is the root plus its module name, with `-` replaced by `.`
 - SDK: compileSdk 37, minSdk 24, targetSdk 35, Java 21
@@ -14,19 +14,19 @@ A modular Android app template built with Clean Architecture, Jetpack Compose, H
 |---|---|---|
 | `:app` | application | `UrithiruProject` (`@HiltAndroidApp`), `MainActivity`, and `NavHostChamber` (the root `NavHost`, which starts at `FeatureSplashNavGraph` and calls the generated `registerAllFeatureGraphs`) |
 | `:buildlogic` | included build | Convention plugins, `AppConfig`, `ProductFlavor`, dependency bundles |
-| `:core` | library | Base data/repository classes, `ApiResult`/`BaseState`, Retrofit and OkHttp DI, DataStore wrapper, dispatchers, permission handling, and generic extensions in `util/extension/` (`StringExtensions`, `FloatExtensions`, `BufferExtensions`, `ExceptionExtensions`, `ResponseExtensions`, `ContextExtensions`) |
-| `:core-entity` | library | Domain models: `Weapon`, `Attributes`, `Scaling`, `Boss`, `OnBoardingPageData`, `AuthSession`, `User`, `TwitchOAuthToken` |
+| `:core` | library | Base data/repository classes, `ApiResult`/`BaseState`/`AppError`, Retrofit and OkHttp DI, DataStore wrapper, dispatchers, permission handling, `AppSettings` (`settings/`: theme, language, onboarding done), the `Translator` and the bundled translation file (`localization/`, `assets/localization/translations.json`), and generic extensions in `util/extension/` (`StringExtensions`, `FloatExtensions`, `BufferExtensions`, `ExceptionExtensions`, `ResponseExtensions`, `ContextExtensions`) |
+| `:core-entity` | library | Domain models: the compendium (`CompendiumKind`, sealed `CompendiumEntry` with `Boss`, `Weapon`, `Armor`, `Item`, `Location`, `Npc`, plus `CompendiumPage`, `CompendiumFeedPage`, `CompendiumSearchResult`, `Attributes`, `Scaling`, `StatValue`), `OnBoardingPageData`, `AuthSession`, `User`, `UserProfile`, `TwitchOAuthToken` |
 | `:core-navigation` | compose lib | `@FeatureRoute` and `@FeatureGraph` annotations, `@Serializable` graph objects and route params, the `Navigator` wrapper |
-| `:core-ui` | compose lib | `BaseScreen`, `BaseViewModel`, `NonceObserver`, theme (`UrithiruTheme`, colors, typography), the `Uri*` design-system components, and Compose/UI extensions in `util/extension/` (`ModifierExtensions`, `NavGraphBuilderExtensions`, `ThemeModeExtensions`, `ContextExtensions`, `AppErrorExtensions`) |
+| `:core-ui` | compose lib | `BaseScreen` (plus `LocalBottomOverlayHeight`/`LocalScreenBottomPadding` in `base/ScreenInsets.kt`), `BaseViewModel`, `NonceObserver`, theme (`UrithiruTheme`, colors, typography), the `Uri*` design-system components, `localizedString` and `LocalTranslator` (`localization/`), the shared `common_*` string keys, and Compose/UI extensions in `util/extension/` (`ModifierExtensions`, `NavGraphBuilderExtensions`, `ThemeModeExtensions`, `ContextExtensions` with `withThemeMode`/`withLanguage`, `AppErrorExtensions`) |
 | `:api-eldenring` | api lib | The Elden Ring **compendium** (Bosses, Weapons, Armors, Items, Locations, Npcs as `CompendiumKind`): `CompendiumApi` → `CompendiumRemoteDataSource` → `CompendiumRepository`. Each DTO implements `CompendiumResponse.mapToEntry()`, which also cleans the API's placeholders and misspelled regions (e.g. "Altus Pleateau"); each entity implements the sealed `CompendiumEntry` in `:core-entity`. Use cases: `GetCompendiumList`/`GetCompendiumDetail`; `GetCompendiumFeedPage`, which loads a page of several sections at once (each with its own page number) and mixes them (seeded, so the order is stable; a failed section doesn't fail the page and is asked for the same page again next time); and `SearchCompendium`, which groups matches by section, closest names first, plus a top result. Both share `loadSections` in `domain/get/CompendiumSections.kt`. No cache yet |
 | `:api-jsonbin` | api lib | **JSONBin** onboarding pages (with a cache) |
 | `:api-twitch` | api lib | Twitch OAuth `client_credentials` token and `RefreshTokenImpl` |
-| `:api-dummyjson` | api lib | **DummyJSON** login (`auth/login`); the session (tokens + user) is saved unencrypted in DataStore via `AuthCache`. A real app should encrypt it |
-| `:feature-splash` | feature lib | Splash screen. Goes straight to Landing if onboarding was completed; otherwise fetches the onboarding text from JSONBin and opens onboarding, even if the request fails |
-| `:feature-onboarding` | feature lib | Four live demo pages (components, error handling, theme picker, sign in) |
+| `:api-dummyjson` | api lib | **DummyJSON** login (`auth/login`), token refresh (`auth/refresh`) and the signed-in user (`auth/me`); the session (tokens + user) and a "session expired" flag are saved unencrypted in DataStore via `AuthCache`. A real app should encrypt them |
+| `:feature-splash` | feature lib | Splash screen. Goes straight to the tabs if onboarding was completed; otherwise fetches the onboarding text from JSONBin and opens onboarding, even if the request fails |
+| `:feature-onboarding` | feature lib | Four live demo pages (components, error handling, theme and language pickers, sign in) |
 | `:feature-catalog` | feature lib | Catalog tab (home): every `Uri*` component grouped by section (`catalog/CatalogEntries.kt`). Each opens `CatalogComponentRoute(id)` with interactive demos (`screen/demo/`). Add a component by adding an entry and a demo function |
 | `:feature-shop` | feature lib | Shop tab. Placeholder for DummyJSON products |
-| `:feature-profile` | feature lib | Profile tab: user card and account details from `auth/me`, or a guest card with "Sign in"; `UriThemePicker`; replay onboarding; logout with a confirmation dialog |
+| `:feature-profile` | feature lib | Profile tab: user card and account details from `auth/me`, or a guest card with "Sign in"; `UriThemePicker` and `UriLanguagePicker`; replay onboarding; logout with a confirmation dialog |
 | `:feature-auth` | feature lib | `LoginRoute`: username/password with `UriTextField`, a "Use demo account" shortcut, and friendly errors. `LoginRoute(returnToPrevious = true)` goes back to the screen that opened it (Profile) instead of home |
 | `:feature-explore` | feature lib | Explore tab: a mixed compendium feed (`ExploreRoute`/`ExploreViewModel`): section chips (All, Bosses, Weapons, Armor, Items, Locations, NPCs), a Featured carousel, a two-column staggered grid with a card style per type (`screen/feed/CompendiumCards.kt`), "Around <region>" rows on All (bosses and locations already loaded, grouped by region once a region has 4), infinite scroll and pull-to-refresh (keeps the feed visible, reshuffles it, and shows a `UriToast` if the refresh fails). Searching on All shows a top result and one row per section with "See all", which opens that section's chip with the same query. Every card opens `CompendiumDetailRoute(kind, id)`: a hero image, a sheet with type tags, stat tiles, and sections per type (stat bars, scaling and requirement chips, drops, effect callout, NPC quote) in `screen/detail/` |
 | `:navigation-processor` | JVM (KSP) | Generates route and graph builders from annotations |
@@ -67,7 +67,7 @@ Screen ─► ViewModel ─► UseCase ─► Repository ─► RemoteDataSource
 ```
 
 **Core building blocks (`:core`)**
-- `BaseDataSource.getResult { api.call() }` turns a Retrofit `Response<T>` into `ApiResult.Success` or `ApiResult.Error`. Exceptions map to error code `6969`.
+- `BaseDataSource.getResult { api.call() }` turns a Retrofit `Response<T>` into `ApiResult.Success` or `ApiResult.Error` with a typed `AppError` (HTTP status or exception mapped once, `CancellationException` rethrown).
 - `resultFlow(networkCall, dispatcher)` emits `Loading` and then the result, running on `io()`.
 - `BaseRepository.mapToEntity(transform, saveResult)` maps the DTO to an entity. If `saveResult` is given, it also saves the result to the cache on the `@ApplicationScope` coroutine scope.
 - `ApiDto<T>(success, count, data)` is the Elden Ring envelope. `JsonBinDto` is the JSONBin envelope.
@@ -96,7 +96,8 @@ di/                      Hilt modules: @Binds for Impl → interface, @Provides 
   - `collectApi(flow, isCentralLoading, onLoading, onError, onSuccess)`, which also toggles the global loading dialog
   - `collectLocalData(flow) { … }` for cache flows
   - `sendNonce(nonce)`, which sends to a `Channel` that is collected by `NonceObserver` in the composable
-- `BaseScreen(viewModel, topAppBarArgs, onBack, …) { properties -> }` handles the central loading dialog, the back handler, system bar padding, the optional `UriTopAppBar`, and runtime permissions (`properties.handlePermission`).
+- `BaseScreen(viewModel, topAppBarArgs, onBack, …) { properties -> }` handles the central loading dialog, the back handler, system bar padding, the optional `UriTopAppBar`, and runtime permissions (`properties.handlePermission`). It keeps content clear of the floating bottom bar; a scrolling tab root passes `drawBehindBottomOverlay = true` and adds `LocalScreenBottomPadding.current` to its list's bottom padding so content scrolls behind the bar.
+- All UI text goes through `localizedString(R.string.x, args…)`; see Text & Localization below.
 
 ---
 
@@ -122,7 +123,7 @@ Splash (FeatureSplashNavGraph start)
   └─► OnBoarding (FeatureOnboardingNavGraph start) ─┬─► Login (FeatureAuthNavGraph start) ─► Tabs
                                                     └─► "Continue as guest" ─────────────────► Tabs
 
-Tabs (NavigationSuiteScaffoldLayout, TopLevelDestination in :app; UriNavigationBar on phones, Material rail on larger screens):
+Tabs (TopLevelDestination in :app; a floating UriNavigationBar drawn over the screens on phones, a Material rail in NavigationSuiteScaffoldLayout on larger screens):
   Catalog (home) · Shop · Explore (mixed feed) ─► CompendiumDetail(kind, id) · Profile
 ```
 `Navigator.navigateToHome()` opens the first tab and clears the back stack, so Back from there leaves the app. `Navigator.navigateToTopLevel(graph)` switches tabs; each tab keeps its own history, and Back from another tab returns to Catalog. Shop is a placeholder for now.
@@ -130,15 +131,26 @@ Tabs (NavigationSuiteScaffoldLayout, TopLevelDestination in :app; UriNavigationB
 **Onboarding pages** (`feature-onboarding/screen/demo/`): each page is a live demo, not an image.
 1. `ComponentsDemo`: real `Uri*` components animate in one by one.
 2. `ErrorHandlingDemo`: a "Go offline" switch runs a simulated request in the ViewModel and shows the skeleton, `UriErrorState` with Retry, or data.
-3. `UriThemePicker`: Light / Dark / Match system, saved through `AppSettings`.
+3. `PreferencesDemo`: `UriThemePicker` (Light / Dark / Match system) and `UriLanguagePicker`, both saved through `AppSettings`.
 4. `SignInDemo`: opens `LoginRoute`, or "Continue as guest". Shows "Continue as <name>" when a session exists.
 
-Titles and descriptions come from JSONBin (server-driven); `OnBoardingDefaults` in the feature is used for any page the bin doesn't provide. Choosing Sign in or Continue sets `hasCompletedOnboarding`, so later launches skip onboarding. Landing's "On Boarding" button replays it.
+Titles and descriptions come from JSONBin (server-driven) and are shown as-is, untranslated; `OnBoardingDefaults` in the feature (translation keys) is used for any page the bin doesn't provide. Choosing Sign in or Continue sets `hasCompletedOnboarding`, so later launches skip onboarding. Profile's "Replay onboarding" replays it.
 
 ---
 
 ## Design System (`core-ui/component`)
-`UriAvatar`, `UriBadge`, `UriBanner`, `UriButton`, `UriCheckBox`, `UriDialog`, `UriDivider`, `UriDot`, `UriEmptyState`, `UriErrorState`, `UriImage`, `UriListFooter`, `UriListItem`, `UriLoader`, `UriMediaPlaceHolder`, `UriNavigationBar`, `UriProgressBar`, `UriRadioButton`, `UriSearchBar`, `UriSkeleton`, `UriStepper`, `UriThemePicker`, `UriToast`, `UriTopAppBar`, `CentralLoadingDialog`. The theme lives in `core-ui/theme` (with custom fonts under `res/font`). `UrithiruTheme.kt` maps every Material 3 color role to the Urithiru palette for light and dark, and `Typography.kt` maps the Material type roles in size order. `ThemeMode` (`System`/`Light`/`Dark`, in `:core` `settings/`) is a user setting saved by `AppSettings` (`:core`, DataStore), which also holds `hasCompletedOnboarding`. `UrithiruProject.defaultThemeMode` is used until the user picks one. `:app` provides `UrithiruProject.defaultThemeMode` to `AppSettings` through the `@DefaultThemeMode` qualifier, and `AppSettings.effectiveThemeMode` is the saved mode or that default, so the theme picker in Profile and onboarding always shows the mode in use. `UrithiruProject` reads that mode once at startup (`runBlocking`, before the first frame) into `currentThemeMode`; `MainActivity` applies it to the system bars, the activity's resources (`attachBaseContext`) and, on Android 12+, the launch window (`UiModeManager.setApplicationNightMode`). When the saved mode changes, `MainActivity` recreates itself, like AppCompat does for night mode. `MainActivity` wraps the app in a `Surface` with the theme background, and `values-night/themes.xml` gives the window a dark parent.
+`UriAvatar`, `UriBadge`, `UriBanner`, `UriButton`, `UriCheckBox`, `UriDialog`, `UriDivider`, `UriDot`, `UriEmptyState`, `UriErrorState`, `UriImage`, `UriLanguagePicker`, `UriListFooter`, `UriListItem`, `UriLoader`, `UriMediaPlaceHolder`, `UriNavigationBar`, `UriProgressBar`, `UriRadioButton`, `UriSearchBar`, `UriSkeleton`, `UriStepper`, `UriTextField`, `UriThemePicker`, `UriToast`, `UriTopAppBar`, `CentralLoadingDialog`. The theme and language pickers share the internal `UriChoiceOption` card. The theme lives in `core-ui/theme` (with custom fonts under `res/font`). `UrithiruTheme.kt` maps every Material 3 color role to the Urithiru palette for light and dark, and `Typography.kt` maps the Material type roles in size order. `ThemeMode` (`System`/`Light`/`Dark`, in `:core` `settings/`) is a user setting saved by `AppSettings` (`:core`, DataStore), which also holds `hasCompletedOnboarding`. `UrithiruProject.defaultThemeMode` is used until the user picks one. `:app` provides `UrithiruProject.defaultThemeMode` to `AppSettings` through the `@DefaultThemeMode` qualifier, and `AppSettings.effectiveThemeMode` is the saved mode or that default, so the theme picker in Profile and onboarding always shows the mode in use. `UrithiruProject` reads that mode once at startup (`runBlocking`, before the first frame) into `currentThemeMode`; `MainActivity` applies it to the system bars, the activity's resources (`attachBaseContext`) and, on Android 12+, the launch window (`UiModeManager.setApplicationNightMode`). When the saved mode changes, `MainActivity` recreates itself, like AppCompat does for night mode. `MainActivity` wraps the app in a `Surface` with the theme background, and `values-night/themes.xml` gives the window a dark parent.
+
+---
+
+## Text & Localization
+
+- **Where text lives:** `core/src/main/assets/localization/translations.json`: `{"version", "defaultLanguage": "en", "languages": {"en": {...}, "id": {...}}}`. Values are ICU MessageFormat: `{0}` for arguments, `{0, plural, one {# drop} other {# drops}}` for counts.
+- **`strings.xml` only holds keys:** each entry's value is its camelCase name (`<string name="explore_featured">exploreFeatured</string>`), which keeps compile-time `R.string` ids. Each module owns its keys with a module prefix; keys used by more than one module are `common_*` in `:core-ui`.
+- **Reading text:** `localizedString(R.string.x, args…)` (`:core-ui`) reads the key and translates it in the current language. `localizedString(text, namedArgs)` translates a string that didn't come from a resource (e.g. a backend's `errorTitle`): a key in the JSON is translated, anything else is shown exactly as given. Outside Compose, inject `Translator` (`:core`).
+- **Loading:** `AssetTranslator` reads the bundled file once per launch, or a downloaded copy in `filesDir/localization/translations.json` when its `version` is higher, so a new file only applies on the next launch. No download exists yet.
+- **Language setting:** `AppSettings.effectiveLanguage` is the saved language (`saveLanguage`) while the file has it, otherwise the file's `defaultLanguage` (`en`); the device language is never used. `UrithiruProject` reads it at startup into `currentLanguage`; `MainActivity` applies it in `attachBaseContext` (`withLanguage`, `Locale.setDefault`) and recreates itself when it changes. `UriLanguagePicker` lists the file's languages, each named by its `languageName` key.
+- **Safety net:** `TranslationFileTest` (`:core`) fails if a `strings.xml` key is missing in any language, a JSON key is unused, a language's arguments differ from English, or a resource's value isn't its camelCase name.
 
 ---
 
@@ -150,11 +162,15 @@ Titles and descriptions come from JSONBin (server-driven); `OnBoardingDefaults` 
 
 **Add a screen:** add the route (plus a graph object if this is a new feature) in `core-navigation`, add the `@FeatureRoute` composable, ViewModel and stateaction in the feature module, then build.
 
+**Add text:** add `<string name="x_thing">xThing</string>` to the module's `strings.xml` (or `:core-ui` as `common_*` if several modules use it), add `xThing` to every language in `translations.json`, and read it with `localizedString(R.string.x_thing)`. Run `./gradlew :core:testDevDebugUnitTest` to check nothing is missing.
+
+**Add a language:** add a block such as `"pt-BR": { "languageName": "Português (Brasil)", … }` with every key to `translations.json` and bump `version`. It appears in the language picker automatically.
+
 **Add a feature module:** use `feature-convention` and depend on `core`, `core-entity`, `core-navigation`, `core-ui` and the needed `api-*`. Add it to `settings.gradle.kts` and to the `app` dependencies.
 
 ---
 
-## Observations / Known Issues (as of 2026-10-06)
+## Observations / Known Issues (as of 2026-11-01)
 
 > On the `improvement` branch, the broken `WeaponRepository` import is fixed and every package is now under `com.septianbeneran.urithiru`. See also `CLAUDE.md` (conventions) and `FOR READING.md` (roadmap and ideas).
 
@@ -163,7 +179,7 @@ Titles and descriptions come from JSONBin (server-driven); `OnBoardingDefaults` 
 - `UriAvatar`, `UriBadge`, `UriBanner`, `UriButton`, `UriDot`, `UriListItem`, `UriLoader`, `UriMediaPlaceHolder`, `UriProgressBar` and `UriToast` still reference palette colors directly. Most are brand accents (blue, success, error) that read fine on both themes, but they haven't all been checked in dark mode. `UriRadioButton`, `UriCheckBox`, `UriStepper`, `UriTopAppBar` and `UriDialog` now use theme colors.
 - **Auth (`api-dummyjson`):** `AuthApi` (login, refresh) uses the plain DummyJSON client. `UserApi` (`auth/me`) uses a client with `AuthInterceptor` (adds `Authorization: Bearer`) and `TokenAuthenticator` (on a 401, `AuthRepository.refreshAccessToken` calls `auth/refresh` behind a `Mutex`, saves the new tokens and the request is retried once; a rejected refresh token clears the session and sets a saved "session expired" flag, so Profile shows a warning toast until the user signs in again or closes it). DummyJSON answers a tampered token with 500, not 401, so only a real expiry triggers a refresh.
 - Explore's "All" view loads 6 entries per section per page through `GetCompendiumFeedPageUseCase`, keeps a page number per section (`ExploreUiState.kindPages`), retries a failed section on the next load and stops asking a section once it has ended. A single section loads 20 at a time (`ExploreViewModel.PAGE_SIZE`) and stops on a short page or once `total` entries are loaded. The API's `total` is the size of the whole section, even for a name search.
-- Real unit tests: `api-eldenring` (DTO mapping, the feed mixer, compendium search) and `feature-explore` (`ExploreViewModelTest`, using `kotlinx-coroutines-test` to replace the Main dispatcher). Other modules still only have the default `ExampleUnitTest` and `ExampleInstrumentedTest` stubs. Every module now gets JUnit and AndroidX test from `testDependencies()` in the convention plugins, so they compile and run.
+- Real unit tests: `api-eldenring` (DTO mapping, the feed mixer, compendium search), `api-dummyjson` (`AuthRepositoryImplTest`, token refresh), `core` (`TranslationCatalogTest`, `TranslationFileTest`) and `feature-explore` (`ExploreViewModelTest`, using `kotlinx-coroutines-test` to replace the Main dispatcher). Other modules still only have the default `ExampleUnitTest` and `ExampleInstrumentedTest` stubs. Every module now gets JUnit and AndroidX test from `testDependencies()` in the convention plugins, so they compile and run.
 
 ---
 
@@ -220,7 +236,8 @@ Titles and descriptions come from JSONBin (server-driven); `OnBoardingDefaults` 
 - **Add processor tests** using `kotlin-compile-testing-ksp`.
 
 ### UI / UX
-- **Move hardcoded strings** (`"Retry"`, etc.) into `strings.xml` so the app can be localized.
+- ~~**Move hardcoded strings** (`"Retry"`, etc.) into `strings.xml` so the app can be localized.~~
+  ✅ **Done (2026-11-01).** All UI text is in the translation JSON (English and Bahasa Indonesia), read through `localizedString`, with a language picker in onboarding and Profile. The Indonesian text still needs a native speaker's review.
 - **Improve accessibility.** The `Uri*` components already have previews; add `contentDescription` on images and check touch-target sizes.
 - ~~**Add a dark theme and dynamic color** to `UrithiruTheme` if not already supported.~~
   ✅ **Dark theme done (2026-10-27).** Every color role is mapped for light and dark, the background is painted, and `ThemeMode` can force a mode. Dynamic color (Material You wallpaper colors) is still open, if wanted.
