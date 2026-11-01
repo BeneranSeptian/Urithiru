@@ -21,6 +21,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -32,7 +34,9 @@ import com.septianbeneran.urithiru.core.entity.eldenring.Item
 import com.septianbeneran.urithiru.core.entity.eldenring.Location
 import com.septianbeneran.urithiru.core.entity.eldenring.Npc
 import com.septianbeneran.urithiru.core.entity.eldenring.Weapon
+import com.septianbeneran.urithiru.core.ui.R as CoreUiR
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
+import com.septianbeneran.urithiru.feature.explore.R
 import com.septianbeneran.urithiru.feature.explore.screen.feed.Tag
 import com.septianbeneran.urithiru.core.util.extension.formatted
 import com.septianbeneran.urithiru.feature.explore.screen.feed.singularLabel
@@ -95,32 +99,32 @@ internal fun DetailSections(entry: CompendiumEntry) {
 
         when (entry) {
             is Weapon -> {
-                StatBarsSection(title = "Attack", bars = entry.attack.map { StatBar(it.name, it.amount.toFloat()) })
-                StatBarsSection(title = "Guard", bars = entry.defence.map { StatBar(it.name, it.amount.toFloat()) })
+                StatBarsSection(title = stringResource(R.string.explore_attack), bars = entry.attack.map { StatBar(it.name, it.amount.toFloat()) })
+                StatBarsSection(title = stringResource(R.string.explore_guard), bars = entry.defence.map { StatBar(it.name, it.amount.toFloat()) })
                 ChipsSection(
-                    title = "Scaling",
+                    title = stringResource(R.string.explore_scaling),
                     chips = entry.scalesWith.mapNotNull { scaling ->
                         scaling.name?.let { name -> listOfNotNull(name, scaling.scaling).joinToString(" ") }
                     }
                 )
                 ChipsSection(
-                    title = "Requirements",
+                    title = stringResource(R.string.explore_requirements),
                     chips = entry.requiredAttributes.map { "${it.name} ${it.amount}" }
                 )
             }
 
             is Armor -> {
-                StatBarsSection(title = "Damage negation", bars = entry.dmgNegation.map { StatBar(it.name, it.amount) })
-                StatBarsSection(title = "Resistance", bars = entry.resistance.map { StatBar(it.name, it.amount) })
+                StatBarsSection(title = stringResource(R.string.explore_damage_negation), bars = entry.dmgNegation.map { StatBar(it.name, it.amount) })
+                StatBarsSection(title = stringResource(R.string.explore_resistance), bars = entry.resistance.map { StatBar(it.name, it.amount) })
             }
 
-            is Boss -> ListSection(title = "Drops", rows = entry.drops)
+            is Boss -> ListSection(title = stringResource(R.string.explore_drops), rows = entry.drops)
 
-            is Item -> entry.effect?.let { CalloutSection(title = "Effect", text = it) }
+            is Item -> entry.effect?.let { CalloutSection(title = stringResource(R.string.explore_effect), text = it) }
 
             is Location -> Unit
 
-            is Npc -> InfoSection(rows = listOf("Found at" to entry.location))
+            is Npc -> InfoSection(rows = listOf(stringResource(R.string.explore_found_at) to entry.location))
         }
     }
 }
@@ -164,7 +168,7 @@ private fun QuickStats(
 
 @Composable
 private fun AboutSection(text: String) {
-    Section(title = "About") {
+    Section(title = stringResource(R.string.explore_about)) {
         Text(
             text = text,
             style = UrithiruTheme.typography.bodyM,
@@ -193,13 +197,13 @@ private fun QuoteSection(quote: String, speaker: String) {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = "“$quote”",
+                text = stringResource(R.string.explore_quote, quote),
                 style = UrithiruTheme.typography.bodyL,
                 fontStyle = FontStyle.Italic,
                 color = MaterialTheme.colorScheme.onSurface
             )
             Text(
-                text = "— $speaker",
+                text = stringResource(R.string.explore_quote_speaker, speaker),
                 style = UrithiruTheme.typography.captionM,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -339,7 +343,7 @@ private fun InfoSection(rows: List<Pair<String, String?>>) {
     val known = rows.mapNotNull { (label, value) -> value?.let { label to it } }
     if (known.isEmpty()) return
 
-    Section(title = "Details") {
+    Section(title = stringResource(CoreUiR.string.common_details)) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -397,25 +401,26 @@ private fun CompendiumEntry.whereabouts(): String? = when (this) {
     is Weapon, is Armor, is Item -> null
 }
 
+@Composable
 private fun CompendiumEntry.quickStats(): List<QuickStat> = when (this) {
     is Weapon -> listOfNotNull(
-        attack.maxByOrNull { it.amount }?.let { QuickStat(it.amount.toString(), "${it.name} attack") },
-        QuickStat(weight.formatted(), "Weight"),
+        attack.maxByOrNull { it.amount }?.let { QuickStat(it.amount.toString(), stringResource(R.string.explore_stat_attack, it.name)) },
+        QuickStat(weight.formatted(), stringResource(R.string.explore_stat_weight)),
         scalesWith
             .filter { it.name != null && it.scaling in ScalingGrades }
             .minByOrNull { ScalingGrades.indexOf(it.scaling) }
-            ?.let { QuickStat(it.scaling.orEmpty(), "${it.name} scaling") }
+            ?.let { QuickStat(it.scaling.orEmpty(), stringResource(R.string.explore_stat_scaling, it.name.orEmpty())) }
     )
 
     is Armor -> listOfNotNull(
-        dmgNegation.maxByOrNull { it.amount }?.let { QuickStat(it.amount.formatted(), "${it.name} negation") },
-        weight?.let { QuickStat(it.formatted(), "Weight") },
+        dmgNegation.maxByOrNull { it.amount }?.let { QuickStat(it.amount.formatted(), stringResource(R.string.explore_stat_negation, it.name)) },
+        weight?.let { QuickStat(it.formatted(), stringResource(R.string.explore_stat_weight)) },
         resistance.maxByOrNull { it.amount }?.let { QuickStat(it.amount.formatted(), it.name) }
     )
 
     is Boss -> listOfNotNull(
-        QuickStat(healthPoints ?: "Unknown", "Health"),
-        QuickStat(drops.size.toString(), if (drops.size == 1) "Drop" else "Drops")
+        QuickStat(healthPoints ?: stringResource(R.string.explore_stat_unknown), stringResource(R.string.explore_stat_health)),
+        QuickStat(drops.size.toString(), pluralStringResource(R.plurals.explore_stat_drops, drops.size))
     )
 
     is Item, is Location, is Npc -> emptyList()

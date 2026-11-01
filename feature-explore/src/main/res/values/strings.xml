@@ -1,0 +1,97 @@
+<resources>
+    <string name="explore_kind_bosses">Bosses</string>
+    <string name="explore_kind_bosses_singular">Boss</string>
+    <string name="explore_kind_bosses_tagline">Every foe worth a rematch</string>
+    <string name="explore_kind_weapons">Weapons</string>
+    <string name="explore_kind_weapons_singular">Weapon</string>
+    <string name="explore_kind_weapons_tagline">Arms for every build</string>
+    <string name="explore_kind_armors">Armor</string>
+    <string name="explore_kind_armors_singular">Armor</string>
+    <string name="explore_kind_armors_tagline">Sets and pieces to wear</string>
+    <string name="explore_kind_items">Items</string>
+    <string name="explore_kind_items_singular">Item</string>
+    <string name="explore_kind_items_tagline">Consumables, tools and keys</string>
+    <string name="explore_kind_locations">Locations</string>
+    <string name="explore_kind_locations_singular">Location</string>
+    <string name="explore_kind_locations_tagline">Places worth the journey</string>
+    <string name="explore_kind_npcs">NPCs</string>
+    <string name="explore_kind_npcs_singular">NPC</string>
+    <string name="explore_kind_npcs_tagline">Faces you\'ll meet on the road</string>
+    <string name="explore_search_placeholder">Search bosses, gear, places…</string>
+    <string name="explore_all">All</string>
+    <string name="explore_nothing_found">Nothing found</string>
+    <string name="explore_try_another_section">Try another section.</string>
+    <string name="explore_refresh_failed">Couldn\'t refresh</string>
+    <string name="explore_results_for">Results for \"%1$s\"</string>
+    <string name="explore_for_you">For you</string>
+    <string name="explore_for_you_subtitle">Bosses, gear, places and people of the Lands Between</string>
+    <string name="explore_search_in">In %1$s</string>
+    <string name="explore_search_everywhere">Across the whole compendium</string>
+    <string name="explore_sections_failed">Couldn\'t load %1$s this time. They\'ll be tried again as you scroll.</string>
+    <string name="explore_search_failed">Couldn\'t search %1$s this time.</string>
+    <string name="explore_top_result">Top result</string>
+    <string name="explore_group_title">%1$s · %2$d</string>
+    <string name="explore_group_title_more">%1$s · %2$d+</string>
+    <string name="explore_see_all">See all</string>
+    <string name="explore_featured">Featured</string>
+    <string name="explore_featured_subtitle">Legendary picks worth a closer look</string>
+    <string name="explore_around_region">Around %1$s</string>
+    <string name="explore_summary_separator"> · </string>
+    <string name="explore_weight_short">%1$s wt</string>
+    <string name="explore_health_short">HP %1$s</string>
+    <string name="explore_back">Back</string>
+    <string name="explore_about">About</string>
+    <string name="explore_attack">Attack</string>
+    <string name="explore_guard">Guard</string>
+    <string name="explore_scaling">Scaling</string>
+    <string name="explore_requirements">Requirements</string>
+    <string name="explore_damage_negation">Damage negation</string>
+    <string name="explore_resistance">Resistance</string>
+    <string name="explore_drops">Drops</string>
+    <string name="explore_effect">Effect</string>
+    <string name="explore_found_at">Found at</string>
+    <string name="explore_quote">“%1$s”</string>
+    <string name="explore_quote_speaker">— %1$s</string>
+    <string name="explore_stat_attack">%1$s attack</string>
+    <string name="explore_stat_scaling">%1$s scaling</string>
+    <string name="explore_stat_negation">%1$s negation</string>
+    <string name="explore_stat_weight">Weight</string>
+    <string name="explore_stat_health">Health</string>
+    <string name="explore_stat_unknown">Unknown</string>
+    <plurals name="explore_kind_bosses_count">
+        <item quantity="one">%d boss</item>
+        <item quantity="other">%d bosses</item>
+    </plurals>
+    <plurals name="explore_kind_weapons_count">
+        <item quantity="one">%d weapon</item>
+        <item quantity="other">%d weapons</item>
+    </plurals>
+    <plurals name="explore_kind_armors_count">
+        <item quantity="one">%d armor</item>
+        <item quantity="other">%d armor</item>
+    </plurals>
+    <plurals name="explore_kind_items_count">
+        <item quantity="one">%d item</item>
+        <item quantity="other">%d items</item>
+    </plurals>
+    <plurals name="explore_kind_locations_count">
+        <item quantity="one">%d location</item>
+        <item quantity="other">%d locations</item>
+    </plurals>
+    <plurals name="explore_kind_npcs_count">
+        <item quantity="one">%d NPC</item>
+        <item quantity="other">%d NPCs</item>
+    </plurals>
+    <plurals name="explore_found_in_sections">
+        <item quantity="one">Found in %d section</item>
+        <item quantity="other">Found in %d sections</item>
+    </plurals>
+    <plurals name="explore_drop_count">
+        <item quantity="one">%d drop</item>
+        <item quantity="other">%d drops</item>
+    </plurals>
+    <plurals name="explore_stat_drops">
+        <item quantity="one">Drop</item>
+        <item quantity="other">Drops</item>
+    </plurals>
+</resources>

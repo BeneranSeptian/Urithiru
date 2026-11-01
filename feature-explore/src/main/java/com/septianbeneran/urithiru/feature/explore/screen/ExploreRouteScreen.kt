@@ -37,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -52,6 +53,7 @@ import com.septianbeneran.urithiru.core.navigation.graph.FeatureExploreNavGraph
 import com.septianbeneran.urithiru.core.navigation.routeparams.feature_explore.CompendiumDetailRoute
 import com.septianbeneran.urithiru.core.navigation.routeparams.feature_explore.ExploreRoute
 import com.septianbeneran.urithiru.core.navigation.util.Navigator
+import com.septianbeneran.urithiru.core.ui.R as CoreUiR
 import com.septianbeneran.urithiru.core.ui.base.BaseScreen
 import com.septianbeneran.urithiru.core.ui.base.LocalScreenBottomPadding
 import com.septianbeneran.urithiru.core.ui.component.UriDot
@@ -68,8 +70,10 @@ import com.septianbeneran.urithiru.core.ui.util.NonceObserver
 import com.septianbeneran.urithiru.core.ui.util.extension.bleed
 import com.septianbeneran.urithiru.core.ui.util.extension.pageScale
 import com.septianbeneran.urithiru.core.ui.util.extension.toMessage
+import com.septianbeneran.urithiru.feature.explore.R
 import com.septianbeneran.urithiru.feature.explore.screen.feed.CompendiumFeedCard
 import com.septianbeneran.urithiru.feature.explore.screen.feed.FeaturedEntryCard
+import com.septianbeneran.urithiru.feature.explore.screen.feed.countLabel
 import com.septianbeneran.urithiru.feature.explore.screen.feed.pluralLabel
 import com.septianbeneran.urithiru.feature.explore.screen.feed.singularLabel
 import com.septianbeneran.urithiru.feature.explore.screen.feed.tagline
@@ -111,7 +115,7 @@ fun ExploreRoute(
         viewModel = viewModel,
         contentPadding = PaddingValues(top = ScreenMargin),
         drawBehindBottomOverlay = true,
-        topAppBarArgs = defaults(title = "Explore", backIcon = null)
+        topAppBarArgs = defaults(title = stringResource(CoreUiR.string.common_title_explore), backIcon = null)
     ) {
         ExploreScreen(
             uiState = uiState,
@@ -140,7 +144,7 @@ fun ExploreScreen(
             value = uiState.searchText,
             onValueChange = { onAction(OnSearchTextChange(it)) },
             onSearch = { onAction(OnSearch(uiState.searchText)) },
-            placeholder = "Search bosses, gear, places…",
+            placeholder = stringResource(R.string.explore_search_placeholder),
             onClear = { onAction(OnClearSearch) }
         )
 
@@ -177,8 +181,11 @@ fun ExploreScreen(
                         onSelect = { onAction(OnKindSelect(it)) }
                     )
                     UriEmptyState(
-                        title = "Nothing found",
-                        message = if (uiState.isSearching) "Try a different name." else "Try another section."
+                        title = stringResource(R.string.explore_nothing_found),
+                        message = stringResource(
+                            if (uiState.isSearching) CoreUiR.string.common_try_different_name
+                            else R.string.explore_try_another_section
+                        )
                     )
                 }
             }
@@ -213,7 +220,7 @@ private fun RefreshableContent(
                     .align(Alignment.TopCenter)
                     .padding(horizontal = ScreenMargin, vertical = 12.dp),
                 type = UriToastType.Error,
-                titleText = "Couldn't refresh",
+                titleText = stringResource(R.string.explore_refresh_failed),
                 subTitleText = stringResource(error.toMessage()),
                 onClose = { onAction(DismissRefreshError) }
             )
@@ -271,7 +278,7 @@ private fun ExploreFeed(
             item(span = StaggeredGridItemSpan.FullLine, key = "region-${row.region}", contentType = "region") {
                 EntryRow(
                     modifier = Modifier.bleed(ScreenMargin),
-                    title = "Around ${row.region}",
+                    title = stringResource(R.string.explore_around_region, row.region),
                     subtitle = row.summary(),
                     entries = row.entries,
                     showKind = true,
@@ -284,14 +291,15 @@ private fun ExploreFeed(
         item(span = StaggeredGridItemSpan.FullLine, contentType = "header") {
             SectionHeader(
                 title = when {
-                    state.isSearching -> "Results for \"${state.submittedQuery}\""
+                    state.isSearching -> stringResource(R.string.explore_results_for, state.submittedQuery)
                     state.selectedKind != null -> state.selectedKind.pluralLabel
-                    else -> "For you"
+                    else -> stringResource(R.string.explore_for_you)
                 },
                 subtitle = when {
-                    state.isSearching -> state.selectedKind?.let { "In ${it.pluralLabel.lowercase()}" } ?: "Across the whole compendium"
+                    state.isSearching -> state.selectedKind?.let { stringResource(R.string.explore_search_in, it.pluralLabel.lowercase()) }
+                        ?: stringResource(R.string.explore_search_everywhere)
                     state.selectedKind != null -> state.selectedKind.tagline
-                    else -> "Bosses, gear, places and people of the Lands Between"
+                    else -> stringResource(R.string.explore_for_you_subtitle)
                 }
             )
         }
@@ -312,7 +320,10 @@ private fun ExploreFeed(
             item(span = StaggeredGridItemSpan.FullLine, contentType = "failed") {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
-                    text = "Couldn't load ${state.failedKinds.joinToString { it.pluralLabel.lowercase() }} this time. They'll be tried again as you scroll.",
+                    text = stringResource(
+                        R.string.explore_sections_failed,
+                        state.failedKinds.map { it.pluralLabel.lowercase() }.joinToString()
+                    ),
                     style = UrithiruTheme.typography.bodyS,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
@@ -353,10 +364,9 @@ private fun SearchResults(
         item(contentType = "header") {
             SectionHeader(
                 modifier = Modifier.padding(horizontal = ScreenMargin),
-                title = "Results for \"${state.submittedQuery}\"",
-                subtitle = when (val count = (result.groups.map { it.kind } + listOfNotNull(result.topResult?.kind)).distinct().size) {
-                    1 -> "Found in 1 section"
-                    else -> "Found in $count sections"
+                title = stringResource(R.string.explore_results_for, state.submittedQuery),
+                subtitle = (result.groups.map { it.kind } + listOfNotNull(result.topResult?.kind)).distinct().size.let { count ->
+                    pluralStringResource(R.plurals.explore_found_in_sections, count, count)
                 }
             )
         }
@@ -368,7 +378,7 @@ private fun SearchResults(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(
-                        text = "Top result",
+                        text = stringResource(R.string.explore_top_result),
                         style = UrithiruTheme.typography.h4,
                         color = MaterialTheme.colorScheme.onBackground
                     )
@@ -383,7 +393,11 @@ private fun SearchResults(
 
         items(result.groups, key = { it.kind.name }, contentType = { "group" }) { group ->
             EntryRow(
-                title = "${group.kind.pluralLabel} · ${group.entries.size}${if (group.hasMore) "+" else ""}",
+                title = stringResource(
+                    if (group.hasMore) R.string.explore_group_title_more else R.string.explore_group_title,
+                    group.kind.pluralLabel,
+                    group.entries.size
+                ),
                 entries = group.entries,
                 showKind = false,
                 onSeeAll = if (group.hasMore) {
@@ -399,7 +413,10 @@ private fun SearchResults(
             item(contentType = "failed") {
                 Text(
                     modifier = Modifier.padding(horizontal = ScreenMargin),
-                    text = "Couldn't search ${result.failedKinds.joinToString { it.pluralLabel.lowercase() }} this time.",
+                    text = stringResource(
+                        R.string.explore_search_failed,
+                        result.failedKinds.map { it.pluralLabel.lowercase() }.joinToString()
+                    ),
                     style = UrithiruTheme.typography.bodyS,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -444,7 +461,7 @@ private fun EntryRow(
             }
             onSeeAll?.let {
                 TextButton(onClick = it) {
-                    Text("See all")
+                    Text(stringResource(R.string.explore_see_all))
                 }
             }
         }
@@ -465,10 +482,12 @@ private fun EntryRow(
     }
 }
 
+@Composable
 private fun RegionRow.summary(): String =
     entries.groupingBy { it.kind }.eachCount().entries
         .sortedBy { it.key.ordinal }
-        .joinToString(" · ") { (kind, count) -> "$count ${if (count == 1) kind.singularLabel.lowercase() else kind.pluralLabel.lowercase()}" }
+        .map { (kind, count) -> kind.countLabel(count) }
+        .joinToString(stringResource(R.string.explore_summary_separator))
 
 private fun entryClick(onAction: (ExploreAction) -> Unit): (CompendiumEntry) -> () -> Unit = { entry ->
     { onAction(OnEntryClick(entry)) }
@@ -508,7 +527,7 @@ private fun KindChips(
             FilterChip(
                 selected = selected == null,
                 onClick = { onSelect(null) },
-                label = { Text("All") },
+                label = { Text(stringResource(R.string.explore_all)) },
                 shape = CircleShape
             )
         }
@@ -546,8 +565,8 @@ private fun FeaturedSection(
     ) {
         SectionHeader(
             modifier = Modifier.padding(horizontal = ScreenMargin),
-            title = "Featured",
-            subtitle = "Legendary picks worth a closer look"
+            title = stringResource(R.string.explore_featured),
+            subtitle = stringResource(R.string.explore_featured_subtitle)
         )
         HorizontalPager(
             state = pagerState,

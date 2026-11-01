@@ -26,6 +26,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -35,10 +36,11 @@ import com.septianbeneran.urithiru.core.entity.eldenring.CompendiumEntry
 import com.septianbeneran.urithiru.core.navigation.annotation.FeatureRoute
 import com.septianbeneran.urithiru.core.navigation.routeparams.feature_explore.CompendiumDetailRoute
 import com.septianbeneran.urithiru.core.navigation.util.Navigator
-import com.septianbeneran.urithiru.core.ui.R
+import com.septianbeneran.urithiru.core.ui.R as CoreUiR
 import com.septianbeneran.urithiru.core.ui.base.BaseScreen
 import com.septianbeneran.urithiru.core.ui.component.UriErrorState
 import com.septianbeneran.urithiru.core.ui.component.UriSkeleton
+import com.septianbeneran.urithiru.feature.explore.R
 import com.septianbeneran.urithiru.feature.explore.screen.detail.DetailSections
 import com.septianbeneran.urithiru.feature.explore.screen.detail.DetailTitle
 import com.septianbeneran.urithiru.feature.explore.screen.feed.EntryImage
@@ -172,8 +174,8 @@ private fun BackButton(
             modifier = Modifier
                 .padding(10.dp)
                 .size(24.dp),
-            painter = painterResource(R.drawable.arrow_back),
-            contentDescription = "Back"
+            painter = painterResource(CoreUiR.drawable.arrow_back),
+            contentDescription = stringResource(R.string.explore_back)
         )
     }
 }
