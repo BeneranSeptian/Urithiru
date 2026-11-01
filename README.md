@@ -428,7 +428,7 @@ fun ProductDetailRoute(navigator: Navigator) {
 ```
 - **Start screen of a feature:** set `graph` too, e.g. `@FeatureRoute(routeParams = ProductListRoute::class, graph = FeatureShopNavGraph::class)`. Exactly one screen per feature does this.
 - **UI rules:** reuse `core-ui` components and `UrithiruTheme` tokens, take colors from `MaterialTheme.colorScheme` (never the raw palette), and show empty results with `UriEmptyState`.
-- **Text:** never hardcode UI text. Put it in the module's `res/values/strings.xml` with the module prefix (`explore_featured`) and read it with `stringResource`. Text used by more than one module goes in `:core-ui` as `common_…` (imported as `CoreUiR`).
+- **Text:** never hardcode UI text. Add a resource whose value is its camelCase key (`<string name="explore_featured">exploreFeatured</string>`) to the module's `strings.xml` (`:core-ui` as `common_…` if several modules use it), add the key to every language in `core/src/main/assets/localization/translations.json`, and read it with `localizedString(R.string.explore_featured)`.
 
 ### 5. Open it from another screen
 The other screen's ViewModel sends a nonce, and its screen navigates:
