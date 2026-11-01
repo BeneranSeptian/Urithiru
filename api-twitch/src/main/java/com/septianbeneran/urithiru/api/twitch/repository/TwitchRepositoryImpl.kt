@@ -10,6 +10,10 @@ import com.septianbeneran.urithiru.api.twitch.data.local.TwitchCache
 import com.septianbeneran.urithiru.api.twitch.data.remote.service.TwitchApiRemoteDataSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class TwitchRepositoryImpl @Inject constructor(
@@ -32,10 +36,9 @@ class TwitchRepositoryImpl @Inject constructor(
     )
 
     override fun saveTwitchToken(oAuthToken: TwitchOAuthToken) {
-        TODO("Not yet implemented")
+        applicationScope.launch { cache.saveTwitchOAuthToken(oAuthToken) }
     }
 
-    override fun loadTwitchToken(): Flow<TwitchOAuthToken> {
-        TODO("Not yet implemented")
-    }
+    override fun loadTwitchToken(): Flow<TwitchOAuthToken> =
+        flow { emitAll(cache.loadTwitchOAuthToken()) }.filterNotNull()
 }
