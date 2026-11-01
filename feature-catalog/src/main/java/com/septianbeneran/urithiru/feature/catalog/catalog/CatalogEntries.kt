@@ -1,65 +1,68 @@
 package com.septianbeneran.urithiru.feature.catalog.catalog
 
+import androidx.annotation.StringRes
+import com.septianbeneran.urithiru.feature.catalog.R
+
 data class CatalogEntry(
     val id: String,
     val name: String,
-    val description: String
+    @param:StringRes val description: Int
 )
 
 data class CatalogSection(
-    val title: String,
+    @param:StringRes val title: Int,
     val entries: List<CatalogEntry>
 )
 
 object CatalogEntries {
     val sections = listOf(
         CatalogSection(
-            title = "Actions",
+            title = R.string.catalog_section_actions,
             entries = listOf(
-                CatalogEntry("button", "UriButton", "Primary, secondary and tertiary buttons, with optional icons."),
-                CatalogEntry("dialog", "UriDialog", "Alert and confirmation dialogs."),
-                CatalogEntry("toast", "UriToast", "Short success, info, warning and error messages."),
-                CatalogEntry("banner", "UriBanner", "A highlighted message with a call to action.")
+                CatalogEntry("button", "UriButton", R.string.catalog_entry_button),
+                CatalogEntry("dialog", "UriDialog", R.string.catalog_entry_dialog),
+                CatalogEntry("toast", "UriToast", R.string.catalog_entry_toast),
+                CatalogEntry("banner", "UriBanner", R.string.catalog_entry_banner)
             )
         ),
         CatalogSection(
-            title = "Inputs",
+            title = R.string.catalog_section_inputs,
             entries = listOf(
-                CatalogEntry("text_field", "UriTextField", "Labelled form field with error text and a password toggle."),
-                CatalogEntry("search_bar", "UriSearchBar", "Search field with a clear button and keyboard search."),
-                CatalogEntry("check_box", "UriCheckBox", "Checkboxes in three sizes."),
-                CatalogEntry("radio_button", "UriRadioButton", "Single choice from a group."),
-                CatalogEntry("theme_picker", "UriThemePicker", "Light, Dark or Match system, as used in onboarding and Profile.")
+                CatalogEntry("text_field", "UriTextField", R.string.catalog_entry_text_field),
+                CatalogEntry("search_bar", "UriSearchBar", R.string.catalog_entry_search_bar),
+                CatalogEntry("check_box", "UriCheckBox", R.string.catalog_entry_check_box),
+                CatalogEntry("radio_button", "UriRadioButton", R.string.catalog_entry_radio_button),
+                CatalogEntry("theme_picker", "UriThemePicker", R.string.catalog_entry_theme_picker)
             )
         ),
         CatalogSection(
-            title = "Loading and states",
+            title = R.string.catalog_section_states,
             entries = listOf(
-                CatalogEntry("loader", "UriLoader", "Spinner, and the full-screen CentralLoadingDialog."),
-                CatalogEntry("progress_bar", "UriProgressBar", "Determinate progress."),
-                CatalogEntry("skeleton", "UriSkeleton", "Shimmering placeholders shown while content loads."),
-                CatalogEntry("error_state", "UriErrorState", "Full-screen failure with a message for each AppError."),
-                CatalogEntry("empty_state", "UriEmptyState", "Shown when a request succeeds but returns nothing."),
-                CatalogEntry("list_footer", "UriListFooter", "Loading or Retry row at the end of a paginated list.")
+                CatalogEntry("loader", "UriLoader", R.string.catalog_entry_loader),
+                CatalogEntry("progress_bar", "UriProgressBar", R.string.catalog_entry_progress_bar),
+                CatalogEntry("skeleton", "UriSkeleton", R.string.catalog_entry_skeleton),
+                CatalogEntry("error_state", "UriErrorState", R.string.catalog_entry_error_state),
+                CatalogEntry("empty_state", "UriEmptyState", R.string.catalog_entry_empty_state),
+                CatalogEntry("list_footer", "UriListFooter", R.string.catalog_entry_list_footer)
             )
         ),
         CatalogSection(
-            title = "Content",
+            title = R.string.catalog_section_content,
             entries = listOf(
-                CatalogEntry("list_item", "UriListItem", "Row with a title, description and optional leading or trailing content."),
-                CatalogEntry("image", "UriImage", "Network image with a placeholder while loading or on error."),
-                CatalogEntry("media_placeholder", "UriMediaPlaceHolder", "Placeholder for missing images or video."),
-                CatalogEntry("avatar", "UriAvatar", "User avatar in three sizes."),
-                CatalogEntry("badge", "UriBadge", "Number, icon and dot badges."),
-                CatalogEntry("dot", "UriDot", "Small indicator, e.g. for pager progress."),
-                CatalogEntry("stepper", "UriStepper", "Numbered steps in a flow."),
-                CatalogEntry("divider", "UriDivider", "Thin separator line.")
+                CatalogEntry("list_item", "UriListItem", R.string.catalog_entry_list_item),
+                CatalogEntry("image", "UriImage", R.string.catalog_entry_image),
+                CatalogEntry("media_placeholder", "UriMediaPlaceHolder", R.string.catalog_entry_media_placeholder),
+                CatalogEntry("avatar", "UriAvatar", R.string.catalog_entry_avatar),
+                CatalogEntry("badge", "UriBadge", R.string.catalog_entry_badge),
+                CatalogEntry("dot", "UriDot", R.string.catalog_entry_dot),
+                CatalogEntry("stepper", "UriStepper", R.string.catalog_entry_stepper),
+                CatalogEntry("divider", "UriDivider", R.string.catalog_entry_divider)
             )
         ),
         CatalogSection(
-            title = "Navigation",
+            title = R.string.catalog_section_navigation,
             entries = listOf(
-                CatalogEntry("top_app_bar", "UriTopAppBar", "Screen title bar with an optional back button and actions.")
+                CatalogEntry("top_app_bar", "UriTopAppBar", R.string.catalog_entry_top_app_bar)
             )
         )
     )

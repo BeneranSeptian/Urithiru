@@ -16,8 +16,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.septianbeneran.urithiru.core.remote.entity.AppError
+import com.septianbeneran.urithiru.core.ui.R as CoreUiR
 import com.septianbeneran.urithiru.core.ui.component.CentralLoadingDialog
 import com.septianbeneran.urithiru.core.ui.component.UriButton
 import com.septianbeneran.urithiru.core.ui.component.UriButtonProperties.Type.Secondary
@@ -28,6 +30,7 @@ import com.septianbeneran.urithiru.core.ui.component.UriLoader
 import com.septianbeneran.urithiru.core.ui.component.UriProgressBar
 import com.septianbeneran.urithiru.core.ui.component.UriSkeleton
 import com.septianbeneran.urithiru.core.ui.component.UriSkeletonListItem
+import com.septianbeneran.urithiru.feature.catalog.R
 import kotlinx.coroutines.delay
 
 @Composable
@@ -41,11 +44,11 @@ fun LoaderDemo() {
         }
     }
 
-    DemoSection("Spinner") {
+    DemoSection(stringResource(R.string.catalog_demo_spinner)) {
         UriLoader()
     }
     DemoSection("CentralLoadingDialog") {
-        UriButton(text = "Show for 2 seconds", onClick = { isDialogShown = true })
+        UriButton(text = stringResource(R.string.catalog_demo_show_two_seconds), onClick = { isDialogShown = true })
     }
     if (isDialogShown) CentralLoadingDialog()
 }
@@ -54,7 +57,7 @@ fun LoaderDemo() {
 fun ProgressBarDemo() {
     var progress by rememberSaveable { mutableFloatStateOf(0.4f) }
 
-    DemoSection("Try it") {
+    DemoSection(stringResource(R.string.catalog_demo_try_it)) {
         UriProgressBar(modifier = Modifier.fillMaxWidth(), progress = progress)
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             UriButton(type = Secondary, text = "-10%", onClick = { progress = (progress - 0.1f).coerceAtLeast(0f) })
@@ -65,7 +68,7 @@ fun ProgressBarDemo() {
 
 @Composable
 fun SkeletonDemo() {
-    DemoSection("Blocks") {
+    DemoSection(stringResource(R.string.catalog_demo_blocks)) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
             UriSkeleton(modifier = Modifier.size(64.dp))
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -74,19 +77,19 @@ fun SkeletonDemo() {
             }
         }
     }
-    DemoSection("List rows") {
+    DemoSection(stringResource(R.string.catalog_demo_list_rows)) {
         repeat(3) { UriSkeletonListItem() }
     }
 }
 
 @Composable
 fun ErrorStateDemo() {
-    DemoSection("Retryable, e.g. no internet") {
+    DemoSection(stringResource(R.string.catalog_demo_retryable)) {
         Box(modifier = Modifier.fillMaxWidth().height(320.dp)) {
             UriErrorState(error = AppError.NoInternet, onRetry = {})
         }
     }
-    DemoSection("Not retryable, e.g. not found") {
+    DemoSection(stringResource(R.string.catalog_demo_not_retryable)) {
         Box(modifier = Modifier.fillMaxWidth().height(280.dp)) {
             UriErrorState(error = AppError.NotFound, onRetry = {})
         }
@@ -95,19 +98,19 @@ fun ErrorStateDemo() {
 
 @Composable
 fun EmptyStateDemo() {
-    DemoSection("Default") {
+    DemoSection(stringResource(R.string.catalog_demo_default)) {
         Box(modifier = Modifier.fillMaxWidth().height(280.dp)) {
-            UriEmptyState(title = "No weapons found", message = "Try a different name.")
+            UriEmptyState(title = stringResource(R.string.catalog_demo_no_weapons), message = stringResource(CoreUiR.string.common_try_different_name))
         }
     }
 }
 
 @Composable
 fun ListFooterDemo() {
-    DemoSection("Loading the next page") {
+    DemoSection(stringResource(R.string.catalog_demo_loading_next_page)) {
         UriListFooter(isLoading = true, error = null, onRetry = {})
     }
-    DemoSection("Next page failed") {
+    DemoSection(stringResource(R.string.catalog_demo_next_page_failed)) {
         UriListFooter(isLoading = false, error = AppError.Timeout, onRetry = {})
     }
 }

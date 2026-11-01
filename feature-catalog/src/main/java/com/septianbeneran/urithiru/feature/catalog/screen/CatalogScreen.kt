@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -21,7 +22,7 @@ import com.septianbeneran.urithiru.core.navigation.graph.FeatureCatalogNavGraph
 import com.septianbeneran.urithiru.core.navigation.routeparams.feature_catalog.CatalogComponentRoute
 import com.septianbeneran.urithiru.core.navigation.routeparams.feature_catalog.CatalogRoute
 import com.septianbeneran.urithiru.core.navigation.util.Navigator
-import com.septianbeneran.urithiru.core.ui.R
+import com.septianbeneran.urithiru.core.ui.R as CoreUiR
 import com.septianbeneran.urithiru.core.ui.base.BaseScreen
 import com.septianbeneran.urithiru.core.ui.base.LocalScreenBottomPadding
 import com.septianbeneran.urithiru.core.ui.component.UriDivider
@@ -44,7 +45,7 @@ fun CatalogRoute(
 
     BaseScreen(
         viewModel = viewModel,
-        topAppBarArgs = defaults(title = "Catalog", backIcon = null),
+        topAppBarArgs = defaults(title = stringResource(CoreUiR.string.common_title_catalog), backIcon = null),
         contentPadding = PaddingValues(start = 8.dp, top = 24.dp, end = 8.dp),
         drawBehindBottomOverlay = true
     ) {
@@ -68,7 +69,7 @@ fun CatalogScreen(
             item(key = section.title) {
                 Text(
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 4.dp),
-                    text = section.title,
+                    text = stringResource(section.title),
                     style = UrithiruTheme.typography.h5,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -77,11 +78,11 @@ fun CatalogScreen(
                 UriListItem(
                     modifier = Modifier.clickable { onEntryClick(entry.id) },
                     title = entry.name,
-                    description = entry.description,
+                    description = stringResource(entry.description),
                     trailingContent = {
                         Icon(
                             modifier = Modifier.size(20.dp),
-                            painter = painterResource(R.drawable.chevron_right),
+                            painter = painterResource(CoreUiR.drawable.chevron_right),
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )

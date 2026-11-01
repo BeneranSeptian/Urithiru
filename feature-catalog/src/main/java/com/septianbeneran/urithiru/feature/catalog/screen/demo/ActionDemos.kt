@@ -9,8 +9,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.septianbeneran.urithiru.core.ui.R
+import com.septianbeneran.urithiru.core.ui.R as CoreUiR
 import com.septianbeneran.urithiru.core.ui.component.UriBanner
 import com.septianbeneran.urithiru.core.ui.component.UriButton
 import com.septianbeneran.urithiru.core.ui.component.UriButtonProperties.Type.Secondary
@@ -19,24 +20,25 @@ import com.septianbeneran.urithiru.core.ui.component.UriDialog
 import com.septianbeneran.urithiru.core.ui.component.UriDialogProperties
 import com.septianbeneran.urithiru.core.ui.component.UriToast
 import com.septianbeneran.urithiru.core.ui.component.UriToastProperties.UriToastType
+import com.septianbeneran.urithiru.feature.catalog.R
 
 @Composable
 fun ButtonDemo() {
-    DemoSection("Types") {
+    DemoSection(stringResource(R.string.catalog_demo_types)) {
         FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            UriButton(text = "Primary", onClick = {})
-            UriButton(type = Secondary, text = "Secondary", onClick = {})
-            UriButton(type = Tertiary, text = "Tertiary", onClick = {})
+            UriButton(text = stringResource(CoreUiR.string.common_primary), onClick = {})
+            UriButton(type = Secondary, text = stringResource(CoreUiR.string.common_secondary), onClick = {})
+            UriButton(type = Tertiary, text = stringResource(R.string.catalog_demo_tertiary), onClick = {})
         }
     }
-    DemoSection("With icons") {
+    DemoSection(stringResource(R.string.catalog_demo_with_icons)) {
         FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            UriButton(text = "Play", leadingIcon = R.drawable.play, onClick = {})
-            UriButton(type = Secondary, text = "Next", trailingIcon = R.drawable.chevron_right, onClick = {})
+            UriButton(text = stringResource(R.string.catalog_demo_play), leadingIcon = CoreUiR.drawable.play, onClick = {})
+            UriButton(type = Secondary, text = stringResource(CoreUiR.string.common_next), trailingIcon = CoreUiR.drawable.chevron_right, onClick = {})
         }
     }
-    DemoSection("Full width") {
-        UriButton(modifier = Modifier.fillMaxWidth(), text = "Continue", onClick = {})
+    DemoSection(stringResource(R.string.catalog_demo_full_width)) {
+        UriButton(modifier = Modifier.fillMaxWidth(), text = stringResource(R.string.catalog_demo_continue), onClick = {})
     }
 }
 
@@ -44,30 +46,30 @@ fun ButtonDemo() {
 fun DialogDemo() {
     var openDialog by rememberSaveable { mutableStateOf<String?>(null) }
 
-    DemoSection("Try it") {
+    DemoSection(stringResource(R.string.catalog_demo_try_it)) {
         FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            UriButton(text = "Alert", onClick = { openDialog = "alert" })
-            UriButton(type = Secondary, text = "Confirmation", onClick = { openDialog = "confirmation" })
+            UriButton(text = stringResource(R.string.catalog_demo_alert), onClick = { openDialog = "alert" })
+            UriButton(type = Secondary, text = stringResource(R.string.catalog_demo_confirmation), onClick = { openDialog = "confirmation" })
         }
     }
 
     when (openDialog) {
         "alert" -> UriDialog(
-            textTitle = "Saved",
-            textDescription = "Your changes have been saved.",
+            textTitle = stringResource(CoreUiR.string.common_saved),
+            textDescription = stringResource(R.string.catalog_demo_saved_message),
             type = UriDialogProperties.Type.Alert(
-                primaryButtonText = "OK",
+                primaryButtonText = stringResource(R.string.catalog_demo_ok),
                 onPrimaryButtonClick = { openDialog = null }
             ),
             onDismissRequest = { openDialog = null },
             isCancelable = true
         )
         "confirmation" -> UriDialog(
-            textTitle = "Remove favorite?",
-            textDescription = "You can add it again at any time.",
+            textTitle = stringResource(R.string.catalog_demo_remove_favorite),
+            textDescription = stringResource(R.string.catalog_demo_remove_favorite_message),
             type = UriDialogProperties.Type.Confirmation(
-                primaryButtonText = "Remove",
-                secondaryButtonText = "Cancel",
+                primaryButtonText = stringResource(R.string.catalog_demo_remove),
+                secondaryButtonText = stringResource(CoreUiR.string.common_cancel),
                 onPrimaryButtonClick = { openDialog = null },
                 onSecondaryButtonClick = { openDialog = null }
             ),
@@ -81,33 +83,33 @@ fun DialogDemo() {
 fun ToastDemo() {
     var isDismissibleVisible by rememberSaveable { mutableStateOf(true) }
 
-    DemoSection("Types") {
-        UriToast(type = UriToastType.Success, titleText = "Success", subTitleText = "Your order was placed.", onClose = {})
-        UriToast(type = UriToastType.Info, titleText = "Info", subTitleText = "A new version is available.", onClose = {})
-        UriToast(type = UriToastType.Warning, titleText = "Warning", subTitleText = "Your session expires soon.", onClose = {})
-        UriToast(type = UriToastType.Error, titleText = "Error", subTitleText = "The payment failed.", onClose = {})
+    DemoSection(stringResource(R.string.catalog_demo_types)) {
+        UriToast(type = UriToastType.Success, titleText = stringResource(R.string.catalog_demo_success), subTitleText = stringResource(R.string.catalog_demo_success_message), onClose = {})
+        UriToast(type = UriToastType.Info, titleText = stringResource(R.string.catalog_demo_info), subTitleText = stringResource(R.string.catalog_demo_info_message), onClose = {})
+        UriToast(type = UriToastType.Warning, titleText = stringResource(R.string.catalog_demo_warning), subTitleText = stringResource(R.string.catalog_demo_warning_message), onClose = {})
+        UriToast(type = UriToastType.Error, titleText = stringResource(R.string.catalog_demo_error), subTitleText = stringResource(R.string.catalog_demo_error_message), onClose = {})
     }
-    DemoSection("Dismissible") {
+    DemoSection(stringResource(R.string.catalog_demo_dismissible)) {
         if (isDismissibleVisible) {
             UriToast(
                 type = UriToastType.Info,
-                titleText = "Tap the X",
-                subTitleText = "The toast closes itself.",
+                titleText = stringResource(R.string.catalog_demo_tap_close),
+                subTitleText = stringResource(R.string.catalog_demo_tap_close_message),
                 onClose = { isDismissibleVisible = false }
             )
         } else {
-            UriButton(type = Secondary, text = "Show again", onClick = { isDismissibleVisible = true })
+            UriButton(type = Secondary, text = stringResource(R.string.catalog_demo_show_again), onClick = { isDismissibleVisible = true })
         }
     }
 }
 
 @Composable
 fun BannerDemo() {
-    DemoSection("Default") {
+    DemoSection(stringResource(R.string.catalog_demo_default)) {
         UriBanner(
-            titleText = "Upgrade to Pro",
-            subTitleText = "Unlock offline mode and favorites sync.",
-            buttonText = "Learn more"
+            titleText = stringResource(R.string.catalog_demo_banner_title),
+            subTitleText = stringResource(R.string.catalog_demo_banner_message),
+            buttonText = stringResource(R.string.catalog_demo_learn_more)
         )
     }
 }

@@ -12,8 +12,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.septianbeneran.urithiru.core.settings.ThemeMode
+import com.septianbeneran.urithiru.core.ui.R as CoreUiR
 import com.septianbeneran.urithiru.core.ui.component.UriCheckBox
 import com.septianbeneran.urithiru.core.ui.component.UriCheckBoxProperties
 import com.septianbeneran.urithiru.core.ui.component.UriRadioButton
@@ -22,26 +24,27 @@ import com.septianbeneran.urithiru.core.ui.component.UriSearchBar
 import com.septianbeneran.urithiru.core.ui.component.UriTextField
 import com.septianbeneran.urithiru.core.ui.component.UriThemePicker
 import com.septianbeneran.urithiru.core.ui.theme.UrithiruTheme
+import com.septianbeneran.urithiru.feature.catalog.R
 
 @Composable
 fun TextFieldDemo() {
     var name by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
 
-    DemoSection("Text") {
+    DemoSection(stringResource(R.string.catalog_demo_text)) {
         UriTextField(
             value = name,
             onValueChange = { name = it },
-            label = "Name",
-            placeholder = "Type something",
-            errorText = if (name.length > 12) "Use at most 12 characters" else null
+            label = stringResource(R.string.catalog_demo_name),
+            placeholder = stringResource(R.string.catalog_demo_type_something),
+            errorText = if (name.length > 12) stringResource(R.string.catalog_demo_name_too_long) else null
         )
     }
-    DemoSection("Password") {
-        UriTextField(value = password, onValueChange = { password = it }, label = "Password", isPassword = true)
+    DemoSection(stringResource(CoreUiR.string.common_password)) {
+        UriTextField(value = password, onValueChange = { password = it }, label = stringResource(CoreUiR.string.common_password), isPassword = true)
     }
-    DemoSection("Disabled") {
-        UriTextField(value = "Read only", onValueChange = {}, label = "Username", enabled = false)
+    DemoSection(stringResource(R.string.catalog_demo_disabled)) {
+        UriTextField(value = stringResource(R.string.catalog_demo_read_only), onValueChange = {}, label = stringResource(CoreUiR.string.common_username), enabled = false)
     }
 }
 
@@ -50,16 +53,17 @@ fun SearchBarDemo() {
     var query by rememberSaveable { mutableStateOf("") }
     var lastSearch by rememberSaveable { mutableStateOf<String?>(null) }
 
-    DemoSection("Try it") {
+    DemoSection(stringResource(R.string.catalog_demo_try_it)) {
         UriSearchBar(
             value = query,
             onValueChange = { query = it },
             onSearch = { lastSearch = query },
-            placeholder = "Search weapon...",
+            placeholder = stringResource(R.string.catalog_demo_search_weapon),
             onClear = { lastSearch = null }
         )
         Text(
-            text = lastSearch?.let { "Searched for \"$it\"" } ?: "Press the keyboard's search key",
+            text = lastSearch?.let { stringResource(R.string.catalog_demo_searched_for, it) }
+                ?: stringResource(R.string.catalog_demo_press_search),
             style = UrithiruTheme.typography.bodyS,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -72,7 +76,7 @@ fun CheckBoxDemo() {
     var medium by rememberSaveable { mutableStateOf(false) }
     var large by rememberSaveable { mutableStateOf(true) }
 
-    DemoSection("Sizes") {
+    DemoSection(stringResource(R.string.catalog_demo_sizes)) {
         Row(horizontalArrangement = Arrangement.spacedBy(24.dp), verticalAlignment = Alignment.CenterVertically) {
             UriCheckBox(checked = small, size = UriCheckBoxProperties.Size.Small, onChecked = { small = it })
             UriCheckBox(checked = medium, size = UriCheckBoxProperties.Size.Medium, onChecked = { medium = it })
@@ -83,10 +87,10 @@ fun CheckBoxDemo() {
 
 @Composable
 fun RadioButtonDemo() {
-    val options = listOf("Light", "Dark", "Match system")
+    val options = listOf(CoreUiR.string.theme_light, CoreUiR.string.theme_dark, CoreUiR.string.theme_system)
     var selected by rememberSaveable { mutableStateOf(options.first()) }
 
-    DemoSection("Group") {
+    DemoSection(stringResource(R.string.catalog_demo_group)) {
         options.forEach { option ->
             Row(
                 modifier = Modifier.clickable { selected = option },
@@ -95,14 +99,14 @@ fun RadioButtonDemo() {
             ) {
                 UriRadioButton(selected = selected == option, onSelected = { selected = option })
                 Text(
-                    text = option,
+                    text = stringResource(option),
                     style = UrithiruTheme.typography.bodyM,
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }
         }
     }
-    DemoSection("Sizes and disabled") {
+    DemoSection(stringResource(R.string.catalog_demo_sizes_and_disabled)) {
         Row(horizontalArrangement = Arrangement.spacedBy(24.dp), verticalAlignment = Alignment.CenterVertically) {
             UriRadioButton(selected = true, size = UriRadioButtonProperties.Size.Small)
             UriRadioButton(selected = true, size = UriRadioButtonProperties.Size.Medium)
@@ -116,10 +120,10 @@ fun RadioButtonDemo() {
 fun ThemePickerDemo() {
     var selected by rememberSaveable { mutableStateOf(ThemeMode.System) }
 
-    DemoSection("Try it") {
+    DemoSection(stringResource(R.string.catalog_demo_try_it)) {
         UriThemePicker(selected = selected, onSelect = { selected = it })
         Text(
-            text = "Here it only changes this demo. Profile saves the choice and applies it to the app.",
+            text = stringResource(R.string.catalog_demo_theme_note),
             style = UrithiruTheme.typography.bodyS,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
