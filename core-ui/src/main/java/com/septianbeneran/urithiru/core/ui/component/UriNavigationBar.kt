@@ -247,7 +247,13 @@ private fun BarItem(
         modifier = modifier
             .padding(style.indicatorPadding)
             .clip(style.indicatorShape)
-            .selectable(selected = isSelected, onClick = onClick, role = Role.Tab),
+            .selectable(
+                selected = isSelected,
+                interactionSource = null,
+                indication = null,
+                role = Role.Tab,
+                onClick = onClick
+            ),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
