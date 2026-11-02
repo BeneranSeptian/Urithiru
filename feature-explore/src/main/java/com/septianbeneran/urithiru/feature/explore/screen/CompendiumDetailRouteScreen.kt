@@ -9,8 +9,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -64,7 +67,8 @@ fun CompendiumDetailRoute(
 
     BaseScreen(
         viewModel = viewModel,
-        contentPadding = PaddingValues(0.dp)
+        contentPadding = PaddingValues(0.dp),
+        isUseSystembarsPadding = false
     ) {
         CompendiumDetailScreen(
             uiState = uiState,
@@ -84,7 +88,11 @@ fun CompendiumDetailScreen(
         when (val state = uiState.detailState) {
             is StateSuccess -> state.value?.let { DetailContent(entry = it) }
 
-            is StateFailed -> Column(modifier = Modifier.padding(top = 72.dp)) {
+            is StateFailed -> Column(
+                modifier = Modifier
+                    .systemBarsPadding()
+                    .padding(top = 72.dp)
+            ) {
                 UriErrorState(
                     error = state.failed,
                     onRetry = { onAction(CompendiumDetailAction.Retry) }
@@ -97,6 +105,7 @@ fun CompendiumDetailScreen(
         BackButton(
             modifier = Modifier
                 .align(Alignment.TopStart)
+                .statusBarsPadding()
                 .padding(16.dp),
             onClick = onBack
         )
@@ -117,6 +126,7 @@ private fun DetailContent(entry: CompendiumEntry) {
                 .padding(top = HeroHeight - SheetOverlap)
                 .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
                 .background(MaterialTheme.colorScheme.background)
+                .navigationBarsPadding()
                 .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 32.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
@@ -139,7 +149,9 @@ private fun Hero(entry: CompendiumEntry) {
                 .fillMaxSize()
                 .then(
                     if (entry.isArtwork) Modifier
-                    else Modifier.padding(start = 48.dp, end = 48.dp, top = 56.dp, bottom = SheetOverlap + 24.dp)
+                    else Modifier
+                        .statusBarsPadding()
+                        .padding(start = 48.dp, end = 48.dp, top = 56.dp, bottom = SheetOverlap + 24.dp)
                 ),
             entry = entry
         )
