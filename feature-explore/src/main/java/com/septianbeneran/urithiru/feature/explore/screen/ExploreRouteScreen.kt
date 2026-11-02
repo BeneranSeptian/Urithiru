@@ -1,5 +1,8 @@
 package com.septianbeneran.urithiru.feature.explore.screen
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -54,6 +57,7 @@ import com.septianbeneran.urithiru.core.navigation.util.Navigator
 import com.septianbeneran.urithiru.core.ui.R as CoreUiR
 import com.septianbeneran.urithiru.core.ui.base.BaseScreen
 import com.septianbeneran.urithiru.core.ui.base.LocalScreenBottomPadding
+import com.septianbeneran.urithiru.core.ui.component.UriDivider
 import com.septianbeneran.urithiru.core.ui.component.UriDot
 import com.septianbeneran.urithiru.core.ui.component.UriEmptyState
 import com.septianbeneran.urithiru.core.ui.component.UriErrorState
@@ -235,6 +239,11 @@ private fun ExploreFeed(
     val gridState = rememberLazyStaggeredGridState()
     val feedState = state.feedState
     val onEntryClick = entryClick(onAction)
+    val showDivider by remember {
+        derivedStateOf {
+            gridState.firstVisibleItemIndex > 0 || gridState.firstVisibleItemScrollOffset > 0
+        }
+    }
 
     LoadMoreEffect(
         gridState = gridState,
@@ -242,100 +251,110 @@ private fun ExploreFeed(
         onLoadNextPage = { onAction(LoadNextPage) }
     )
 
-    LazyVerticalStaggeredGrid(
-        modifier = Modifier.fillMaxSize(),
-        state = gridState,
-        columns = StaggeredGridCells.Fixed(2),
-        contentPadding = PaddingValues(
-            start = ScreenMargin,
-            end = ScreenMargin,
-            top = 16.dp,
-            bottom = ScreenMargin + LocalScreenBottomPadding.current
-        ),
-        horizontalArrangement = Arrangement.spacedBy(FeedSpacing),
-        verticalItemSpacing = FeedSpacing
-    ) {
-        item(span = StaggeredGridItemSpan.FullLine, contentType = "kinds") {
-            KindChips(
-                modifier = Modifier.bleed(ScreenMargin),
-                selected = state.selectedKind,
-                onSelect = { onAction(OnKindSelect(it)) }
-            )
+    Column(modifier = Modifier.fillMaxSize()) {
+        AnimatedVisibility(
+            visible = showDivider,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            UriDivider(modifier = Modifier.padding(top = 8.dp))
         }
 
-        if (state.featured.isNotEmpty()) {
-            item(span = StaggeredGridItemSpan.FullLine, contentType = "featured") {
-                FeaturedSection(
+        LazyVerticalStaggeredGrid(
+            modifier = Modifier.fillMaxSize(),
+            state = gridState,
+            columns = StaggeredGridCells.Fixed(2),
+            contentPadding = PaddingValues(
+                start = ScreenMargin,
+                end = ScreenMargin,
+                top = 16.dp,
+                bottom = ScreenMargin + LocalScreenBottomPadding.current
+            ),
+            horizontalArrangement = Arrangement.spacedBy(FeedSpacing),
+            verticalItemSpacing = FeedSpacing
+        ) {
+            item(span = StaggeredGridItemSpan.FullLine, contentType = "kinds") {
+                KindChips(
                     modifier = Modifier.bleed(ScreenMargin),
-                    entries = state.featured,
-                    onEntryClick = onEntryClick
+                    selected = state.selectedKind,
+                    onSelect = { onAction(OnKindSelect(it)) }
                 )
             }
-        }
 
-        state.regionRows.forEach { row ->
-            item(span = StaggeredGridItemSpan.FullLine, key = "region-${row.region}", contentType = "region") {
-                EntryRow(
-                    modifier = Modifier.bleed(ScreenMargin),
-                    title = localizedString(R.string.explore_around_region, row.region),
-                    subtitle = row.summary(),
-                    entries = row.entries,
-                    showKind = true,
-                    onSeeAll = null,
-                    onEntryClick = onEntryClick
-                )
-            }
-        }
-
-        item(span = StaggeredGridItemSpan.FullLine, contentType = "header") {
-            SectionHeader(
-                title = when {
-                    state.isSearching -> localizedString(R.string.explore_results_for, state.submittedQuery)
-                    state.selectedKind != null -> state.selectedKind.pluralLabel
-                    else -> localizedString(R.string.explore_for_you)
-                },
-                subtitle = when {
-                    state.isSearching -> state.selectedKind?.let { localizedString(R.string.explore_search_in, it.pluralLabel.lowercase()) }
-                        ?: localizedString(R.string.explore_search_everywhere)
-                    state.selectedKind != null -> state.selectedKind.tagline
-                    else -> localizedString(R.string.explore_for_you_subtitle)
+            if (state.featured.isNotEmpty()) {
+                item(span = StaggeredGridItemSpan.FullLine, contentType = "featured") {
+                    FeaturedSection(
+                        modifier = Modifier.bleed(ScreenMargin),
+                        entries = state.featured,
+                        onEntryClick = onEntryClick
+                    )
                 }
-            )
-        }
+            }
 
-        items(
-            items = state.entries,
-            key = { "${it.kind}-${it.id}" },
-            contentType = { it.kind }
-        ) { entry ->
-            CompendiumFeedCard(
-                entry = entry,
-                showKind = state.selectedKind == null,
-                onClick = onEntryClick(entry)
-            )
-        }
+            state.regionRows.forEach { row ->
+                item(span = StaggeredGridItemSpan.FullLine, key = "region-${row.region}", contentType = "region") {
+                    EntryRow(
+                        modifier = Modifier.bleed(ScreenMargin),
+                        title = localizedString(R.string.explore_around_region, row.region),
+                        subtitle = row.summary(),
+                        entries = row.entries,
+                        showKind = true,
+                        onSeeAll = null,
+                        onEntryClick = onEntryClick
+                    )
+                }
+            }
 
-        if (state.failedKinds.isNotEmpty()) {
-            item(span = StaggeredGridItemSpan.FullLine, contentType = "failed") {
-                Text(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = localizedString(
-                        R.string.explore_sections_failed,
-                        state.failedKinds.map { it.pluralLabel.lowercase() }.joinToString()
-                    ),
-                    style = UrithiruTheme.typography.bodyS,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center
+            item(span = StaggeredGridItemSpan.FullLine, contentType = "header") {
+                SectionHeader(
+                    title = when {
+                        state.isSearching -> localizedString(R.string.explore_results_for, state.submittedQuery)
+                        state.selectedKind != null -> state.selectedKind.pluralLabel
+                        else -> localizedString(R.string.explore_for_you)
+                    },
+                    subtitle = when {
+                        state.isSearching -> state.selectedKind?.let { localizedString(R.string.explore_search_in, it.pluralLabel.lowercase()) }
+                            ?: localizedString(R.string.explore_search_everywhere)
+                        state.selectedKind != null -> state.selectedKind.tagline
+                        else -> localizedString(R.string.explore_for_you_subtitle)
+                    }
                 )
             }
-        }
 
-        item(span = StaggeredGridItemSpan.FullLine, contentType = "footer") {
-            UriListFooter(
-                isLoading = feedState is StateLoading,
-                error = (feedState as? StateFailed)?.failed,
-                onRetry = { onAction(LoadNextPage) }
-            )
+            items(
+                items = state.entries,
+                key = { "${it.kind}-${it.id}" },
+                contentType = { it.kind }
+            ) { entry ->
+                CompendiumFeedCard(
+                    entry = entry,
+                    showKind = state.selectedKind == null,
+                    onClick = onEntryClick(entry)
+                )
+            }
+
+            if (state.failedKinds.isNotEmpty()) {
+                item(span = StaggeredGridItemSpan.FullLine, contentType = "failed") {
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = localizedString(
+                            R.string.explore_sections_failed,
+                            state.failedKinds.map { it.pluralLabel.lowercase() }.joinToString()
+                        ),
+                        style = UrithiruTheme.typography.bodyS,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+
+            item(span = StaggeredGridItemSpan.FullLine, contentType = "footer") {
+                UriListFooter(
+                    isLoading = feedState is StateLoading,
+                    error = (feedState as? StateFailed)?.failed,
+                    onRetry = { onAction(LoadNextPage) }
+                )
+            }
         }
     }
 }
