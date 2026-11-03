@@ -5,9 +5,9 @@ import com.google.devtools.ksp.symbol.KSType
 
 internal object AnnotationExtension {
     inline fun <reified T> KSAnnotation.findArgumentValue(name: String): T? =
-        arguments.find { it.name?.asString() == name }?.value as T?
+        arguments.find { it.name?.asString() == name }?.value as? T
 
-    fun KSAnnotation.getRouteParams() = findArgumentValue<KSType>("routeParams")!!
+    fun KSAnnotation.getRouteParams(): KSType? = findArgumentValue<KSType>("routeParams")
 
-    fun KSAnnotation.getGraph() = findArgumentValue<KSType>("graph")!!
+    fun KSAnnotation.getGraph(): KSType? = findArgumentValue<KSType>("graph")
 }
