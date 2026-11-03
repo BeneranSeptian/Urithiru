@@ -54,7 +54,6 @@ import com.septianbeneran.urithiru.core.navigation.graph.FeatureExploreNavGraph
 import com.septianbeneran.urithiru.core.navigation.routeparams.feature_explore.CompendiumDetailRoute
 import com.septianbeneran.urithiru.core.navigation.routeparams.feature_explore.ExploreRoute
 import com.septianbeneran.urithiru.core.navigation.util.Navigator
-import com.septianbeneran.urithiru.core.ui.R as CoreUiR
 import com.septianbeneran.urithiru.core.ui.base.BaseScreen
 import com.septianbeneran.urithiru.core.ui.base.LocalScreenBottomPadding
 import com.septianbeneran.urithiru.core.ui.component.UriDivider
@@ -78,7 +77,6 @@ import com.septianbeneran.urithiru.feature.explore.screen.feed.CompendiumFeedCar
 import com.septianbeneran.urithiru.feature.explore.screen.feed.FeaturedEntryCard
 import com.septianbeneran.urithiru.feature.explore.screen.feed.countLabel
 import com.septianbeneran.urithiru.feature.explore.screen.feed.pluralLabel
-import com.septianbeneran.urithiru.feature.explore.screen.feed.singularLabel
 import com.septianbeneran.urithiru.feature.explore.screen.feed.tagline
 import com.septianbeneran.urithiru.feature.explore.screen.stateaction.ExploreAction
 import com.septianbeneran.urithiru.feature.explore.screen.stateaction.ExploreAction.DismissRefreshError
@@ -92,16 +90,18 @@ import com.septianbeneran.urithiru.feature.explore.screen.stateaction.ExploreAct
 import com.septianbeneran.urithiru.feature.explore.screen.stateaction.ExploreNonce.NavigateToDetail
 import com.septianbeneran.urithiru.feature.explore.screen.stateaction.ExploreUiState
 import com.septianbeneran.urithiru.feature.explore.screen.stateaction.RegionRow
+import com.septianbeneran.urithiru.feature.explore.screen.util.FEATURED_AUTO_SCROLL_MS
+import com.septianbeneran.urithiru.feature.explore.screen.util.FeedSpacing
+import com.septianbeneran.urithiru.feature.explore.screen.util.LOAD_MORE_THRESHOLD
+import com.septianbeneran.urithiru.feature.explore.screen.util.ScreenMargin
+import com.septianbeneran.urithiru.feature.explore.screen.util.SearchCardHeight
+import com.septianbeneran.urithiru.feature.explore.screen.util.SearchCardWidth
+import com.septianbeneran.urithiru.feature.explore.screen.util.SkeletonCardRatios
 import com.septianbeneran.urithiru.feature.explore.viewmodel.ExploreViewModel
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
+import com.septianbeneran.urithiru.core.ui.R as CoreUiR
 
-private val ScreenMargin = 24.dp
-private val FeedSpacing = 12.dp
-private val SearchCardWidth = 168.dp
-private val SearchCardHeight = 240.dp
-private const val FEATURED_AUTO_SCROLL_MS = 4_000L
-private const val LOAD_MORE_THRESHOLD = 4
-private val SkeletonCardRatios = listOf(0.78f, 1f, 1.15f, 0.9f)
 
 @FeatureRoute(
     routeParams = ExploreRoute::class,
@@ -118,7 +118,10 @@ fun ExploreRoute(
         viewModel = viewModel,
         contentPadding = PaddingValues(top = ScreenMargin),
         drawBehindBottomOverlay = true,
-        topAppBarArgs = defaults(title = localizedString(CoreUiR.string.common_title_explore), backIcon = null)
+        topAppBarArgs = defaults(
+            title = localizedString(CoreUiR.string.common_title_explore),
+            backIcon = null
+        )
     ) {
         ExploreScreen(
             uiState = uiState,
@@ -130,7 +133,12 @@ fun ExploreRoute(
         nonce = viewModel.nonce,
         onNonce = { nonce ->
             when (nonce) {
-                is NavigateToDetail -> navigator.navigate(CompendiumDetailRoute(kind = nonce.kind.name, id = nonce.id))
+                is NavigateToDetail -> navigator.navigate(
+                    CompendiumDetailRoute(
+                        kind = nonce.kind.name,
+                        id = nonce.id
+                    )
+                )
             }
         }
     )
@@ -252,6 +260,13 @@ private fun ExploreFeed(
     )
 
     Column(modifier = Modifier.fillMaxSize()) {
+        KindChips(
+            modifier = Modifier
+                .padding(horizontal = ScreenMargin)
+                .bleed(ScreenMargin),
+            selected = state.selectedKind,
+            onSelect = { onAction(OnKindSelect(it)) }
+        )
         AnimatedVisibility(
             visible = showDivider,
             enter = fadeIn(),
@@ -273,14 +288,6 @@ private fun ExploreFeed(
             horizontalArrangement = Arrangement.spacedBy(FeedSpacing),
             verticalItemSpacing = FeedSpacing
         ) {
-            item(span = StaggeredGridItemSpan.FullLine, contentType = "kinds") {
-                KindChips(
-                    modifier = Modifier.bleed(ScreenMargin),
-                    selected = state.selectedKind,
-                    onSelect = { onAction(OnKindSelect(it)) }
-                )
-            }
-
             if (state.featured.isNotEmpty()) {
                 item(span = StaggeredGridItemSpan.FullLine, contentType = "featured") {
                     FeaturedSection(
@@ -292,7 +299,11 @@ private fun ExploreFeed(
             }
 
             state.regionRows.forEach { row ->
-                item(span = StaggeredGridItemSpan.FullLine, key = "region-${row.region}", contentType = "region") {
+                item(
+                    span = StaggeredGridItemSpan.FullLine,
+                    key = "region-${row.region}",
+                    contentType = "region"
+                ) {
                     EntryRow(
                         modifier = Modifier.bleed(ScreenMargin),
                         title = localizedString(R.string.explore_around_region, row.region),
@@ -308,13 +319,23 @@ private fun ExploreFeed(
             item(span = StaggeredGridItemSpan.FullLine, contentType = "header") {
                 SectionHeader(
                     title = when {
-                        state.isSearching -> localizedString(R.string.explore_results_for, state.submittedQuery)
+                        state.isSearching -> localizedString(
+                            R.string.explore_results_for,
+                            state.submittedQuery
+                        )
+
                         state.selectedKind != null -> state.selectedKind.pluralLabel
                         else -> localizedString(R.string.explore_for_you)
                     },
                     subtitle = when {
-                        state.isSearching -> state.selectedKind?.let { localizedString(R.string.explore_search_in, it.pluralLabel.lowercase()) }
+                        state.isSearching -> state.selectedKind?.let {
+                            localizedString(
+                                R.string.explore_search_in,
+                                it.pluralLabel.lowercase()
+                            )
+                        }
                             ?: localizedString(R.string.explore_search_everywhere)
+
                         state.selectedKind != null -> state.selectedKind.tagline
                         else -> localizedString(R.string.explore_for_you_subtitle)
                     }
@@ -369,7 +390,10 @@ private fun SearchResults(
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(top = 16.dp, bottom = ScreenMargin + LocalScreenBottomPadding.current),
+        contentPadding = PaddingValues(
+            top = 16.dp,
+            bottom = ScreenMargin + LocalScreenBottomPadding.current
+        ),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         item(contentType = "kinds") {
@@ -507,9 +531,10 @@ private fun RegionRow.summary(): String =
         .map { (kind, count) -> kind.countLabel(count) }
         .joinToString(localizedString(R.string.explore_summary_separator))
 
-private fun entryClick(onAction: (ExploreAction) -> Unit): (CompendiumEntry) -> () -> Unit = { entry ->
-    { onAction(OnEntryClick(entry)) }
-}
+private fun entryClick(onAction: (ExploreAction) -> Unit): (CompendiumEntry) -> () -> Unit =
+    { entry ->
+        { onAction(OnEntryClick(entry)) }
+    }
 
 @Composable
 private fun LoadMoreEffect(
@@ -520,7 +545,8 @@ private fun LoadMoreEffect(
     val isNearEnd by remember(gridState) {
         derivedStateOf {
             val layoutInfo = gridState.layoutInfo
-            val lastVisible = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: return@derivedStateOf false
+            val lastVisible =
+                layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: return@derivedStateOf false
             lastVisible >= layoutInfo.totalItemsCount - LOAD_MORE_THRESHOLD
         }
     }
@@ -570,7 +596,7 @@ private fun FeaturedSection(
 
     LaunchedEffect(pagerState, entries.size) {
         while (true) {
-            delay(FEATURED_AUTO_SCROLL_MS)
+            delay(FEATURED_AUTO_SCROLL_MS.milliseconds)
             if (!pagerState.isScrollInProgress && entries.size > 1) {
                 pagerState.animateScrollToPage((pagerState.currentPage + 1) % entries.size)
             }
