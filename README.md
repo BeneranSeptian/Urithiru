@@ -105,7 +105,7 @@ Tabs (floating bottom bar on phones, rail on tablets):
 | `:feature-catalog` · `:feature-shop` · `:feature-explore` · `:feature-profile` | The four tabs |
 | `:navigation-processor` | The KSP processor that generates the feature graphs |
 
-`buildlogic` is not a module: it's an included build with the convention plugins (`base-convention`, `api-convention`, `compose-convention`, `feature-convention`, `app-convention`).
+`buildlogic` is not a module: it's an included build with the convention plugins (`base-convention`, `hilt-convention`, `api-convention`, `compose-convention`, `feature-convention`, `app-convention`).
 
 Dependencies only point down: `app → feature-* → api-* → core, core-entity`. Features never depend on each other; they navigate through the routes in `:core-navigation`.
 

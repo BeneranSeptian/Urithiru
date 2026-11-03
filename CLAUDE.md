@@ -26,10 +26,11 @@ Urithiru is a modular Android app template (Clean Architecture, Jetpack Compose,
 - **Feature modules never depend on each other.** They navigate through shared `@Serializable` route classes in `core-navigation`.
 - Use `moduleImplementation(projects.xxx)` (from `buildlogic/GradleExtension.kt`) for every inter-module dependency, e.g. `moduleImplementation(projects.coreUi)`. `projects.*` are Gradle's type-safe project accessors, generated from the `include(...)` list in `settings.gradle.kts`, so a misspelled or missing module fails to compile. Never use `project(":x")` in module build files. (The only exception is inside `buildlogic`, which is an included build and can't see the accessors.)
 - New modules apply one convention plugin:
-  - `api-convention` for data/API modules
-  - `feature-convention` for `feature-*` modules (Compose + Hilt-navigation, Coil and the navigation processor)
+  - `api-convention` for data/API modules (includes Hilt)
+  - `feature-convention` for `feature-*` modules (Compose, Hilt, Hilt-navigation, Coil and the navigation processor)
   - `compose-convention` for shared Compose libraries without screens (`core-ui`, `core-navigation`)
   - `base-convention` for plain libraries
+- `base-convention` and `compose-convention` don't include Hilt. A module that uses `@Inject`, `@Module` or `@HiltViewModel` also applies `hilt-convention` (as `core` and `core-ui` do). Add other libraries, like DataStore, only to the module that imports them.
 
 ## Layering per API module (`api-*`)
 

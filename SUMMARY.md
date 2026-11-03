@@ -44,10 +44,11 @@ Feature modules never depend on each other. They navigate using shared route cla
 
 Convention plugins (`buildlogic/src/main/kotlin`):
 - **`AndroidExtension.kt`**: `configureAndroid(project)` holds the Android setup shared by the app and every library (compileSdk, minSdk, Java 21, BuildConfig/resValues, and the product flavors). Both `base-convention` and `app-convention` call it, so flavor logic lives in one place.
-- **`base-convention`**: Android library, Hilt and KSP, namespace `com.septianbeneran.urithiru.<module.name>`, `configureAndroid`, the kotlinx-serialization compiler plugin, plus `baseDependencies()` (Hilt, kotlinx-serialization-json, DataStore).
-- **`api-convention`**: base convention plus Retrofit and kotlinx-serialization-json. It also loads any keys in the module's `microservice.properties` into `BuildConfig`. Endpoint paths don't go there: each `XRemoteDataSourceImpl` passes them to the `@Url` methods as literal strings (e.g. `"bosses"`, `"bosses/$id"`).
-- **`compose-convention`**: base convention plus Compose (BOM, UI, Material3, tooling), navigation-compose and activity-compose. Used by `core-ui` and `core-navigation`. (`core-ui` also adds Coil itself, for image-loading components.)
-- **`feature-convention`**: compose convention plus Hilt-navigation (`hiltViewModel()`), Coil, and `ksp(project(":navigation-processor"))`. Used by every `feature-*` module.
+- **`base-convention`**: Android library, namespace `com.septianbeneran.urithiru.<module.name>`, `configureAndroid`, the kotlinx-serialization compiler plugin and kotlinx-serialization-json, plus JUnit and AndroidX test. No Hilt or DataStore: `core-entity` uses it as is.
+- **`hilt-convention`**: KSP, the Hilt plugin, Hilt and its compiler. Included by `api-convention` and `feature-convention`, and applied directly by `core` and `core-ui` (`BaseViewModel` uses field injection). DataStore is added only in `:core`, the one module that imports it.
+- **`api-convention`**: base and Hilt conventions plus Retrofit. It also loads any keys in the module's `microservice.properties` into `BuildConfig`. Endpoint paths don't go there: each `XRemoteDataSourceImpl` passes them to the `@Url` methods as literal strings (e.g. `"bosses"`, `"bosses/$id"`).
+- **`compose-convention`**: base convention plus Compose (BOM, UI, Material3), navigation-compose and activity-compose. Compose tooling (previews, layout inspector) is `debugImplementation`, so it doesn't ship in release builds. Used by `core-ui` and `core-navigation`. (`core-ui` also adds Coil itself, for image-loading components.)
+- **`feature-convention`**: compose and Hilt conventions plus Hilt-navigation (`hiltViewModel()`), Coil, and `ksp(project(":navigation-processor"))`. Used by every `feature-*` module.
 - **`app-convention`**: application setup through `configureAndroid` (flavors also get their `applicationIdSuffix`), plus `targetSdk` and `versionCode`.
 - `DependencyExtension.kt` adds dependencies by configuration name (`"implementation"(…)`, `"ksp"(…)`), never through Gradle's generated hashed accessor imports.
 - `gradle.properties` enables incremental KSP (the default) and the configuration cache.

@@ -271,6 +271,9 @@ Next, in rough order:
 - [ ] Unit tests for repositories and ViewModels, plus CI (GitHub Actions)
 - [ ] Tag a `template-v1` release, then Play Console internal testing
 
+**On hold**
+- [ ] Publish `buildlogic` and `navigation-processor` as private libraries (e.g. GitHub Packages), so building needs your permission. Put on hold 2026-11-03: too much overhead for one person and one app, and a private repo is enough for now. Before picking it up: read the version catalog at runtime instead of through `LibrariesForLibs`, make the processor's package names configurable, give the plugins namespaced IDs, and add tests (KSP compile-testing for the processor, Gradle TestKit for the conventions).
+
 ---
 
 ## 11. Debugging tips learned the hard way
