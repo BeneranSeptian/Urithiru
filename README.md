@@ -101,7 +101,6 @@ Tabs (floating bottom bar on phones, rail on tablets):
 | `:api-eldenring` | The Elden Ring compendium: bosses, weapons, armor, items, locations, NPCs |
 | `:api-dummyjson` | Login, token refresh, `auth/me` and the saved session |
 | `:api-jsonbin` | Server-driven onboarding text |
-| `:api-twitch` | A Twitch OAuth `client_credentials` token flow (kept as an example) |
 | `:feature-splash` · `:feature-onboarding` · `:feature-auth` | First-launch flow and login |
 | `:feature-catalog` · `:feature-shop` · `:feature-explore` · `:feature-profile` | The four tabs |
 | `:navigation-processor` | The KSP processor that generates the feature graphs |
