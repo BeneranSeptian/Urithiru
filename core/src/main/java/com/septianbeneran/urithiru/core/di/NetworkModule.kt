@@ -1,5 +1,7 @@
 package com.septianbeneran.urithiru.core.di
 
+import android.content.Context
+import com.chuckerteam.chucker.api.ChuckerInterceptor
 import com.septianbeneran.urithiru.core.BuildConfig
 import com.septianbeneran.urithiru.core.BuildConfig.DUMMY_JSON_BASE_URL
 import com.septianbeneran.urithiru.core.BuildConfig.ELDEN_RING_BASE_URL
@@ -11,6 +13,7 @@ import com.septianbeneran.urithiru.core.remote.interceptor.LogcatInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import kotlinx.serialization.json.Json
@@ -25,11 +28,12 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient {
+    fun provideOkHttpClient(@ApplicationContext context: Context): OkHttpClient {
         return OkHttpClient.Builder()
             .apply {
                 if (BuildConfig.DEBUG) addInterceptor(LogcatInterceptor())
             }
+            .addNetworkInterceptor(ChuckerInterceptor.Builder(context).build())
             .build()
     }
 

@@ -10,4 +10,6 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
+    debugImplementation(libs.chucker)
+    releaseImplementation(libs.chucker.no.op)
 }
