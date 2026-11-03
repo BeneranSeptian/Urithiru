@@ -1,7 +1,5 @@
 plugins {
     id("com.android.library")
-    id("com.google.devtools.ksp")
-    id("com.google.dagger.hilt.android")
     id("kotlinx-serialization")
 }
 
@@ -11,6 +9,6 @@ android {
 }
 
 dependencies {
-    baseDependencies()
+    serializationDependencies()
     testDependencies()
 }

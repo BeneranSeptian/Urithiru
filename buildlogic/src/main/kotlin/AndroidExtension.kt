@@ -4,7 +4,7 @@ import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.dsl.LibraryProductFlavor
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
-import java.io.FileInputStream
+import java.io.File
 import java.util.Properties
 
 /**
@@ -43,7 +43,7 @@ private fun CommonExtension.configureFlavors(project: Project) {
             resValue("string", "app_name", flavorProperties["APP_NAME"] ?: "My App")
 
             flavorProperties.forEach { (key, value) ->
-                buildConfigField("String", key, "\"$value\"")
+                buildConfigField("String", key, value.asBuildConfigString())
             }
 
             // AGP backs both flavor types with one class, so branch on the module type, not on `this`
@@ -60,9 +60,16 @@ private fun CommonExtension.configureFlavors(project: Project) {
 }
 
 private fun Project.flavorProperties(flavor: ProductFlavor): Map<String, String> =
-    Properties().apply {
-        val propertiesFile = file("${rootDir}/productFlavorProperties/${flavor.flavor}.properties")
-        if (propertiesFile.exists()) {
-            FileInputStream(propertiesFile).use { load(it) }
-        }
-    }.entries.associate { entry -> entry.key.toString() to entry.value.toString() }
+    readProperties(file("${rootDir}/productFlavorProperties/${flavor.flavor}.properties"))
+
+/** Reads a `.properties` file into a map, or returns an empty map when the file doesn't exist. */
+internal fun readProperties(file: File): Map<String, String> {
+    if (!file.exists()) return emptyMap()
+    val properties = Properties()
+    file.inputStream().use { properties.load(it) }
+    return properties.entries.associate { entry -> entry.key.toString() to entry.value.toString() }
+}
+
+/** Quotes a value as a Java string literal for `buildConfigField`, escaping backslashes and quotes. */
+internal fun String.asBuildConfigString(): String =
+    "\"" + replace("\\", "\\\\").replace("\"", "\\\"") + "\""

@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.library)
     id("compose-convention")
+    id("hilt-convention")
 }
 
 dependencies {
