@@ -26,6 +26,7 @@ import com.septianbeneran.urithiru.core.ui.util.extension.toMessage
  * Full-screen failure: icon, title, a message for [error], and a retry button.
  * By default the button only shows when the error is worth retrying (see [AppError.isRetryable]).
  * Set [showRetry] to true where there's no other way forward, e.g. the splash screen.
+ * Pass [verticalAlignment] = [Alignment.Top] to place it under a fixed header instead of centering it.
  */
 @Composable
 fun UriErrorState(
@@ -34,6 +35,7 @@ fun UriErrorState(
     title: String = localizedString(R.string.error_title),
     @DrawableRes icon: Int = R.drawable.error,
     showRetry: Boolean = error.isRetryable,
+    verticalAlignment: Alignment.Vertical = Alignment.CenterVertically,
     onRetry: (() -> Unit)? = null
 ) {
     Column(
@@ -41,7 +43,7 @@ fun UriErrorState(
             .fillMaxSize()
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically)
+        verticalArrangement = Arrangement.spacedBy(12.dp, verticalAlignment)
     ) {
         Icon(
             modifier = Modifier.size(48.dp),

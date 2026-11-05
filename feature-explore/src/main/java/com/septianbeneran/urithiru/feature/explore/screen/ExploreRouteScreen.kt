@@ -1,8 +1,6 @@
 package com.septianbeneran.urithiru.feature.explore.screen
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
@@ -36,10 +35,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -160,50 +164,51 @@ fun ExploreScreen(
         )
 
         val feedState = uiState.feedState
+        var isListScrolled by remember { mutableStateOf(false) }
+        val dividerAlpha by animateFloatAsState(
+            targetValue = if (uiState.hasContent && isListScrolled) 1f else 0f,
+            label = "dividerAlpha"
+        )
+
+        KindChips(
+            modifier = Modifier.padding(top = 8.dp),
+            selected = uiState.selectedKind,
+            onSelect = { onAction(OnKindSelect(it)) }
+        )
+        UriDivider(
+            modifier = Modifier
+                .padding(top = 4.dp)
+                .graphicsLayer { alpha = dividerAlpha }
+        )
 
         when {
             feedState is StateFailed && !uiState.hasContent -> {
-                Column {
-                    KindChips(
-                        modifier = Modifier.padding(top = 16.dp),
-                        selected = uiState.selectedKind,
-                        onSelect = { onAction(OnKindSelect(it)) }
-                    )
-                    UriErrorState(
-                        error = feedState.failed,
-                        onRetry = { onAction(Refresh) }
-                    )
-                }
-            }
-
-            (feedState is StateLoading || feedState is StateInitial) && !uiState.hasContent -> {
-                FeedSkeleton(
-                    selectedKind = uiState.selectedKind,
-                    showFeatured = !uiState.isSearching,
-                    onSelectKind = { onAction(OnKindSelect(it)) }
+                UriErrorState(
+                    modifier = Modifier.padding(top = 48.dp),
+                    error = feedState.failed,
+                    onRetry = { onAction(Refresh) },
+                    verticalAlignment = Alignment.Top
                 )
             }
 
+            (feedState is StateLoading || feedState is StateInitial) && !uiState.hasContent -> {
+                FeedSkeleton(showFeatured = !uiState.isSearching)
+            }
+
             !uiState.hasContent -> {
-                Column {
-                    KindChips(
-                        modifier = Modifier.padding(top = 16.dp),
-                        selected = uiState.selectedKind,
-                        onSelect = { onAction(OnKindSelect(it)) }
+                UriEmptyState(
+                    title = localizedString(R.string.explore_nothing_found),
+                    message = localizedString(
+                        if (uiState.isSearching) CoreUiR.string.common_try_different_name
+                        else R.string.explore_try_another_section
                     )
-                    UriEmptyState(
-                        title = localizedString(R.string.explore_nothing_found),
-                        message = localizedString(
-                            if (uiState.isSearching) CoreUiR.string.common_try_different_name
-                            else R.string.explore_try_another_section
-                        )
-                    )
-                }
+                )
             }
 
             else -> RefreshableContent(
                 state = uiState,
-                onAction = onAction
+                onAction = onAction,
+                onScrolledChange = { isListScrolled = it }
             )
         }
     }
@@ -212,7 +217,8 @@ fun ExploreScreen(
 @Composable
 private fun RefreshableContent(
     state: ExploreUiState,
-    onAction: (ExploreAction) -> Unit
+    onAction: (ExploreAction) -> Unit,
+    onScrolledChange: (Boolean) -> Unit
 ) {
     PullToRefreshBox(
         modifier = Modifier.fillMaxSize(),
@@ -220,9 +226,9 @@ private fun RefreshableContent(
         onRefresh = { onAction(Refresh) }
     ) {
         if (state.isGroupedSearch) {
-            SearchResults(state = state, onAction = onAction)
+            SearchResults(state = state, onAction = onAction, onScrolledChange = onScrolledChange)
         } else {
-            ExploreFeed(state = state, onAction = onAction)
+            ExploreFeed(state = state, onAction = onAction, onScrolledChange = onScrolledChange)
         }
 
         state.refreshError?.let { error ->
@@ -242,140 +248,123 @@ private fun RefreshableContent(
 @Composable
 private fun ExploreFeed(
     state: ExploreUiState,
-    onAction: (ExploreAction) -> Unit
+    onAction: (ExploreAction) -> Unit,
+    onScrolledChange: (Boolean) -> Unit
 ) {
     val gridState = rememberLazyStaggeredGridState()
     val feedState = state.feedState
     val onEntryClick = entryClick(onAction)
-    val showDivider by remember {
-        derivedStateOf {
-            gridState.firstVisibleItemIndex > 0 || gridState.firstVisibleItemScrollOffset > 0
-        }
-    }
 
+    ScrolledEffect(
+        isScrolled = { gridState.firstVisibleItemIndex > 0 || gridState.firstVisibleItemScrollOffset > 0 },
+        onScrolledChange = onScrolledChange
+    )
     LoadMoreEffect(
         gridState = gridState,
         page = state.page,
         onLoadNextPage = { onAction(LoadNextPage) }
     )
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        KindChips(
-            modifier = Modifier
-                .padding(horizontal = ScreenMargin)
-                .bleed(ScreenMargin),
-            selected = state.selectedKind,
-            onSelect = { onAction(OnKindSelect(it)) }
-        )
-        AnimatedVisibility(
-            visible = showDivider,
-            enter = fadeIn(),
-            exit = fadeOut()
-        ) {
-            UriDivider(modifier = Modifier.padding(top = 8.dp))
+    LazyVerticalStaggeredGrid(
+        modifier = Modifier.fillMaxSize(),
+        state = gridState,
+        columns = StaggeredGridCells.Fixed(2),
+        contentPadding = PaddingValues(
+            start = ScreenMargin,
+            end = ScreenMargin,
+            top = 16.dp,
+            bottom = ScreenMargin + LocalScreenBottomPadding.current
+        ),
+        horizontalArrangement = Arrangement.spacedBy(FeedSpacing),
+        verticalItemSpacing = FeedSpacing
+    ) {
+        if (state.featured.isNotEmpty()) {
+            item(span = StaggeredGridItemSpan.FullLine, contentType = "featured") {
+                FeaturedSection(
+                    modifier = Modifier.bleed(ScreenMargin),
+                    entries = state.featured,
+                    onEntryClick = onEntryClick
+                )
+            }
         }
 
-        LazyVerticalStaggeredGrid(
-            modifier = Modifier.fillMaxSize(),
-            state = gridState,
-            columns = StaggeredGridCells.Fixed(2),
-            contentPadding = PaddingValues(
-                start = ScreenMargin,
-                end = ScreenMargin,
-                top = 16.dp,
-                bottom = ScreenMargin + LocalScreenBottomPadding.current
-            ),
-            horizontalArrangement = Arrangement.spacedBy(FeedSpacing),
-            verticalItemSpacing = FeedSpacing
-        ) {
-            if (state.featured.isNotEmpty()) {
-                item(span = StaggeredGridItemSpan.FullLine, contentType = "featured") {
-                    FeaturedSection(
-                        modifier = Modifier.bleed(ScreenMargin),
-                        entries = state.featured,
-                        onEntryClick = onEntryClick
-                    )
-                }
+        state.regionRows.forEach { row ->
+            item(
+                span = StaggeredGridItemSpan.FullLine,
+                key = "region-${row.region}",
+                contentType = "region"
+            ) {
+                EntryRow(
+                    modifier = Modifier.bleed(ScreenMargin),
+                    title = localizedString(R.string.explore_around_region, row.region),
+                    subtitle = row.summary(),
+                    entries = row.entries,
+                    showKind = true,
+                    onSeeAll = null,
+                    onEntryClick = onEntryClick
+                )
             }
+        }
 
-            state.regionRows.forEach { row ->
-                item(
-                    span = StaggeredGridItemSpan.FullLine,
-                    key = "region-${row.region}",
-                    contentType = "region"
-                ) {
-                    EntryRow(
-                        modifier = Modifier.bleed(ScreenMargin),
-                        title = localizedString(R.string.explore_around_region, row.region),
-                        subtitle = row.summary(),
-                        entries = row.entries,
-                        showKind = true,
-                        onSeeAll = null,
-                        onEntryClick = onEntryClick
+        item(span = StaggeredGridItemSpan.FullLine, contentType = "header") {
+            SectionHeader(
+                title = when {
+                    state.isSearching -> localizedString(
+                        R.string.explore_results_for,
+                        state.submittedQuery
                     )
-                }
-            }
 
-            item(span = StaggeredGridItemSpan.FullLine, contentType = "header") {
-                SectionHeader(
-                    title = when {
-                        state.isSearching -> localizedString(
-                            R.string.explore_results_for,
-                            state.submittedQuery
+                    state.selectedKind != null -> state.selectedKind.pluralLabel
+                    else -> localizedString(R.string.explore_for_you)
+                },
+                subtitle = when {
+                    state.isSearching -> state.selectedKind?.let {
+                        localizedString(
+                            R.string.explore_search_in,
+                            it.pluralLabel.lowercase()
                         )
-
-                        state.selectedKind != null -> state.selectedKind.pluralLabel
-                        else -> localizedString(R.string.explore_for_you)
-                    },
-                    subtitle = when {
-                        state.isSearching -> state.selectedKind?.let {
-                            localizedString(
-                                R.string.explore_search_in,
-                                it.pluralLabel.lowercase()
-                            )
-                        }
-                            ?: localizedString(R.string.explore_search_everywhere)
-
-                        state.selectedKind != null -> state.selectedKind.tagline
-                        else -> localizedString(R.string.explore_for_you_subtitle)
                     }
-                )
-            }
+                        ?: localizedString(R.string.explore_search_everywhere)
 
-            items(
-                items = state.entries,
-                key = { "${it.kind}-${it.id}" },
-                contentType = { it.kind }
-            ) { entry ->
-                CompendiumFeedCard(
-                    entry = entry,
-                    showKind = state.selectedKind == null,
-                    onClick = onEntryClick(entry)
-                )
-            }
-
-            if (state.failedKinds.isNotEmpty()) {
-                item(span = StaggeredGridItemSpan.FullLine, contentType = "failed") {
-                    Text(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = localizedString(
-                            R.string.explore_sections_failed,
-                            state.failedKinds.map { it.pluralLabel.lowercase() }.joinToString()
-                        ),
-                        style = UrithiruTheme.typography.bodyS,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center
-                    )
+                    state.selectedKind != null -> state.selectedKind.tagline
+                    else -> localizedString(R.string.explore_for_you_subtitle)
                 }
-            }
+            )
+        }
 
-            item(span = StaggeredGridItemSpan.FullLine, contentType = "footer") {
-                UriListFooter(
-                    isLoading = feedState is StateLoading,
-                    error = (feedState as? StateFailed)?.failed,
-                    onRetry = { onAction(LoadNextPage) }
+        items(
+            items = state.entries,
+            key = { "${it.kind}-${it.id}" },
+            contentType = { it.kind }
+        ) { entry ->
+            CompendiumFeedCard(
+                entry = entry,
+                showKind = state.selectedKind == null,
+                onClick = onEntryClick(entry)
+            )
+        }
+
+        if (state.failedKinds.isNotEmpty()) {
+            item(span = StaggeredGridItemSpan.FullLine, contentType = "failed") {
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = localizedString(
+                        R.string.explore_sections_failed,
+                        state.failedKinds.map { it.pluralLabel.lowercase() }.joinToString()
+                    ),
+                    style = UrithiruTheme.typography.bodyS,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
                 )
             }
+        }
+
+        item(span = StaggeredGridItemSpan.FullLine, contentType = "footer") {
+            UriListFooter(
+                isLoading = feedState is StateLoading,
+                error = (feedState as? StateFailed)?.failed,
+                onRetry = { onAction(LoadNextPage) }
+            )
         }
     }
 }
@@ -383,26 +372,28 @@ private fun ExploreFeed(
 @Composable
 private fun SearchResults(
     state: ExploreUiState,
-    onAction: (ExploreAction) -> Unit
+    onAction: (ExploreAction) -> Unit,
+    onScrolledChange: (Boolean) -> Unit
 ) {
+    val listState = rememberLazyListState()
+
+    ScrolledEffect(
+        isScrolled = { listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > 0 },
+        onScrolledChange = onScrolledChange
+    )
+
     val result = state.searchResult ?: return
     val onEntryClick = entryClick(onAction)
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
+        state = listState,
         contentPadding = PaddingValues(
             top = 16.dp,
             bottom = ScreenMargin + LocalScreenBottomPadding.current
         ),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        item(contentType = "kinds") {
-            KindChips(
-                selected = state.selectedKind,
-                onSelect = { onAction(OnKindSelect(it)) }
-            )
-        }
-
         item(contentType = "header") {
             SectionHeader(
                 modifier = Modifier.padding(horizontal = ScreenMargin),
@@ -537,6 +528,18 @@ private fun entryClick(onAction: (ExploreAction) -> Unit): (CompendiumEntry) -> 
     }
 
 @Composable
+private fun ScrolledEffect(
+    isScrolled: () -> Boolean,
+    onScrolledChange: (Boolean) -> Unit
+) {
+    val currentOnScrolledChange by rememberUpdatedState(onScrolledChange)
+
+    LaunchedEffect(Unit) {
+        snapshotFlow(isScrolled).collect { currentOnScrolledChange(it) }
+    }
+}
+
+@Composable
 private fun LoadMoreEffect(
     gridState: LazyStaggeredGridState,
     page: Int,
@@ -664,11 +667,7 @@ private fun SectionHeader(
 }
 
 @Composable
-private fun FeedSkeleton(
-    selectedKind: CompendiumKind?,
-    showFeatured: Boolean,
-    onSelectKind: (CompendiumKind?) -> Unit
-) {
+private fun FeedSkeleton(showFeatured: Boolean) {
     LazyVerticalStaggeredGrid(
         modifier = Modifier.fillMaxSize(),
         columns = StaggeredGridCells.Fixed(2),
@@ -682,13 +681,6 @@ private fun FeedSkeleton(
         verticalItemSpacing = FeedSpacing,
         userScrollEnabled = false
     ) {
-        item(span = StaggeredGridItemSpan.FullLine) {
-            KindChips(
-                modifier = Modifier.bleed(ScreenMargin),
-                selected = selectedKind,
-                onSelect = onSelectKind
-            )
-        }
         if (showFeatured) {
             item(span = StaggeredGridItemSpan.FullLine) {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
