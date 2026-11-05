@@ -1,7 +1,6 @@
 package com.septianbeneran.urithiru.api.eldenring.repository
 
 import com.septianbeneran.urithiru.api.eldenring.data.remote.service.CompendiumRemoteDataSource
-import com.septianbeneran.urithiru.core.annotation.ApplicationScope
 import com.septianbeneran.urithiru.core.base.BaseRepository
 import com.septianbeneran.urithiru.core.entity.eldenring.CompendiumEntry
 import com.septianbeneran.urithiru.core.entity.eldenring.CompendiumKind
@@ -9,15 +8,13 @@ import com.septianbeneran.urithiru.core.entity.eldenring.CompendiumPage
 import com.septianbeneran.urithiru.core.remote.entity.ApiResult
 import com.septianbeneran.urithiru.core.util.CoroutineDispatcherProvider
 import com.septianbeneran.urithiru.core.util.resultFlow
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class CompendiumRepositoryImpl @Inject constructor(
     private val remote: CompendiumRemoteDataSource,
-    private val dispatcher: CoroutineDispatcherProvider,
-    @ApplicationScope applicationScope: CoroutineScope
-) : BaseRepository(applicationScope), CompendiumRepository {
+    private val dispatcher: CoroutineDispatcherProvider
+) : BaseRepository(), CompendiumRepository {
 
     override fun getList(
         kind: CompendiumKind,

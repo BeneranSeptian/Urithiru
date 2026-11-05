@@ -268,9 +268,8 @@ interface ProductRepository {
 
 class ProductRepositoryImpl @Inject constructor(
     private val remote: ProductRemoteDataSource,
-    private val dispatcher: CoroutineDispatcherProvider,
-    @ApplicationScope applicationScope: CoroutineScope
-) : BaseRepository(applicationScope), ProductRepository {
+    private val dispatcher: CoroutineDispatcherProvider
+) : BaseRepository(), ProductRepository {
     override fun getProducts(limit: Int, skip: Int) = resultFlow(
         networkCall = { remote.getProducts(limit, skip) },
         dispatcher = dispatcher

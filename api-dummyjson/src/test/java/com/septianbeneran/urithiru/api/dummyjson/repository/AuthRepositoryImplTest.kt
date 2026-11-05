@@ -10,8 +10,6 @@ import com.septianbeneran.urithiru.core.entity.auth.User
 import com.septianbeneran.urithiru.core.remote.entity.ApiResult
 import com.septianbeneran.urithiru.core.remote.entity.AppError
 import com.septianbeneran.urithiru.core.util.CoroutineDispatcherProvider
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -32,7 +30,6 @@ class AuthRepositoryImplTest {
     private val cache = FakeAuthCache(session)
     private val remote = FakeRemote()
     private val repository = AuthRepositoryImpl(
-        applicationScope = CoroutineScope(Dispatchers.Unconfined),
         cache = cache,
         remote = remote,
         dispatcher = object : CoroutineDispatcherProvider {}

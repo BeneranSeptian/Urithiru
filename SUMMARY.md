@@ -69,7 +69,7 @@ Screen ─► ViewModel ─► UseCase ─► Repository ─► RemoteDataSource
 **Core building blocks (`:core`)**
 - `BaseDataSource.getResult { api.call() }` turns a Retrofit `Response<T>` into `ApiResult.Success` or `ApiResult.Error` with a typed `AppError` (HTTP status or exception mapped once, `CancellationException` rethrown).
 - `resultFlow(networkCall, dispatcher)` emits `Loading` and then the result, running on `io()`.
-- `BaseRepository.mapToEntity(transform, saveResult)` maps the DTO to an entity. If `saveResult` is given, it also saves the result to the cache on the `@ApplicationScope` coroutine scope.
+- `BaseRepository.mapToEntity(transform, saveResult)` maps the DTO to an entity. If `saveResult` is given, it saves the result to the cache before emitting `Success` (in `NonCancellable`, so the write finishes even if the screen closes). A mapping failure becomes `AppError.Parse`; a failed save becomes `AppError.Unknown`.
 - `ApiDto<T>(success, count, data)` is the Elden Ring envelope. `JsonBinDto` is the JSONBin envelope.
 - `BaseState`: `StateInitial | StateLoading | StateSuccess | StateFailed` (UI-side state).
 - `NetworkModule` provides one `Retrofit` per backend, using the qualifiers `@EldenRingNetwork`, `@JsonBinNetwork` and `@DummyJsonNetwork`. Every `Retrofit` uses the kotlinx-serialization converter. The shared `OkHttpClient` adds `LogcatInterceptor` in debug builds and [Chucker](https://github.com/ChuckerTeam/chucker) as a network interceptor, so every call (including the `Authorization` header and a 401 followed by its retry) can be inspected on the device. `:core` uses `debugImplementation` for Chucker and `releaseImplementation` for its `library-no-op`, which passes requests through and adds no UI.
