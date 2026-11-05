@@ -264,6 +264,7 @@ Next, in rough order:
 - [x] Language picker in onboarding and Profile; English by default, never the device language
 - [ ] Download a newer translation file (at splash, applied on the next launch)
 - [ ] Parse backend `errorTitle` / `errorDescription` into `AppError`
+- [ ] Event tracking: `EventTracker` in `:core`, vendors in `core-analytics` (section 13)
 
 **Phase 4: ship it**
 - [ ] Remove the unused permissions from the manifest
@@ -311,6 +312,74 @@ Next, in rough order:
 - Small commits with clear messages.
 - Write questions and blockers under "Open questions" below and commit them. They're the to-do list for the next session.
 - If `./gradlew` says "permission denied": `sh gradlew …`, or `gradlew.bat` on Windows.
+
+---
+
+## 13. Event tracking (planned, not built)
+
+Decided 2026-11-05: **one interface in `:core`, all vendors in a single `core-analytics` module** that only `:app` depends on. Features only ever see the interface, so no vendor SDK reaches a `feature-*` module.
+
+### Layout
+
+```
+core/analytics/              EventTracker, AnalyticsEvent, TrackerDestination,
+                             CompositeEventTracker, LogcatEventTracker (debug only)
+core-analytics/
+  firebase/                  FirebaseEventTracker
+  appsflyer/                 AppsFlyerEventTracker
+  marketingcloud/            MarketingCloudEventTracker
+  di/AnalyticsModule.kt      binds each tracker @IntoSet
+```
+
+### The pieces
+
+- **`EventTracker`** (`track(event)`, `setUserId(id)`, `setUserProperty(key, value)`, plus `destination`). Features inject this. Hilt hands them `CompositeEventTracker`, which forwards to every tracker in the set.
+- **`AnalyticsEvent(name, params, destinations)`**, a neutral event. Each feature defines its own events next to where they're used (`feature-explore/.../analytics/ExploreEvents.kt`, e.g. `KindSelected(kind)`), so event names are written once, never typed inside a ViewModel.
+- **`TrackerDestination`**: `Analytics` (Firebase), `Attribution` (AppsFlyer), `Marketing` (Marketing Cloud). An event says where it goes; the default is `Analytics` only. A chip tap goes to Firebase; a purchase goes to all three. AppsFlyer should only get conversion events (sign-up, login, purchase), since every extra event costs money and muddies campaign data.
+- **Each vendor tracker translates the neutral event into its SDK's format.** Firebase limits names to 40 characters and caps parameters; AppsFlyer has its own names (`af_purchase`, `af_revenue`, `af_currency`) that its revenue reports need; Marketing Cloud mostly wants contact attributes. All of that lives in the vendor's file, never in features.
+- **`CompositeEventTracker`**: sends each event only to trackers whose `destination` is in `event.destinations` **and** has the user's consent; runs each call in `runCatching` so one SDK crashing doesn't stop the others; sends off the main thread on the `@ApplicationScope` coroutine.
+
+### Where events come from
+
+- **ViewModels, in `onAction`**: every user intent already passes through there, so it's one line per action. Composables never call the tracker.
+- **Screen views automatically**: `NavHostChamber` adds a destination-changed listener and sends `screen_view` with the route class name. Screens do nothing.
+- **Identity**: `feature-auth` calls `setUserId` on login and `setUserId(null)` on logout; `UrithiruProject` sets `language` and `theme_mode` from `AppSettings`.
+
+### Consent
+
+Per destination, not one switch: users often allow analytics but refuse marketing. Saved in `AppSettings` (DataStore), shown on Profile. When consent is withdrawn, the vendor tracker also turns its SDK off (Firebase `setAnalyticsCollectionEnabled(false)`, AppsFlyer `stop(true)`, Marketing Cloud opt-out), because SDKs collect some data on their own.
+
+### Keys and flavors
+
+Vendor keys (AppsFlyer dev key, Marketing Cloud app ID and token) go in `local.properties` and reach code through `BuildConfig`. Never commit `google-services.json`. Per flavor: `dev` uses only the Logcat tracker, `uat`/`beta` send to sandbox projects, `prod` to the real ones, controlled by flags in `productFlavorProperties/<flavor>.properties`.
+
+### Recipe: add a new vendor (e.g. Mixpanel)
+
+1. Add the SDK to `libs.versions.toml` and to `core-analytics/build.gradle.kts` only.
+2. Put its key in `local.properties` (and the flavor flag `MIXPANEL_ENABLED` in `productFlavorProperties/*.properties`), exposed through `BuildConfig`.
+3. Create `core-analytics/.../mixpanel/MixpanelEventTracker.kt`: `@Singleton class MixpanelEventTracker @Inject constructor(...) : EventTracker`, with its `destination`, and map neutral event names and params to Mixpanel's in `track`.
+4. If it needs a new kind of destination, add an entry to `TrackerDestination` and a consent toggle for it.
+5. Bind it in `AnalyticsModule`: `@Binds @IntoSet abstract fun mixpanel(impl: MixpanelEventTracker): EventTracker`.
+6. Initialize the SDK in its tracker (or a small initializer called from `UrithiruProject`), lazily if it's slow, so cold start doesn't suffer.
+7. Turn consent off for it in the tracker when the user withdraws.
+
+No feature module changes. Removing a vendor is the reverse: delete its file and its `@Binds` line.
+
+### Testing
+
+A `FakeEventTracker` records events per destination, so ViewModel tests can assert routing too: "the purchase reached `Attribution`, the chip tap didn't".
+
+### Build order
+
+1. `:core` interface, `AnalyticsEvent`, `CompositeEventTracker`, `LogcatEventTracker`, Hilt bindings.
+2. Automatic `screen_view` in `NavHostChamber`.
+3. Explore events in `ExploreViewModel` + a test with `FakeEventTracker`.
+4. Consent settings on Profile.
+5. `core-analytics` with the first real vendor, once one is chosen.
+
+### When to split a vendor out
+
+Only if an app built from this template doesn't want that vendor's SDK in its APK, or the SDK causes build trouble (its own Gradle plugin, conflicting dependencies). Then move its file into its own `analytics-<vendor>` module that `:app` includes. Features don't change, because they only know `EventTracker`.
 
 ## Open questions
 - (add yours here)
