@@ -4,7 +4,7 @@ A modular Android app template built with Clean Architecture, Jetpack Compose, H
 
 - Package root: `com.septianbeneran.urithiru` for every module. A module's namespace is the root plus its module name, with `-` replaced by `.`
 - SDK: compileSdk 37, minSdk 24, targetSdk 35, Java 21
-- Build: Gradle 9.8.2, AGP 9.4.1, Kotlin 2.4.21, KSP 2.3.12, Compose BOM 2026.09.00, Hilt 2.60.1, Coil 3.6.3; compileSdk/targetSdk 37
+- Build: Gradle 9.9.0, AGP 9.4.1, Kotlin 2.4.21, KSP 2.3.12, Compose BOM 2026.09.00, Hilt 2.60.1, Coil 3.6.3; compileSdk/targetSdk 37
 
 ---
 

@@ -86,7 +86,7 @@ Tabs (floating bottom bar on phones, rail on tablets):
 
 ## 📦 Prerequisites
 - JDK 21
-- Gradle 9.8.2 (through the wrapper, `./gradlew`)
+- Gradle 9.9.0 (through the wrapper, `./gradlew`)
 - Android SDK 37 to compile; the app runs on Android 7.0 (API 24) and up
 
 ## 🧱 Modules
