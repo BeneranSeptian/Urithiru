@@ -13,6 +13,8 @@ import com.septianbeneran.urithiru.processor.util.AnnotationExtension.getGraph
 import com.septianbeneran.urithiru.processor.util.AnnotationExtension.getRouteParams
 import com.septianbeneran.urithiru.processor.util.Constant.FEATUREROUTE_ANNOTATION_PACKAGE_FULL_PATH
 import com.septianbeneran.urithiru.processor.util.Constant.FEATURE_ROUTE_ANNOTATION
+import com.septianbeneran.urithiru.processor.util.Constant.NAVIGATOR_CLASS_NAME
+import com.septianbeneran.urithiru.processor.util.Constant.NAVIGATOR_CLASS_PACKAGE
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.ksp.toTypeName
@@ -23,8 +25,9 @@ class FeatureProcessor(
     private val logger: KSPLogger
 ) : SymbolProcessor {
     private val routeFiles = mutableListOf<FileSpec>()
-    lateinit var startDestination: TypeName
-    lateinit var graphClass: TypeName
+    private var startDestination: TypeName? = null
+    private var graphClass: TypeName? = null
+    private var startDestinationFunction: KSFunctionDeclaration? = null
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val annotationName = FEATUREROUTE_ANNOTATION_PACKAGE_FULL_PATH
@@ -33,28 +36,43 @@ class FeatureProcessor(
             .getSymbolsWithAnnotation(annotationName)
             .filterIsInstance<KSFunctionDeclaration>()
             .forEach { function ->
-                logger.info("generating ${function.simpleName}", function)
+                logger.info("generating ${function.simpleName.asString()}", function)
+
+                if (!function.hasNavigatorOnlyParameter()) {
+                    logger.error(
+                        "@FeatureRoute function ${function.simpleName.asString()} must take exactly one parameter: " +
+                            "(navigator: $NAVIGATOR_CLASS_NAME)",
+                        function
+                    )
+                    return@forEach
+                }
 
                 val annotation =
                     function.annotations.first { it.shortName.asString() == FEATURE_ROUTE_ANNOTATION }
-                val annotationParams = RouteData(
-                    routeParams = annotation.getRouteParams(),
-                    graphClass = annotation.getGraph()
-                )
+                val routeParams = annotation.getRouteParams()
+                if (routeParams == null) {
+                    logger.error("@FeatureRoute is missing routeParams", function)
+                    return@forEach
+                }
+                val graph = annotation.getGraph()
+                val annotationParams = RouteData(routeParams = routeParams, graphClass = graph)
 
-                val isGraphClassDeclared =
-                    annotationParams.graphClass.declaration.qualifiedName?.asString() in setOf(
-                        "kotlin.Nothing",
-                        "java.lang.Void"
-                    )
-                val isStartDestinationDuplicate =
-                    ::startDestination.isInitialized && ::graphClass.isInitialized
+                val isStartDestination =
+                    graph != null && graph.declaration.qualifiedName?.asString() !in NO_GRAPH_CLASSES
 
-                if (isGraphClassDeclared.not()) {
-                    if (isStartDestinationDuplicate.not()) {
-                        startDestination = annotationParams.routeParams.toTypeName()
-                        graphClass = annotationParams.graphClass.toTypeName()
-                    } else error("Multiple start destination!, check @FeatureRoute")
+                if (isStartDestination) {
+                    val existing = startDestinationFunction
+                    if (existing != null) {
+                        logger.error(
+                            "Only one @FeatureRoute per feature module can set graph. " +
+                                "${existing.simpleName.asString()} already sets it.",
+                            function
+                        )
+                        return@forEach
+                    }
+                    startDestinationFunction = function
+                    startDestination = routeParams.toTypeName()
+                    graphClass = graph.toTypeName()
                 }
 
                 routeFiles.add(function.accept(RouteVisitor(), annotationParams))
@@ -67,19 +85,34 @@ class FeatureProcessor(
         super.finish()
 
         if (routeFiles.isNotEmpty()) {
-            if (::startDestination.isInitialized.not() || ::graphClass.isInitialized.not()) {
-                error("Start destination not declared")
+            val graph = graphClass
+            val start = startDestination
+            if (graph == null || start == null) {
+                logger.error(
+                    "No start destination: exactly one @FeatureRoute in this feature module must set graph = <FeatureXNavGraph>::class"
+                )
+                return
             }
 
             routeFiles.forEach { fileSpec -> fileSpec.writeTo(codeGenerator, false) }
 
             generateRouteGraph(
-                graphClassName = graphClass,
-                startDestinationRouteParamsName = startDestination,
+                graphClassName = graph,
+                startDestinationRouteParamsName = start,
                 routeFiles = routeFiles,
                 packageName = "com.septianbeneran.urithiru.feature.graph",
                 codeGenerator = codeGenerator
             )
         }
+    }
+
+    private fun KSFunctionDeclaration.hasNavigatorOnlyParameter(): Boolean {
+        val parameter = parameters.singleOrNull() ?: return false
+        val type = parameter.type.resolve().declaration.qualifiedName?.asString()
+        return type == "$NAVIGATOR_CLASS_PACKAGE.$NAVIGATOR_CLASS_NAME"
+    }
+
+    private companion object {
+        val NO_GRAPH_CLASSES = setOf("kotlin.Nothing", "java.lang.Void")
     }
 }

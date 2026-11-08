@@ -18,7 +18,7 @@ fun FileSpec.Builder.generateRouteSpec(
     routeParams: KSType,
     originatingFile: KSFile
 ): FileSpec.Builder {
-    val targetPackage = packageName.replace(".screen", ".route")
+    val targetPackage = packageName.routePackage()
     val generatedFuncName = functionName.replaceFirstChar { it.lowercase() } + "Generated"
     val targetComposableMember = MemberName(packageName, functionName)
 
@@ -41,4 +41,11 @@ fun FileSpec.Builder.generateRouteSpec(
                 .build()
         )
     return fileSpec
+}
+
+private fun String.routePackage(): String {
+    val segments = split('.')
+    val screenIndex = segments.lastIndexOf("screen")
+    if (screenIndex == -1) return this
+    return segments.toMutableList().apply { set(screenIndex, "route") }.joinToString(".")
 }

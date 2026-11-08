@@ -4,7 +4,7 @@ Guidance for Claude Code when working in this repository. For the full project o
 
 ## Project
 
-Urithiru is a modular Android app template (Clean Architecture, Jetpack Compose, Hilt, Retrofit, Coroutines/Flow, and KSP-generated navigation). The sample data is Elden Ring (weapons and bosses) from `eldenring.fanapis.com`, onboarding text from JSONBin, login from DummyJSON (`api-dummyjson`, `feature-auth`), and a Twitch OAuth flow. It is "Urithiru Showcase", a working template app with 4 tabs (Catalog, Shop, Explore, Profile). The plan, roadmap and next steps are in `FOR READING.md` (sections 2, 3 and 10).
+Urithiru is a modular Android app template (Clean Architecture, Jetpack Compose, Hilt, Retrofit, Coroutines/Flow, and KSP-generated navigation). The sample data is Elden Ring (weapons and bosses) from `eldenring.fanapis.com`, onboarding text from JSONBin, and login from DummyJSON (`api-dummyjson`, `feature-auth`). It is "Urithiru Showcase", a working template app with 4 tabs (Catalog, Shop, Explore, Profile). The plan, roadmap and next steps are in `FOR READING.md` (sections 2, 3 and 10).
 
 ## Commands
 
@@ -21,15 +21,16 @@ Urithiru is a modular Android app template (Clean Architecture, Jetpack Compose,
 
 ## Module rules
 
-- **Package root is always `com.septianbeneran.urithiru`.** A module's namespace is `com.septianbeneran.urithiru.<module-name with - replaced by .>`. For example, `api-twitch` uses `com.septianbeneran.urithiru.api.twitch`. Source folders must match the package.
+- **Package root is always `com.septianbeneran.urithiru`.** A module's namespace is `com.septianbeneran.urithiru.<module-name with - replaced by .>`. For example, `api-dummyjson` uses `com.septianbeneran.urithiru.api.dummyjson`. Source folders must match the package.
 - Dependency direction: `app → feature-* → api-* → core, core-entity`. Features may also use `core-ui` and `core-navigation`.
 - **Feature modules never depend on each other.** They navigate through shared `@Serializable` route classes in `core-navigation`.
 - Use `moduleImplementation(projects.xxx)` (from `buildlogic/GradleExtension.kt`) for every inter-module dependency, e.g. `moduleImplementation(projects.coreUi)`. `projects.*` are Gradle's type-safe project accessors, generated from the `include(...)` list in `settings.gradle.kts`, so a misspelled or missing module fails to compile. Never use `project(":x")` in module build files. (The only exception is inside `buildlogic`, which is an included build and can't see the accessors.)
 - New modules apply one convention plugin:
-  - `api-convention` for data/API modules
-  - `feature-convention` for `feature-*` modules (Compose + Hilt-navigation, Coil and the navigation processor)
+  - `api-convention` for data/API modules (includes Hilt)
+  - `feature-convention` for `feature-*` modules (Compose, Hilt, Hilt-navigation, Coil and the navigation processor)
   - `compose-convention` for shared Compose libraries without screens (`core-ui`, `core-navigation`)
   - `base-convention` for plain libraries
+- `base-convention` and `compose-convention` don't include Hilt. A module that uses `@Inject`, `@Module` or `@HiltViewModel` also applies `hilt-convention` (as `core` and `core-ui` do). Add other libraries, like DataStore, only to the module that imports them.
 
 ## Layering per API module (`api-*`)
 

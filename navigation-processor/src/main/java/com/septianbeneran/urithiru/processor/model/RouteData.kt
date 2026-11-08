@@ -4,5 +4,5 @@ import com.google.devtools.ksp.symbol.KSType
 
 data class RouteData(
     val routeParams: KSType,
-    val graphClass: KSType
+    val graphClass: KSType?
 )

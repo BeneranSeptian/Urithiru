@@ -86,7 +86,7 @@ Tabs (floating bottom bar on phones, rail on tablets):
 
 ## 📦 Prerequisites
 - JDK 21
-- Gradle 9.8.2 (through the wrapper, `./gradlew`)
+- Gradle 9.9.0 (through the wrapper, `./gradlew`)
 - Android SDK 37 to compile; the app runs on Android 7.0 (API 24) and up
 
 ## 🧱 Modules
@@ -101,12 +101,11 @@ Tabs (floating bottom bar on phones, rail on tablets):
 | `:api-eldenring` | The Elden Ring compendium: bosses, weapons, armor, items, locations, NPCs |
 | `:api-dummyjson` | Login, token refresh, `auth/me` and the saved session |
 | `:api-jsonbin` | Server-driven onboarding text |
-| `:api-twitch` | A Twitch OAuth `client_credentials` token flow (kept as an example) |
 | `:feature-splash` · `:feature-onboarding` · `:feature-auth` | First-launch flow and login |
 | `:feature-catalog` · `:feature-shop` · `:feature-explore` · `:feature-profile` | The four tabs |
 | `:navigation-processor` | The KSP processor that generates the feature graphs |
 
-`buildlogic` is not a module: it's an included build with the convention plugins (`base-convention`, `api-convention`, `compose-convention`, `feature-convention`, `app-convention`).
+`buildlogic` is not a module: it's an included build with the convention plugins (`base-convention`, `hilt-convention`, `api-convention`, `compose-convention`, `feature-convention`, `app-convention`).
 
 Dependencies only point down: `app → feature-* → api-* → core, core-entity`. Features never depend on each other; they navigate through the routes in `:core-navigation`.
 
@@ -269,9 +268,8 @@ interface ProductRepository {
 
 class ProductRepositoryImpl @Inject constructor(
     private val remote: ProductRemoteDataSource,
-    private val dispatcher: CoroutineDispatcherProvider,
-    @ApplicationScope applicationScope: CoroutineScope
-) : BaseRepository(applicationScope), ProductRepository {
+    private val dispatcher: CoroutineDispatcherProvider
+) : BaseRepository(), ProductRepository {
     override fun getProducts(limit: Int, skip: Int) = resultFlow(
         networkCall = { remote.getProducts(limit, skip) },
         dispatcher = dispatcher

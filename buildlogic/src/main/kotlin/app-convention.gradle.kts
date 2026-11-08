@@ -14,6 +14,7 @@ android {
 }
 
 dependencies {
-    baseDependencies()
+    hiltDependencies()
+    serializationDependencies()
     testDependencies()
 }

@@ -1,5 +1,6 @@
 package com.septianbeneran.urithiru.feature.explore.screen
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
@@ -33,10 +35,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -51,9 +58,9 @@ import com.septianbeneran.urithiru.core.navigation.graph.FeatureExploreNavGraph
 import com.septianbeneran.urithiru.core.navigation.routeparams.feature_explore.CompendiumDetailRoute
 import com.septianbeneran.urithiru.core.navigation.routeparams.feature_explore.ExploreRoute
 import com.septianbeneran.urithiru.core.navigation.util.Navigator
-import com.septianbeneran.urithiru.core.ui.R as CoreUiR
 import com.septianbeneran.urithiru.core.ui.base.BaseScreen
 import com.septianbeneran.urithiru.core.ui.base.LocalScreenBottomPadding
+import com.septianbeneran.urithiru.core.ui.component.UriDivider
 import com.septianbeneran.urithiru.core.ui.component.UriDot
 import com.septianbeneran.urithiru.core.ui.component.UriEmptyState
 import com.septianbeneran.urithiru.core.ui.component.UriErrorState
@@ -74,7 +81,6 @@ import com.septianbeneran.urithiru.feature.explore.screen.feed.CompendiumFeedCar
 import com.septianbeneran.urithiru.feature.explore.screen.feed.FeaturedEntryCard
 import com.septianbeneran.urithiru.feature.explore.screen.feed.countLabel
 import com.septianbeneran.urithiru.feature.explore.screen.feed.pluralLabel
-import com.septianbeneran.urithiru.feature.explore.screen.feed.singularLabel
 import com.septianbeneran.urithiru.feature.explore.screen.feed.tagline
 import com.septianbeneran.urithiru.feature.explore.screen.stateaction.ExploreAction
 import com.septianbeneran.urithiru.feature.explore.screen.stateaction.ExploreAction.DismissRefreshError
@@ -88,16 +94,18 @@ import com.septianbeneran.urithiru.feature.explore.screen.stateaction.ExploreAct
 import com.septianbeneran.urithiru.feature.explore.screen.stateaction.ExploreNonce.NavigateToDetail
 import com.septianbeneran.urithiru.feature.explore.screen.stateaction.ExploreUiState
 import com.septianbeneran.urithiru.feature.explore.screen.stateaction.RegionRow
+import com.septianbeneran.urithiru.feature.explore.screen.util.FEATURED_AUTO_SCROLL_MS
+import com.septianbeneran.urithiru.feature.explore.screen.util.FeedSpacing
+import com.septianbeneran.urithiru.feature.explore.screen.util.LOAD_MORE_THRESHOLD
+import com.septianbeneran.urithiru.feature.explore.screen.util.ScreenMargin
+import com.septianbeneran.urithiru.feature.explore.screen.util.SearchCardHeight
+import com.septianbeneran.urithiru.feature.explore.screen.util.SearchCardWidth
+import com.septianbeneran.urithiru.feature.explore.screen.util.SkeletonCardRatios
 import com.septianbeneran.urithiru.feature.explore.viewmodel.ExploreViewModel
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
+import com.septianbeneran.urithiru.core.ui.R as CoreUiR
 
-private val ScreenMargin = 24.dp
-private val FeedSpacing = 12.dp
-private val SearchCardWidth = 168.dp
-private val SearchCardHeight = 240.dp
-private const val FEATURED_AUTO_SCROLL_MS = 4_000L
-private const val LOAD_MORE_THRESHOLD = 4
-private val SkeletonCardRatios = listOf(0.78f, 1f, 1.15f, 0.9f)
 
 @FeatureRoute(
     routeParams = ExploreRoute::class,
@@ -114,7 +122,10 @@ fun ExploreRoute(
         viewModel = viewModel,
         contentPadding = PaddingValues(top = ScreenMargin),
         drawBehindBottomOverlay = true,
-        topAppBarArgs = defaults(title = localizedString(CoreUiR.string.common_title_explore), backIcon = null)
+        topAppBarArgs = defaults(
+            title = localizedString(CoreUiR.string.common_title_explore),
+            backIcon = null
+        )
     ) {
         ExploreScreen(
             uiState = uiState,
@@ -126,7 +137,12 @@ fun ExploreRoute(
         nonce = viewModel.nonce,
         onNonce = { nonce ->
             when (nonce) {
-                is NavigateToDetail -> navigator.navigate(CompendiumDetailRoute(kind = nonce.kind.name, id = nonce.id))
+                is NavigateToDetail -> navigator.navigate(
+                    CompendiumDetailRoute(
+                        kind = nonce.kind.name,
+                        id = nonce.id
+                    )
+                )
             }
         }
     )
@@ -148,50 +164,51 @@ fun ExploreScreen(
         )
 
         val feedState = uiState.feedState
+        var isListScrolled by remember { mutableStateOf(false) }
+        val dividerAlpha by animateFloatAsState(
+            targetValue = if (uiState.hasContent && isListScrolled) 1f else 0f,
+            label = "dividerAlpha"
+        )
+
+        KindChips(
+            modifier = Modifier.padding(top = 8.dp),
+            selected = uiState.selectedKind,
+            onSelect = { onAction(OnKindSelect(it)) }
+        )
+        UriDivider(
+            modifier = Modifier
+                .padding(top = 4.dp)
+                .graphicsLayer { alpha = dividerAlpha }
+        )
 
         when {
             feedState is StateFailed && !uiState.hasContent -> {
-                Column {
-                    KindChips(
-                        modifier = Modifier.padding(top = 16.dp),
-                        selected = uiState.selectedKind,
-                        onSelect = { onAction(OnKindSelect(it)) }
-                    )
-                    UriErrorState(
-                        error = feedState.failed,
-                        onRetry = { onAction(Refresh) }
-                    )
-                }
-            }
-
-            (feedState is StateLoading || feedState is StateInitial) && !uiState.hasContent -> {
-                FeedSkeleton(
-                    selectedKind = uiState.selectedKind,
-                    showFeatured = !uiState.isSearching,
-                    onSelectKind = { onAction(OnKindSelect(it)) }
+                UriErrorState(
+                    modifier = Modifier.padding(top = 48.dp),
+                    error = feedState.failed,
+                    onRetry = { onAction(Refresh) },
+                    verticalAlignment = Alignment.Top
                 )
             }
 
+            (feedState is StateLoading || feedState is StateInitial) && !uiState.hasContent -> {
+                FeedSkeleton(showFeatured = !uiState.isSearching)
+            }
+
             !uiState.hasContent -> {
-                Column {
-                    KindChips(
-                        modifier = Modifier.padding(top = 16.dp),
-                        selected = uiState.selectedKind,
-                        onSelect = { onAction(OnKindSelect(it)) }
+                UriEmptyState(
+                    title = localizedString(R.string.explore_nothing_found),
+                    message = localizedString(
+                        if (uiState.isSearching) CoreUiR.string.common_try_different_name
+                        else R.string.explore_try_another_section
                     )
-                    UriEmptyState(
-                        title = localizedString(R.string.explore_nothing_found),
-                        message = localizedString(
-                            if (uiState.isSearching) CoreUiR.string.common_try_different_name
-                            else R.string.explore_try_another_section
-                        )
-                    )
-                }
+                )
             }
 
             else -> RefreshableContent(
                 state = uiState,
-                onAction = onAction
+                onAction = onAction,
+                onScrolledChange = { isListScrolled = it }
             )
         }
     }
@@ -200,7 +217,8 @@ fun ExploreScreen(
 @Composable
 private fun RefreshableContent(
     state: ExploreUiState,
-    onAction: (ExploreAction) -> Unit
+    onAction: (ExploreAction) -> Unit,
+    onScrolledChange: (Boolean) -> Unit
 ) {
     PullToRefreshBox(
         modifier = Modifier.fillMaxSize(),
@@ -208,9 +226,9 @@ private fun RefreshableContent(
         onRefresh = { onAction(Refresh) }
     ) {
         if (state.isGroupedSearch) {
-            SearchResults(state = state, onAction = onAction)
+            SearchResults(state = state, onAction = onAction, onScrolledChange = onScrolledChange)
         } else {
-            ExploreFeed(state = state, onAction = onAction)
+            ExploreFeed(state = state, onAction = onAction, onScrolledChange = onScrolledChange)
         }
 
         state.refreshError?.let { error ->
@@ -230,12 +248,17 @@ private fun RefreshableContent(
 @Composable
 private fun ExploreFeed(
     state: ExploreUiState,
-    onAction: (ExploreAction) -> Unit
+    onAction: (ExploreAction) -> Unit,
+    onScrolledChange: (Boolean) -> Unit
 ) {
     val gridState = rememberLazyStaggeredGridState()
     val feedState = state.feedState
     val onEntryClick = entryClick(onAction)
 
+    ScrolledEffect(
+        isScrolled = { gridState.firstVisibleItemIndex > 0 || gridState.firstVisibleItemScrollOffset > 0 },
+        onScrolledChange = onScrolledChange
+    )
     LoadMoreEffect(
         gridState = gridState,
         page = state.page,
@@ -255,14 +278,6 @@ private fun ExploreFeed(
         horizontalArrangement = Arrangement.spacedBy(FeedSpacing),
         verticalItemSpacing = FeedSpacing
     ) {
-        item(span = StaggeredGridItemSpan.FullLine, contentType = "kinds") {
-            KindChips(
-                modifier = Modifier.bleed(ScreenMargin),
-                selected = state.selectedKind,
-                onSelect = { onAction(OnKindSelect(it)) }
-            )
-        }
-
         if (state.featured.isNotEmpty()) {
             item(span = StaggeredGridItemSpan.FullLine, contentType = "featured") {
                 FeaturedSection(
@@ -274,7 +289,11 @@ private fun ExploreFeed(
         }
 
         state.regionRows.forEach { row ->
-            item(span = StaggeredGridItemSpan.FullLine, key = "region-${row.region}", contentType = "region") {
+            item(
+                span = StaggeredGridItemSpan.FullLine,
+                key = "region-${row.region}",
+                contentType = "region"
+            ) {
                 EntryRow(
                     modifier = Modifier.bleed(ScreenMargin),
                     title = localizedString(R.string.explore_around_region, row.region),
@@ -290,13 +309,23 @@ private fun ExploreFeed(
         item(span = StaggeredGridItemSpan.FullLine, contentType = "header") {
             SectionHeader(
                 title = when {
-                    state.isSearching -> localizedString(R.string.explore_results_for, state.submittedQuery)
+                    state.isSearching -> localizedString(
+                        R.string.explore_results_for,
+                        state.submittedQuery
+                    )
+
                     state.selectedKind != null -> state.selectedKind.pluralLabel
                     else -> localizedString(R.string.explore_for_you)
                 },
                 subtitle = when {
-                    state.isSearching -> state.selectedKind?.let { localizedString(R.string.explore_search_in, it.pluralLabel.lowercase()) }
+                    state.isSearching -> state.selectedKind?.let {
+                        localizedString(
+                            R.string.explore_search_in,
+                            it.pluralLabel.lowercase()
+                        )
+                    }
                         ?: localizedString(R.string.explore_search_everywhere)
+
                     state.selectedKind != null -> state.selectedKind.tagline
                     else -> localizedString(R.string.explore_for_you_subtitle)
                 }
@@ -343,23 +372,28 @@ private fun ExploreFeed(
 @Composable
 private fun SearchResults(
     state: ExploreUiState,
-    onAction: (ExploreAction) -> Unit
+    onAction: (ExploreAction) -> Unit,
+    onScrolledChange: (Boolean) -> Unit
 ) {
+    val listState = rememberLazyListState()
+
+    ScrolledEffect(
+        isScrolled = { listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > 0 },
+        onScrolledChange = onScrolledChange
+    )
+
     val result = state.searchResult ?: return
     val onEntryClick = entryClick(onAction)
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(top = 16.dp, bottom = ScreenMargin + LocalScreenBottomPadding.current),
+        state = listState,
+        contentPadding = PaddingValues(
+            top = 16.dp,
+            bottom = ScreenMargin + LocalScreenBottomPadding.current
+        ),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        item(contentType = "kinds") {
-            KindChips(
-                selected = state.selectedKind,
-                onSelect = { onAction(OnKindSelect(it)) }
-            )
-        }
-
         item(contentType = "header") {
             SectionHeader(
                 modifier = Modifier.padding(horizontal = ScreenMargin),
@@ -488,8 +522,21 @@ private fun RegionRow.summary(): String =
         .map { (kind, count) -> kind.countLabel(count) }
         .joinToString(localizedString(R.string.explore_summary_separator))
 
-private fun entryClick(onAction: (ExploreAction) -> Unit): (CompendiumEntry) -> () -> Unit = { entry ->
-    { onAction(OnEntryClick(entry)) }
+private fun entryClick(onAction: (ExploreAction) -> Unit): (CompendiumEntry) -> () -> Unit =
+    { entry ->
+        { onAction(OnEntryClick(entry)) }
+    }
+
+@Composable
+private fun ScrolledEffect(
+    isScrolled: () -> Boolean,
+    onScrolledChange: (Boolean) -> Unit
+) {
+    val currentOnScrolledChange by rememberUpdatedState(onScrolledChange)
+
+    LaunchedEffect(Unit) {
+        snapshotFlow(isScrolled).collect { currentOnScrolledChange(it) }
+    }
 }
 
 @Composable
@@ -501,7 +548,8 @@ private fun LoadMoreEffect(
     val isNearEnd by remember(gridState) {
         derivedStateOf {
             val layoutInfo = gridState.layoutInfo
-            val lastVisible = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: return@derivedStateOf false
+            val lastVisible =
+                layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: return@derivedStateOf false
             lastVisible >= layoutInfo.totalItemsCount - LOAD_MORE_THRESHOLD
         }
     }
@@ -551,7 +599,7 @@ private fun FeaturedSection(
 
     LaunchedEffect(pagerState, entries.size) {
         while (true) {
-            delay(FEATURED_AUTO_SCROLL_MS)
+            delay(FEATURED_AUTO_SCROLL_MS.milliseconds)
             if (!pagerState.isScrollInProgress && entries.size > 1) {
                 pagerState.animateScrollToPage((pagerState.currentPage + 1) % entries.size)
             }
@@ -619,11 +667,7 @@ private fun SectionHeader(
 }
 
 @Composable
-private fun FeedSkeleton(
-    selectedKind: CompendiumKind?,
-    showFeatured: Boolean,
-    onSelectKind: (CompendiumKind?) -> Unit
-) {
+private fun FeedSkeleton(showFeatured: Boolean) {
     LazyVerticalStaggeredGrid(
         modifier = Modifier.fillMaxSize(),
         columns = StaggeredGridCells.Fixed(2),
@@ -637,13 +681,6 @@ private fun FeedSkeleton(
         verticalItemSpacing = FeedSpacing,
         userScrollEnabled = false
     ) {
-        item(span = StaggeredGridItemSpan.FullLine) {
-            KindChips(
-                modifier = Modifier.bleed(ScreenMargin),
-                selected = selectedKind,
-                onSelect = onSelectKind
-            )
-        }
         if (showFeatured) {
             item(span = StaggeredGridItemSpan.FullLine) {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
