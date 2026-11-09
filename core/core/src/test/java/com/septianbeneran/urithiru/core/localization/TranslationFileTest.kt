@@ -10,12 +10,14 @@ import javax.xml.parsers.DocumentBuilderFactory
 /** Checks the bundled translation file against every module's strings.xml. */
 class TranslationFileTest {
 
-    private val projectDir = File("..").canonicalFile
+    private val rootDir = File("../..").canonicalFile
     private val file: TranslationFile = Json.decodeFromString(
-        File(projectDir, "core/src/main/assets/localization/${AssetTranslator.BUNDLED_PATH.substringAfter('/')}").readText()
+        File("src/main/assets/localization/${AssetTranslator.BUNDLED_PATH.substringAfter('/')}").readText()
     )
-    private val resourceKeys: Map<String, String> = projectDir
-        .listFiles { dir -> dir.isDirectory }.orEmpty()
+    /** Modules sit at the root (`app`) or one level down in a cluster folder (`core/core-ui`, `feature/feature-shop`). */
+    private val resourceKeys: Map<String, String> = rootDir
+        .walk().maxDepth(2)
+        .filter { it.isDirectory }
         .map { File(it, "src/main/res/values/strings.xml") }
         .filter { it.exists() }
         .flatMap { stringValues(it) }

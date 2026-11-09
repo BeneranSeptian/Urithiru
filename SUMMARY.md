@@ -10,6 +10,8 @@ A modular Android app template built with Clean Architecture, Jetpack Compose, H
 
 ## Module Map
 
+Modules are grouped in folders: `core/` (`core`, `core-entity`, `core-navigation`, `core-ui`), `api/` (`api-*`) and `feature/` (`feature-*`); `app` and `navigation-processor` stay at the root. The Gradle paths stay flat (`:core-ui` lives in `core/core-ui`), so `projects.*` accessors, namespaces and packages don't include the folder. `settings.gradle.kts` maps each module to its folder with `includeModules("<cluster>", …)`.
+
 | Module | Kind | Responsibility |
 |---|---|---|
 | `:app` | application | `UrithiruProject` (`@HiltAndroidApp`), `MainActivity`, and `NavHostChamber` (the root `NavHost`, which starts at `FeatureSplashNavGraph` and calls the generated `registerAllFeatureGraphs`) |
@@ -145,7 +147,7 @@ Titles and descriptions come from JSONBin (server-driven) and are shown as-is, u
 
 ## Text & Localization
 
-- **Where text lives:** `core/src/main/assets/localization/translations.json`: `{"version", "defaultLanguage": "en", "languages": {"en": {...}, "id": {...}}}`. Values are ICU MessageFormat: `{0}` for arguments, `{0, plural, one {# drop} other {# drops}}` for counts.
+- **Where text lives:** `core/core/src/main/assets/localization/translations.json`: `{"version", "defaultLanguage": "en", "languages": {"en": {...}, "id": {...}}}`. Values are ICU MessageFormat: `{0}` for arguments, `{0, plural, one {# drop} other {# drops}}` for counts.
 - **`strings.xml` only holds keys:** each entry's value is its camelCase name (`<string name="explore_featured">exploreFeatured</string>`), which keeps compile-time `R.string` ids. Each module owns its keys with a module prefix; keys used by more than one module are `common_*` in `:core-ui`.
 - **Reading text:** `localizedString(R.string.x, args…)` (`:core-ui`) reads the key and translates it in the current language. `localizedString(text, namedArgs)` translates a string that didn't come from a resource (e.g. a backend's `errorTitle`): a key in the JSON is translated, anything else is shown exactly as given. Outside Compose, inject `Translator` (`:core`).
 - **Loading:** `AssetTranslator` reads the bundled file once per launch, or a downloaded copy in `filesDir/localization/translations.json` when its `version` is higher, so a new file only applies on the next launch. No download exists yet.
@@ -158,7 +160,7 @@ Titles and descriptions come from JSONBin (server-driven) and are shown as-is, u
 
 **Add an API endpoint:** add a DTO, then the Retrofit method (`@Url` path). Then add the DataSource method (`getResult { … }`, passing the endpoint path as a string), the Repository method (`resultFlow(...).mapToEntity(...)`), and a UseCase interface with its Impl. Wire them in the module's `di/`.
 
-**Add a new backend:** add `*_BASE_URL` to every `productFlavorProperties/*.properties`, add a qualifier annotation in `core/annotation`, and add a `Retrofit` provider in `NetworkModule`. Then create a new `api-*` module using `api-convention`, and register it in `settings.gradle.kts` and `app/build.gradle.kts`.
+**Add a new backend:** add `*_BASE_URL` to every `productFlavorProperties/*.properties`, add a qualifier annotation in `core/annotation`, and add a `Retrofit` provider in `NetworkModule`. Then create a new `api-*` module using `api-convention`, in `api/`, and add it to the `api` `includeModules` call in `settings.gradle.kts` and to `app/build.gradle.kts`.
 
 **Add a screen:** add the route (plus a graph object if this is a new feature) in `core-navigation`, add the `@FeatureRoute` composable, ViewModel and stateaction in the feature module, then build.
 
@@ -166,7 +168,7 @@ Titles and descriptions come from JSONBin (server-driven) and are shown as-is, u
 
 **Add a language:** add a block such as `"pt-BR": { "languageName": "Português (Brasil)", … }` with every key to `translations.json` and bump `version`. It appears in the language picker automatically.
 
-**Add a feature module:** use `feature-convention` and depend on `core`, `core-entity`, `core-navigation`, `core-ui` and the needed `api-*`. Add it to `settings.gradle.kts` and to the `app` dependencies.
+**Add a feature module:** use `feature-convention` and depend on `core`, `core-entity`, `core-navigation`, `core-ui` and the needed `api-*`. Create it in `feature/`, add it to the `feature` `includeModules` call in `settings.gradle.kts`, and to the `app` dependencies.
 
 ---
 

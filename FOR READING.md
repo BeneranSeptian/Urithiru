@@ -78,7 +78,7 @@ Ideas for later:
 - Every Material color role is mapped in `UrithiruTheme.kt`. **If something looks purple, a role is missing there.**
 
 **Text and language**
-- Real text lives in **one file**: `core/src/main/assets/localization/translations.json`, with a block per language (`en`, `id`).
+- Real text lives in **one file**: `core/core/src/main/assets/localization/translations.json`, with a block per language (`en`, `id`).
 - `strings.xml` files only hold **keys**: `<string name="explore_featured">exploreFeatured</string>`. The value is the name in camelCase.
 - Screens read text with `localizedString(R.string.explore_featured)`. Never use `stringResource`.
 - Placeholders are `{0}`, `{1}`; counts are `{0, plural, one {# drop} other {# drops}}`.
@@ -112,7 +112,7 @@ Ideas for later:
 
 ### Add a new tab
 1. Create a module by copying `feature-catalog`'s `build.gradle.kts`, `.gitignore`, `*.pro` files and `src/main/AndroidManifest.xml`.
-2. Add `include(":feature-x")` to `settings.gradle.kts`, and `moduleImplementation(projects.featureX)` to `app/build.gradle.kts`.
+2. Create the module in `feature/feature-x`, add `"feature-x"` to the `feature` `includeModules(...)` call in `settings.gradle.kts`, and `moduleImplementation(projects.featureX)` to `app/build.gradle.kts`.
 3. Add a graph object `FeatureXNavGraph` in `core-navigation/graph/`.
 4. Give the start screen `@FeatureRoute(routeParams = XRoute::class, graph = FeatureXNavGraph::class)`.
 5. Add one line to `TopLevelDestination` in `:app`, with two Material Symbols icons (outlined and filled).
@@ -126,7 +126,7 @@ Ideas for later:
 
 ### Add or change text
 1. In the `strings.xml` of the module that shows it, add `<string name="profile_thing">profileThing</string>`. Use the module's prefix. If two or more modules need it, put it in `core-ui` as `common_thing` instead.
-2. In `core/src/main/assets/localization/translations.json`, add `"profileThing": "…"` to **every** language block.
+2. In `core/core/src/main/assets/localization/translations.json`, add `"profileThing": "…"` to **every** language block.
 3. In the screen: `localizedString(R.string.profile_thing)`. In a file that also uses `core-ui` keys, import those as `com.septianbeneran.urithiru.core.ui.R as CoreUiR`.
 4. Run `./gradlew :core:testDevDebugUnitTest`. It fails if a key is missing in any language, so you can't forget one.
 - To only fix wording, edit the JSON value. No Kotlin changes needed.
@@ -140,7 +140,7 @@ Ideas for later:
 ### Add an icon
 1. Go to fonts.google.com/icons, pick the icon, and choose **Outlined** (and **Filled** too if it's for a tab).
 2. Download the **SVG**.
-3. In Android Studio: right-click `core-ui/src/main/res/drawable` → **New → Vector Asset** → **Local file**.
+3. In Android Studio: right-click `core/core-ui/src/main/res/drawable` → **New → Vector Asset** → **Local file**.
 4. **Naming:** `name.xml` for outlined and `name_filled.xml` for filled (e.g. `person.xml`, `person_filled.xml`).
 5. Tint it with `MaterialTheme.colorScheme`, never a fixed color.
 6. **Never draw icons by hand.** Only official Material Symbols.
@@ -322,9 +322,9 @@ Decided 2026-11-05: **one interface in `:core`, all vendors in a single `core-an
 ### Layout
 
 ```
-core/analytics/              EventTracker, AnalyticsEvent, TrackerDestination,
+core/core/.../analytics/     EventTracker, AnalyticsEvent, TrackerDestination,
                              CompositeEventTracker, LogcatEventTracker (debug only)
-core-analytics/
+core/core-analytics/
   firebase/                  FirebaseEventTracker
   appsflyer/                 AppsFlyerEventTracker
   marketingcloud/            MarketingCloudEventTracker
@@ -355,7 +355,7 @@ Vendor keys (AppsFlyer dev key, Marketing Cloud app ID and token) go in `local.p
 
 ### Recipe: add a new vendor (e.g. Mixpanel)
 
-1. Add the SDK to `libs.versions.toml` and to `core-analytics/build.gradle.kts` only.
+1. Add the SDK to `libs.versions.toml` and to `core/core-analytics/build.gradle.kts` only.
 2. Put its key in `local.properties` (and the flavor flag `MIXPANEL_ENABLED` in `productFlavorProperties/*.properties`), exposed through `BuildConfig`.
 3. Create `core-analytics/.../mixpanel/MixpanelEventTracker.kt`: `@Singleton class MixpanelEventTracker @Inject constructor(...) : EventTracker`, with its `destination`, and map neutral event names and params to Mixpanel's in `track`.
 4. If it needs a new kind of destination, add an entry to `TrackerDestination` and a consent toggle for it.

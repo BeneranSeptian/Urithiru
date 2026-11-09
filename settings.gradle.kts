@@ -28,18 +28,25 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 rootProject.name = "Urithiru"
 include(":app")
-include(":core")
-include(":api-eldenring")
-include(":core-entity")
-include(":core-navigation")
-include(":feature-explore")
-include(":feature-onboarding")
-include(":api-jsonbin")
-include(":core-ui")
-include(":feature-splash")
 include(":navigation-processor")
-include(":api-dummyjson")
-include(":feature-auth")
-include(":feature-catalog")
-include(":feature-shop")
-include(":feature-profile")
+
+/** Includes each module from its cluster folder, keeping the flat Gradle path (e.g. `:core-ui` lives in `core/core-ui`). */
+fun includeModules(cluster: String, vararg modules: String) {
+    modules.forEach { module ->
+        include(":$module")
+        project(":$module").projectDir = file("$cluster/$module")
+    }
+}
+
+includeModules("core", "core", "core-entity", "core-navigation", "core-ui")
+includeModules("api", "api-dummyjson", "api-eldenring", "api-jsonbin")
+includeModules(
+    "feature",
+    "feature-auth",
+    "feature-catalog",
+    "feature-explore",
+    "feature-onboarding",
+    "feature-profile",
+    "feature-shop",
+    "feature-splash",
+)

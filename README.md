@@ -427,7 +427,7 @@ fun ProductDetailRoute(navigator: Navigator) {
 ```
 - **Start screen of a feature:** set `graph` too, e.g. `@FeatureRoute(routeParams = ProductListRoute::class, graph = FeatureShopNavGraph::class)`. Exactly one screen per feature does this.
 - **UI rules:** reuse `core-ui` components and `UrithiruTheme` tokens, take colors from `MaterialTheme.colorScheme` (never the raw palette), and show empty results with `UriEmptyState`.
-- **Text:** never hardcode UI text. Add a resource whose value is its camelCase key (`<string name="explore_featured">exploreFeatured</string>`) to the module's `strings.xml` (`:core-ui` as `common_…` if several modules use it), add the key to every language in `core/src/main/assets/localization/translations.json`, and read it with `localizedString(R.string.explore_featured)`.
+- **Text:** never hardcode UI text. Add a resource whose value is its camelCase key (`<string name="explore_featured">exploreFeatured</string>`) to the module's `strings.xml` (`:core-ui` as `common_…` if several modules use it), add the key to every language in `core/core/src/main/assets/localization/translations.json`, and read it with `localizedString(R.string.explore_featured)`.
 
 ### 5. Open it from another screen
 The other screen's ViewModel sends a nonce, and its screen navigates:
@@ -453,11 +453,11 @@ KSP generates the route (`productDetailRouteGenerated`), adds it to the feature 
 A tab is a feature module whose start screen is listed in `TopLevelDestination`. Features never know about the bar.
 
 #### Step A: Create the feature module
-Copy `feature-catalog`'s `build.gradle.kts`, `.gitignore`, `*.pro` files and `src/main/AndroidManifest.xml` into `feature-x`. Then register it:
+Copy `feature-catalog`'s `build.gradle.kts`, `.gitignore`, `*.pro` files and `src/main/AndroidManifest.xml` into `feature/feature-x`. Then register it:
 
 ```kotlin
-// settings.gradle.kts
-include(":feature-x")
+// settings.gradle.kts: add it to the feature cluster
+includeModules("feature", /* … */ "feature-x")
 
 // app/build.gradle.kts
 moduleImplementation(projects.featureX)
@@ -485,7 +485,7 @@ fun XRoute(navigator: Navigator) {
 ```
 
 #### Step C: Add the tab
-Add two official Material Symbols icons to `core-ui/src/main/res/drawable` (`x.xml` outlined, `x_filled.xml` filled), then one line in `:app`:
+Add two official Material Symbols icons to `core/core-ui/src/main/res/drawable` (`x.xml` outlined, `x_filled.xml` filled), then one line in `:app`:
 
 ```kotlin
 enum class TopLevelDestination(...) {
